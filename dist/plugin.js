@@ -723,6 +723,99 @@ class FigmaDataExtractor {
         });
         return componentSets;
     }
+    // Enhanced method to resolve instances and find their component sets
+    async resolveInstancesAndComponentSets(nodes) {
+        const resolvedInstances = [];
+        for (const node of nodes) {
+            if (node.type === 'INSTANCE' && node.mainComponentId) {
+                try {
+                    const resolved = await this.resolveInstance(node);
+                    if (resolved) {
+                        resolvedInstances.push(resolved);
+                    }
+                }
+                catch (error) {
+                    console.warn('Failed to resolve instance:', node.id, error);
+                }
+            }
+        }
+        return resolvedInstances;
+    }
+    // Resolve a single instance to its component set and variants
+    async resolveInstance(instance) {
+        if (!instance.mainComponentId) {
+            return null;
+        }
+        try {
+            // Get the main component from Figma
+            const mainComponent = figma.getNodeById(instance.mainComponentId);
+            if (!mainComponent) {
+                console.warn('Main component not found:', instance.mainComponentId);
+                return null;
+            }
+            // Find the parent component set
+            const componentSet = mainComponent.parent;
+            if (!componentSet || componentSet.type !== 'COMPONENT_SET') {
+                console.warn('Component set not found for main component:', instance.mainComponentId);
+                return null;
+            }
+            // Extract all variants from the component set
+            const variants = [];
+            for (const variant of componentSet.children) {
+                if (variant.type === 'COMPONENT') {
+                    const variantNode = await this.extractNode(variant);
+                    variants.push(variantNode);
+                }
+            }
+            // Find the active variant based on instance properties
+            const activeVariant = this.findActiveVariant(instance, variants);
+            if (!activeVariant) {
+                console.warn('Active variant not found for instance:', instance.id);
+                return null;
+            }
+            // Extract the component set and main component
+            const componentSetNode = await this.extractNode(componentSet);
+            const mainComponentNode = await this.extractNode(mainComponent);
+            return {
+                instance,
+                mainComponent: mainComponentNode,
+                componentSet: componentSetNode,
+                variants,
+                activeVariant
+            };
+        }
+        catch (error) {
+            console.error('Error resolving instance:', instance.id, error);
+            return null;
+        }
+    }
+    // Find the active variant based on instance variant properties
+    findActiveVariant(instance, variants) {
+        if (!instance.variantProperties) {
+            // If no variant properties, return the first variant
+            return variants[0] || null;
+        }
+        // Find variant that matches the instance's variant properties
+        for (const variant of variants) {
+            if (this.variantPropertiesMatch(instance.variantProperties, variant.variantProperties)) {
+                return variant;
+            }
+        }
+        // If no exact match, return the first variant
+        return variants[0] || null;
+    }
+    // Check if variant properties match
+    variantPropertiesMatch(instanceProps, variantProps) {
+        if (!instanceProps || !variantProps) {
+            return false;
+        }
+        for (const [key, value] of Object.entries(instanceProps)) {
+            if (variantProps[key] !== value) {
+                return false;
+            }
+        }
+        return true;
+    }
     // Helper method to trace animation chains
     traceAnimationChain(startNodeId, nodes) {
         const chain = [startNodeId];
@@ -845,6 +938,8 @@ async function handleExportJSON() {
     // Extract Figma data
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
+    // Resolve instances and find component sets
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Create comprehensive export data
     const exportData = {
         meta: {
@@ -856,8 +951,9 @@ async function handleExportJSON() {
         },
         nodes: nodes,
         componentSets: extractor.findComponentSets(nodes),
-        animationChains: extractor.findComponentSets(nodes).map(cs => {
-            const firstVariant = cs.variants[0];
+        resolvedInstances: resolvedInstances,
+        animationChains: resolvedInstances.map(instance => {
+            const firstVariant = instance.variants[0];
             return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
         })
     };
@@ -889,10 +985,12 @@ async function handleExportBoth() {
     // Extract Figma data
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
+    // Resolve instances and find component sets
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
-    const animationChains = componentSets.map(cs => {
-        const firstVariant = cs.variants[0];
+    const animationChains = resolvedInstances.map(instance => {
+        const firstVariant = instance.variants[0];
         return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     });
     // Generate HTML
@@ -909,6 +1007,7 @@ async function handleExportBoth() {
         },
         nodes: nodes,
         componentSets: componentSets,
+        resolvedInstances: resolvedInstances,
         animationChains: animationChains
     };
     // Send both JSON and HTML back to UI

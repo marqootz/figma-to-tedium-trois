@@ -115,6 +115,9 @@ async function handleExportJSON(): Promise<void> {
   const extractor = new FigmaDataExtractor();
   const nodes = await extractor.extractNodes(selection);
   
+  // Resolve instances and find component sets
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  
   // Create comprehensive export data
   const exportData = {
     meta: {
@@ -126,8 +129,9 @@ async function handleExportJSON(): Promise<void> {
     },
     nodes: nodes,
     componentSets: extractor.findComponentSets(nodes),
-    animationChains: extractor.findComponentSets(nodes).map(cs => {
-      const firstVariant = cs.variants[0];
+    resolvedInstances: resolvedInstances,
+    animationChains: resolvedInstances.map(instance => {
+      const firstVariant = instance.variants[0];
       return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     })
   };
@@ -166,10 +170,13 @@ async function handleExportBoth(): Promise<void> {
   const extractor = new FigmaDataExtractor();
   const nodes = await extractor.extractNodes(selection);
   
+  // Resolve instances and find component sets
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
-  const animationChains = componentSets.map(cs => {
-    const firstVariant = cs.variants[0];
+  const animationChains = resolvedInstances.map(instance => {
+    const firstVariant = instance.variants[0];
     return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
   });
 
@@ -188,6 +195,7 @@ async function handleExportBoth(): Promise<void> {
     },
     nodes: nodes,
     componentSets: componentSets,
+    resolvedInstances: resolvedInstances,
     animationChains: animationChains
   };
   

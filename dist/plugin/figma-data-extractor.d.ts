@@ -10,6 +10,16 @@ export declare class FigmaDataExtractor {
         componentSet: FigmaNode;
         variants: FigmaNode[];
     }[];
+    resolveInstancesAndComponentSets(nodes: FigmaNode[]): Promise<{
+        instance: FigmaNode;
+        mainComponent: FigmaNode;
+        componentSet: FigmaNode;
+        variants: FigmaNode[];
+        activeVariant: FigmaNode;
+    }[]>;
+    private resolveInstance;
+    private findActiveVariant;
+    private variantPropertiesMatch;
     traceAnimationChain(startNodeId: string, nodes: FigmaNode[]): string[];
 }
 //# sourceMappingURL=figma-data-extractor.d.ts.map
