@@ -68,10 +68,13 @@ async function handleExportHTML(): Promise<void> {
   const extractor = new FigmaDataExtractor();
   const nodes = await extractor.extractNodes(selection);
   
+  // Resolve instances and find component sets
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
-  const animationChains = componentSets.map(cs => {
-    const firstVariant = cs.variants[0];
+  const animationChains = resolvedInstances.map(instance => {
+    const firstVariant = instance.variants[0];
     return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
   });
 
@@ -80,7 +83,7 @@ async function handleExportHTML(): Promise<void> {
 
   // Generate HTML
   const generator = new HTMLGenerator();
-  const html = generator.generateHTML(nodes);
+  const html = generator.generateHTML(nodes, resolvedInstances);
   
   // Send back to UI
   figma.ui.postMessage({
@@ -182,7 +185,7 @@ async function handleExportBoth(): Promise<void> {
 
   // Generate HTML
   const generator = new HTMLGenerator();
-  const html = generator.generateHTML(nodes);
+  const html = generator.generateHTML(nodes, resolvedInstances);
   
   // Create comprehensive export data
   const exportData = {

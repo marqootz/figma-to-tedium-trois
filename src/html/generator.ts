@@ -8,10 +8,10 @@ export class HTMLGenerator {
   private styleGenerator = new StyleGenerator();
   private animationHandler = new AnimationHandler();
 
-  generateHTML(nodes: FigmaNode[]): string {
-    const css = this.generateCSS(nodes);
-    const bodyHTML = this.generateBodyHTML(nodes);
-    const javascript = this.generateJavaScript(nodes);
+  generateHTML(nodes: FigmaNode[], resolvedInstances?: any[]): string {
+    const css = this.generateCSS(nodes, resolvedInstances);
+    const bodyHTML = this.generateBodyHTML(nodes, resolvedInstances);
+    const javascript = this.generateJavaScript(nodes, resolvedInstances);
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -47,16 +47,81 @@ ${css}
 </html>`;
   }
 
-  private generateCSS(nodes: FigmaNode[]): string {
-    return nodes.map(node => this.styleGenerator.generateStyles(node, true)).join('\n\n');
+  private generateCSS(nodes: FigmaNode[], resolvedInstances?: any[]): string {
+    let css = nodes.map(node => this.styleGenerator.generateStyles(node, true)).join('\n\n');
+    
+    // Add CSS for all variants if we have resolved instances
+    if (resolvedInstances) {
+      const variantCSS = this.generateVariantCSS(resolvedInstances);
+      css += '\n\n' + variantCSS;
+    }
+    
+    return css;
   }
 
-  private generateBodyHTML(nodes: FigmaNode[]): string {
-    return nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+  private generateBodyHTML(nodes: FigmaNode[], resolvedInstances?: any[]): string {
+    let html = nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+    
+    // Add HTML for all variants if we have resolved instances
+    if (resolvedInstances) {
+      const variantHTML = this.generateVariantHTML(resolvedInstances);
+      html += '\n' + variantHTML;
+    }
+    
+    return html;
   }
 
-  private generateJavaScript(nodes: FigmaNode[]): string {
-    return this.animationHandler.generateAnimationCode(nodes);
+  private generateJavaScript(nodes: FigmaNode[], resolvedInstances?: any[]): string {
+    return this.animationHandler.generateAnimationCode(nodes, resolvedInstances);
+  }
+
+  // Generate CSS for all variants in the shadow variant system
+  private generateVariantCSS(resolvedInstances: any[]): string {
+    let css = '';
+    
+    resolvedInstances.forEach(instance => {
+      const { variants, activeVariant } = instance;
+      
+      // Generate CSS for each variant
+      variants.forEach((variant: FigmaNode) => {
+        const variantCSS = this.styleGenerator.generateStyles(variant, false);
+        css += '\n\n' + variantCSS;
+        
+        // Add variant-specific visibility rules
+        const isActive = variant.id === activeVariant.id;
+        css += `\n[data-figma-id="${variant.id}"] {\n`;
+        css += `  display: ${isActive ? 'block' : 'none'};\n`;
+        css += `  position: absolute;\n`;
+        css += `  left: 0;\n`;
+        css += `  top: 0;\n`;
+        css += `}\n`;
+      });
+    });
+    
+    return css;
+  }
+
+  // Generate HTML for all variants in the shadow variant system
+  private generateVariantHTML(resolvedInstances: any[]): string {
+    let html = '';
+    
+    resolvedInstances.forEach(instance => {
+      const { instance: instanceNode, variants } = instance;
+      
+      // Create a container for all variants
+      html += `\n<!-- Variants for ${instanceNode.name} -->\n`;
+      html += `<div class="variant-container" data-instance-id="${instanceNode.id}">\n`;
+      
+      // Generate HTML for each variant
+      variants.forEach((variant: FigmaNode) => {
+        const variantHTML = this.elementBuilder.buildElement(variant);
+        html += variantHTML + '\n';
+      });
+      
+      html += `</div>\n`;
+    });
+    
+    return html;
   }
 }
 

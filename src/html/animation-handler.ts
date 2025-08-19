@@ -1,7 +1,7 @@
 import { FigmaNode } from '../core/types';
 
 export class AnimationHandler {
-  generateAnimationCode(nodes: FigmaNode[]): string {
+  generateAnimationCode(nodes: FigmaNode[], resolvedInstances?: any[]): string {
     return `
       // Initialize Figma Animation System
       ${this.getAnimationSystemCode()}
@@ -12,10 +12,16 @@ export class AnimationHandler {
         // Register all nodes and elements
         ${this.generateNodeRegistrations(nodes)}
         
+        // Register variant elements if we have resolved instances
+        ${resolvedInstances ? this.generateVariantRegistrations(resolvedInstances) : ''}
+        
         // Setup initial timeout reactions
         ${this.generateInitialTimeouts(nodes)}
         
-        console.log('Animation system initialized with ${nodes.length} nodes');
+        // Setup variant animation system
+        ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
+        
+        console.log('Animation system initialized with ${nodes.length} nodes${resolvedInstances ? ' and ' + resolvedInstances.length + ' resolved instances' : ''}');
       });
     `;
   }
@@ -308,6 +314,58 @@ export class AnimationHandler {
       // Setup timeout reactions for ${node.name}
       window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');
     `).join('\n');
+  }
+
+  // Generate registrations for variant elements
+  private generateVariantRegistrations(resolvedInstances: any[]): string {
+    let registrations = '';
+    
+    resolvedInstances.forEach(instance => {
+      const { variants } = instance;
+      
+      variants.forEach((variant: FigmaNode) => {
+        const sanitizedId = variant.id.replace(/[^a-zA-Z0-9]/g, '_');
+        registrations += `
+        const variant_${sanitizedId} = document.querySelector('[data-figma-id="${variant.id}"]');
+        if (variant_${sanitizedId}) {
+          window.figmaAnimationSystem.registerElement(
+            '${variant.id}',
+            variant_${sanitizedId},
+            ${JSON.stringify(variant)}
+          );
+        } else {
+          console.warn('Variant element not found: ${variant.id}');
+        }
+      `;
+      });
+    });
+    
+    return registrations;
+  }
+
+  // Generate variant animation setup
+  private generateVariantAnimationSetup(resolvedInstances: any[]): string {
+    let setup = '';
+    
+    resolvedInstances.forEach(instance => {
+      const { instance: instanceNode, variants, activeVariant } = instance;
+      
+      setup += `
+      // Setup variant animation for ${instanceNode.name}
+      const instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')} = {
+        instanceId: '${instanceNode.id}',
+        variants: [${variants.map((v: FigmaNode) => `'${v.id}'`).join(', ')}],
+        activeVariant: '${activeVariant.id}',
+        currentIndex: ${variants.findIndex((v: FigmaNode) => v.id === activeVariant.id)}
+      };
+      
+      // Add variant switching methods to animation system
+      window.figmaAnimationSystem.variantInstances = window.figmaAnimationSystem.variantInstances || [];
+      window.figmaAnimationSystem.variantInstances.push(instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
+      `;
+    });
+    
+    return setup;
   }
 }
 

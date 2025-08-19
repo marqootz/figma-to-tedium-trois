@@ -166,7 +166,7 @@ class StyleGenerator {
 
 ;// ./src/html/animation-handler.ts
 class AnimationHandler {
-    generateAnimationCode(nodes) {
+    generateAnimationCode(nodes, resolvedInstances) {
         return `
       // Initialize Figma Animation System
       ${this.getAnimationSystemCode()}
@@ -177,10 +177,16 @@ class AnimationHandler {
         // Register all nodes and elements
         ${this.generateNodeRegistrations(nodes)}
         
+        // Register variant elements if we have resolved instances
+        ${resolvedInstances ? this.generateVariantRegistrations(resolvedInstances) : ''}
+        
         // Setup initial timeout reactions
         ${this.generateInitialTimeouts(nodes)}
         
-        console.log('Animation system initialized with ${nodes.length} nodes');
+        // Setup variant animation system
+        ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
+        
+        console.log('Animation system initialized with ${nodes.length} nodes${resolvedInstances ? ' and ' + resolvedInstances.length + ' resolved instances' : ''}');
       });
     `;
     }
@@ -468,6 +474,50 @@ class AnimationHandler {
       window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');
     `).join('\n');
     }
+    // Generate registrations for variant elements
+    generateVariantRegistrations(resolvedInstances) {
+        let registrations = '';
+        resolvedInstances.forEach(instance => {
+            const { variants } = instance;
+            variants.forEach((variant) => {
+                const sanitizedId = variant.id.replace(/[^a-zA-Z0-9]/g, '_');
+                registrations += `
+        const variant_${sanitizedId} = document.querySelector('[data-figma-id="${variant.id}"]');
+        if (variant_${sanitizedId}) {
+          window.figmaAnimationSystem.registerElement(
+            '${variant.id}',
+            variant_${sanitizedId},
+            ${JSON.stringify(variant)}
+          );
+        } else {
+          console.warn('Variant element not found: ${variant.id}');
+        }
+      `;
+            });
+        });
+        return registrations;
+    }
+    // Generate variant animation setup
+    generateVariantAnimationSetup(resolvedInstances) {
+        let setup = '';
+        resolvedInstances.forEach(instance => {
+            const { instance: instanceNode, variants, activeVariant } = instance;
+            setup += `
+      // Setup variant animation for ${instanceNode.name}
+      const instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')} = {
+        instanceId: '${instanceNode.id}',
+        variants: [${variants.map((v) => `'${v.id}'`).join(', ')}],
+        activeVariant: '${activeVariant.id}',
+        currentIndex: ${variants.findIndex((v) => v.id === activeVariant.id)}
+      };
+      
+      // Add variant switching methods to animation system
+      window.figmaAnimationSystem.variantInstances = window.figmaAnimationSystem.variantInstances || [];
+      window.figmaAnimationSystem.variantInstances.push(instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
+      `;
+        });
+        return setup;
+    }
 }
 
 ;// ./src/html/generator.ts
@@ -480,10 +530,10 @@ class HTMLGenerator {
         this.styleGenerator = new StyleGenerator();
         this.animationHandler = new AnimationHandler();
     }
-    generateHTML(nodes) {
-        const css = this.generateCSS(nodes);
-        const bodyHTML = this.generateBodyHTML(nodes);
-        const javascript = this.generateJavaScript(nodes);
+    generateHTML(nodes, resolvedInstances) {
+        const css = this.generateCSS(nodes, resolvedInstances);
+        const bodyHTML = this.generateBodyHTML(nodes, resolvedInstances);
+        const javascript = this.generateJavaScript(nodes, resolvedInstances);
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -517,14 +567,64 @@ ${css}
 </body>
 </html>`;
     }
-    generateCSS(nodes) {
-        return nodes.map(node => this.styleGenerator.generateStyles(node, true)).join('\n\n');
+    generateCSS(nodes, resolvedInstances) {
+        let css = nodes.map(node => this.styleGenerator.generateStyles(node, true)).join('\n\n');
+        // Add CSS for all variants if we have resolved instances
+        if (resolvedInstances) {
+            const variantCSS = this.generateVariantCSS(resolvedInstances);
+            css += '\n\n' + variantCSS;
+        }
+        return css;
     }
-    generateBodyHTML(nodes) {
-        return nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+    generateBodyHTML(nodes, resolvedInstances) {
+        let html = nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+        // Add HTML for all variants if we have resolved instances
+        if (resolvedInstances) {
+            const variantHTML = this.generateVariantHTML(resolvedInstances);
+            html += '\n' + variantHTML;
+        }
+        return html;
     }
-    generateJavaScript(nodes) {
-        return this.animationHandler.generateAnimationCode(nodes);
+    generateJavaScript(nodes, resolvedInstances) {
+        return this.animationHandler.generateAnimationCode(nodes, resolvedInstances);
+    }
+    // Generate CSS for all variants in the shadow variant system
+    generateVariantCSS(resolvedInstances) {
+        let css = '';
+        resolvedInstances.forEach(instance => {
+            const { variants, activeVariant } = instance;
+            // Generate CSS for each variant
+            variants.forEach((variant) => {
+                const variantCSS = this.styleGenerator.generateStyles(variant, false);
+                css += '\n\n' + variantCSS;
+                // Add variant-specific visibility rules
+                const isActive = variant.id === activeVariant.id;
+                css += `\n[data-figma-id="${variant.id}"] {\n`;
+                css += `  display: ${isActive ? 'block' : 'none'};\n`;
+                css += `  position: absolute;\n`;
+                css += `  left: 0;\n`;
+                css += `  top: 0;\n`;
+                css += `}\n`;
+            });
+        });
+        return css;
+    }
+    // Generate HTML for all variants in the shadow variant system
+    generateVariantHTML(resolvedInstances) {
+        let html = '';
+        resolvedInstances.forEach(instance => {
+            const { instance: instanceNode, variants } = instance;
+            // Create a container for all variants
+            html += `\n<!-- Variants for ${instanceNode.name} -->\n`;
+            html += `<div class="variant-container" data-instance-id="${instanceNode.id}">\n`;
+            // Generate HTML for each variant
+            variants.forEach((variant) => {
+                const variantHTML = this.elementBuilder.buildElement(variant);
+                html += variantHTML + '\n';
+            });
+            html += `</div>\n`;
+        });
+        return html;
     }
 }
 
@@ -900,17 +1000,19 @@ async function handleExportHTML() {
     // Extract Figma data
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
+    // Resolve instances and find component sets
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
-    const animationChains = componentSets.map(cs => {
-        const firstVariant = cs.variants[0];
+    const animationChains = resolvedInstances.map(instance => {
+        const firstVariant = instance.variants[0];
         return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     });
     console.log('Found', componentSets.length, 'component sets with animations');
     console.log('Animation chains:', animationChains);
     // Generate HTML
     const generator = new HTMLGenerator();
-    const html = generator.generateHTML(nodes);
+    const html = generator.generateHTML(nodes, resolvedInstances);
     // Send back to UI
     figma.ui.postMessage({
         type: 'html-generated',
@@ -995,7 +1097,7 @@ async function handleExportBoth() {
     });
     // Generate HTML
     const generator = new HTMLGenerator();
-    const html = generator.generateHTML(nodes);
+    const html = generator.generateHTML(nodes, resolvedInstances);
     // Create comprehensive export data
     const exportData = {
         meta: {
