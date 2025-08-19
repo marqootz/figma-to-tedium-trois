@@ -212,6 +212,14 @@ class AnimationHandler {
         async executeAnimation(sourceId, targetId) {
           console.log('Executing animation:', sourceId, '→', targetId);
           
+          // Check if this is a variant animation
+          const variantInstance = this.findVariantInstance(sourceId);
+          if (variantInstance) {
+            await this.executeVariantAnimation(variantInstance, sourceId, targetId);
+            return;
+          }
+          
+          // Fallback to regular element animation
           const sourceElement = this.elementRegistry.get(sourceId);
           const targetElement = this.elementRegistry.get(targetId);
           const sourceNode = this.nodeRegistry.get(sourceId);
@@ -446,6 +454,323 @@ class AnimationHandler {
           this.elementRegistry.clear();
           this.nodeRegistry.clear();
           console.log('FigmaAnimationSystem destroyed');
+        }
+        
+        // Variant Animation Methods
+        findVariantInstance(nodeId) {
+          if (!this.variantInstances) return null;
+          return this.variantInstances.find(instance => 
+            instance.variants.includes(nodeId)
+          );
+        }
+        
+        async executeVariantAnimation(variantInstance, sourceId, targetId) {
+          console.log('Executing variant animation:', sourceId, '→', targetId);
+          
+          const sourceElement = this.elementRegistry.get(sourceId);
+          const targetElement = this.elementRegistry.get(targetId);
+          const sourceNode = this.nodeRegistry.get(sourceId);
+          const targetNode = this.nodeRegistry.get(targetId);
+
+          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
+            console.error('Missing variant elements or nodes for animation');
+            return;
+          }
+
+          // Get animation configuration from the source node
+          const reaction = sourceNode.reactions && sourceNode.reactions[0];
+          if (!reaction) {
+            console.log('No reaction found, performing instant variant switch');
+            this.performVariantSwitch(variantInstance, sourceId, targetId);
+            return;
+          }
+
+          const options = {
+            duration: reaction.action.transition.duration,
+            easing: this.mapFigmaEasing(reaction.action.transition.easing.type),
+            transitionType: reaction.action.transition.type
+          };
+
+          // Detect comprehensive changes between variants
+          const changes = this.detectVariantChanges(sourceNode, targetNode);
+          console.log('Variant changes detected:', changes);
+
+          // Execute variant animation
+          switch (options.transitionType) {
+            case 'SMART_ANIMATE':
+              await this.executeVariantSmartAnimate(variantInstance, sourceId, targetId, changes, options);
+              break;
+            case 'DISSOLVE':
+              await this.executeVariantDissolve(variantInstance, sourceId, targetId, options);
+              break;
+            default:
+              this.performVariantSwitch(variantInstance, sourceId, targetId);
+          }
+
+          // Update variant instance state
+          variantInstance.activeVariant = targetId;
+          variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
+
+          // Setup timeout reactions for new active variant
+          this.setupTimeoutReactions(targetId);
+        }
+        
+        detectVariantChanges(source, target) {
+          const changes = [];
+
+          // Position and size changes
+          if (source.x !== target.x || source.y !== target.y) {
+            changes.push({
+              property: 'position',
+              sourceValue: { x: source.x, y: source.y },
+              targetValue: { x: target.x, y: target.y }
+            });
+          }
+
+          if (source.width !== target.width || source.height !== target.height) {
+            changes.push({
+              property: 'size',
+              sourceValue: { width: source.width, height: source.height },
+              targetValue: { width: target.width, height: target.height }
+            });
+          }
+
+          // Opacity changes
+          if (source.opacity !== target.opacity) {
+            changes.push({
+              property: 'opacity',
+              sourceValue: source.opacity || 1,
+              targetValue: target.opacity || 1
+            });
+          }
+
+          // Background color changes
+          if (this.fillsAreDifferent(source.fills, target.fills)) {
+            changes.push({
+              property: 'background',
+              sourceValue: source.fills,
+              targetValue: target.fills
+            });
+          }
+
+          // Corner radius changes
+          if (source.cornerRadius !== target.cornerRadius) {
+            changes.push({
+              property: 'borderRadius',
+              sourceValue: source.cornerRadius || 0,
+              targetValue: target.cornerRadius || 0
+            });
+          }
+
+          // Layout changes (for hybrid flattening)
+          if (this.layoutHasChanged(source, target)) {
+            changes.push({
+              property: 'layout',
+              sourceValue: this.getLayoutProperties(source),
+              targetValue: this.getLayoutProperties(target)
+            });
+          }
+
+          return changes;
+        }
+        
+        fillsAreDifferent(sourceFills, targetFills) {
+          if (!sourceFills && !targetFills) return false;
+          if (!sourceFills || !targetFills) return true;
+          if (sourceFills.length !== targetFills.length) return true;
+          
+          return sourceFills.some((fill, index) => {
+            const targetFill = targetFills[index];
+            return fill.type !== targetFill.type || 
+                   fill.opacity !== targetFill.opacity ||
+                   (fill.color && targetFill.color && 
+                    (fill.color.r !== targetFill.color.r || 
+                     fill.color.g !== targetFill.color.g || 
+                     fill.color.b !== targetFill.color.b));
+          });
+        }
+        
+        layoutHasChanged(source, target) {
+          return source.layoutMode !== target.layoutMode ||
+                 source.counterAxisAlignItems !== target.counterAxisAlignItems ||
+                 source.primaryAxisAlignItems !== target.primaryAxisAlignItems ||
+                 source.itemSpacing !== target.itemSpacing ||
+                 source.paddingLeft !== target.paddingLeft ||
+                 source.paddingRight !== target.paddingRight ||
+                 source.paddingTop !== target.paddingTop ||
+                 source.paddingBottom !== target.paddingBottom;
+        }
+        
+        getLayoutProperties(node) {
+          return {
+            layoutMode: node.layoutMode,
+            counterAxisAlignItems: node.counterAxisAlignItems,
+            primaryAxisAlignItems: node.primaryAxisAlignItems,
+            itemSpacing: node.itemSpacing,
+            paddingLeft: node.paddingLeft,
+            paddingRight: node.paddingRight,
+            paddingTop: node.paddingTop,
+            paddingBottom: node.paddingBottom
+          };
+        }
+        
+        async executeVariantSmartAnimate(variantInstance, sourceId, targetId, changes, options) {
+          return new Promise((resolve) => {
+            console.log('Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
+
+            const sourceElement = this.elementRegistry.get(sourceId);
+            const targetElement = this.elementRegistry.get(targetId);
+
+            // Apply hybrid flattening if layout changes detected
+            const layoutChange = changes.find(change => change.property === 'layout');
+            if (layoutChange) {
+              this.applyLayoutFlattening(sourceElement, layoutChange);
+            }
+
+            // Setup CSS transitions for all changing properties
+            const transitionProperties = this.getVariantTransitionProperties(changes);
+            sourceElement.style.transition = transitionProperties
+              .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
+              .join(', ');
+
+            // Apply changes on next frame
+            requestAnimationFrame(() => {
+              changes.forEach(change => this.applyVariantChange(sourceElement, change));
+            });
+
+            // Complete animation
+            setTimeout(() => {
+              console.log('Variant animation completed, switching to target');
+              this.performVariantSwitch(variantInstance, sourceId, targetId);
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+        
+        applyLayoutFlattening(element, layoutChange) {
+          // Convert flexbox layout to absolute positioning for animation
+          const parent = element.parentElement;
+          if (parent && parent.style.display === 'flex') {
+            const children = Array.from(parent.children);
+            children.forEach(child => {
+              const rect = child.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              
+              child.style.position = 'absolute';
+              child.style.left = (rect.left - parentRect.left) + 'px';
+              child.style.top = (rect.top - parentRect.top) + 'px';
+              child.style.width = rect.width + 'px';
+              child.style.height = rect.height + 'px';
+            });
+            
+            parent.style.display = 'block';
+          }
+        }
+        
+        getVariantTransitionProperties(changes) {
+          const properties = new Set();
+          
+          changes.forEach(change => {
+            switch (change.property) {
+              case 'position':
+              case 'size':
+                properties.add('transform');
+                break;
+              case 'opacity':
+                properties.add('opacity');
+                break;
+              case 'background':
+                properties.add('background-color');
+                break;
+              case 'borderRadius':
+                properties.add('border-radius');
+                break;
+              case 'layout':
+                properties.add('all');
+                break;
+            }
+          });
+
+          return Array.from(properties);
+        }
+        
+        applyVariantChange(element, change) {
+          console.log('Applying variant change:', change.property, '=', change.targetValue);
+
+          switch (change.property) {
+            case 'position':
+              const { x, y } = change.targetValue;
+              element.style.transform = \`translate(\${x}px, \${y}px)\`;
+              break;
+            case 'size':
+              const { width, height } = change.targetValue;
+              element.style.width = width + 'px';
+              element.style.height = height + 'px';
+              break;
+            case 'opacity':
+              element.style.opacity = change.targetValue.toString();
+              break;
+            case 'background':
+              const fill = change.targetValue[0];
+              if (fill && fill.color) {
+                const { r, g, b } = fill.color;
+                const alpha = fill.opacity || 1;
+                element.style.backgroundColor = \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`;
+              }
+              break;
+            case 'borderRadius':
+              element.style.borderRadius = change.targetValue + 'px';
+              break;
+            case 'layout':
+              // Layout changes are handled by flattening
+              break;
+          }
+        }
+        
+        async executeVariantDissolve(variantInstance, sourceId, targetId, options) {
+          return new Promise((resolve) => {
+            console.log('Starting variant DISSOLVE:', options.duration + 's');
+
+            const sourceElement = this.elementRegistry.get(sourceId);
+            const targetElement = this.elementRegistry.get(targetId);
+
+            sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            
+            // Show target with 0 opacity
+            targetElement.style.display = 'block';
+            targetElement.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+              sourceElement.style.opacity = '0';
+              targetElement.style.opacity = '1';
+            });
+
+            setTimeout(() => {
+              this.performVariantSwitch(variantInstance, sourceId, targetId);
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+        
+        performVariantSwitch(variantInstance, sourceId, targetId) {
+          console.log('Performing variant switch:', sourceId, '→', targetId);
+          
+          // Hide all variants in the instance
+          variantInstance.variants.forEach(variantId => {
+            const element = this.elementRegistry.get(variantId);
+            if (element) {
+              element.style.display = 'none';
+            }
+          });
+
+          // Show target variant
+          const targetElement = this.elementRegistry.get(targetId);
+          if (targetElement) {
+            targetElement.style.display = 'block';
+            targetElement.style.opacity = '1';
+            targetElement.style.transform = '';
+          }
         }
       }
     `;
