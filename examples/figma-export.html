@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figma Export</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f5f5f5;
+      overflow: hidden;
+      margin: 0;
+    }
+    
+    /* Component styles */
+[data-figma-id="5533:4251"] {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-figma-id="I5533:4251;5533:3903"] {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  background-color: rgba(44, 129, 165, 1);
+  border-radius: 1000px;
+}
+
+[data-figma-id="I5533:4251;5533:3904"] {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 144px;
+  height: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(100, 53, 53, 0.5799999833106995);
+}
+
+[data-figma-id="I5533:4251;5533:3905"] {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-figma-id="I5533:4251;5533:3906"] {
+  position: absolute;
+  left: 45.670166015625px;
+  top: 35.4686279296875px;
+  width: 54.25920104980469px;
+  height: 76.26240539550781px;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+[data-figma-id="I5533:4251;5533:3907"] {
+  position: absolute;
+  left: 0px;
+  top: 288px;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-figma-id="I5533:4251;5533:3908"] {
+  position: absolute;
+  left: 46.310302734375px;
+  top: 33.86865234375px;
+  width: 51.37920379638672px;
+  height: 76.26240539550781px;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+[data-figma-id="I5533:4251;5533:3909"] {
+  position: absolute;
+  left: 0px;
+  top: 576px;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-figma-id="I5533:4251;5533:3910"] {
+  position: absolute;
+  left: 52.518310546875px;
+  top: 34.675048828125px;
+  width: 27.763200759887695px;
+  height: 74.64959716796875px;
+  background-color: rgba(255, 255, 255, 1);
+}
+  </style>
+</head>
+<body>
+  <div data-figma-id="5533:4251" data-figma-name="glydcar/info-bar/counter-sm" data-figma-type="INSTANCE" data-layout-mode="HORIZONTAL" data-reactions='[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5533:3911","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","easing":{"type":"GENTLE"},"duration":1.0220937728881836}}}]'><div data-figma-id="I5533:4251;5533:3903" data-figma-name="Frame 1233" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="I5533:4251;5533:3904" data-figma-name="Frame 1232" data-figma-type="FRAME" data-layout-mode="VERTICAL"><div data-figma-id="I5533:4251;5533:3905" data-figma-name="Frame 1236" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="I5533:4251;5533:3906" data-figma-name="3" data-figma-type="VECTOR"></div></div>
+<div data-figma-id="I5533:4251;5533:3907" data-figma-name="Frame 1235" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="I5533:4251;5533:3908" data-figma-name="2" data-figma-type="VECTOR"></div></div>
+<div data-figma-id="I5533:4251;5533:3909" data-figma-name="Frame 1234" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="I5533:4251;5533:3910" data-figma-name="1" data-figma-type="VECTOR"></div></div></div></div></div>
+  <script>
+    
+      // Initialize Figma Animation System
+      
+      class FigmaAnimationSystem {
+        constructor() {
+          this.elementRegistry = new Map();
+          this.nodeRegistry = new Map();
+          this.timeouts = new Set();
+          console.log('FigmaAnimationSystem initialized');
+        }
+        
+        registerElement(figmaId, element, node) {
+          this.elementRegistry.set(figmaId, element);
+          this.nodeRegistry.set(figmaId, node);
+          element.setAttribute('data-figma-id', figmaId);
+          console.log('Registered element:', figmaId, node.name);
+        }
+        
+        async executeAnimation(sourceId, targetId) {
+          console.log('Executing animation:', sourceId, '→', targetId);
+          
+          const sourceElement = this.elementRegistry.get(sourceId);
+          const targetElement = this.elementRegistry.get(targetId);
+          const sourceNode = this.nodeRegistry.get(sourceId);
+          const targetNode = this.nodeRegistry.get(targetId);
+
+          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
+            console.error('Missing elements or nodes for animation');
+            return;
+          }
+
+          // Get animation configuration
+          const reaction = sourceNode.reactions && sourceNode.reactions[0];
+          if (!reaction) {
+            console.log('No reaction found, performing instant switch');
+            this.performInstantSwitch(sourceElement, targetElement);
+            return;
+          }
+
+          const options = {
+            duration: reaction.action.transition.duration,
+            easing: this.mapFigmaEasing(reaction.action.transition.easing.type),
+            transitionType: reaction.action.transition.type
+          };
+
+          // Detect changes
+          const changes = this.detectChanges(sourceNode, targetNode);
+          console.log('Animation changes detected:', changes);
+
+          // Execute animation
+          switch (options.transitionType) {
+            case 'SMART_ANIMATE':
+              await this.executeSmartAnimate(sourceElement, targetElement, changes, options);
+              break;
+            case 'DISSOLVE':
+              await this.executeDissolve(sourceElement, targetElement, options);
+              break;
+            default:
+              this.performInstantSwitch(sourceElement, targetElement);
+          }
+
+          // Setup timeout reactions for new active variant
+          this.setupTimeoutReactions(targetId);
+        }
+        
+        mapFigmaEasing(figmaEasing) {
+          const easingMap = {
+            'GENTLE': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            'QUICK': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
+            'BOUNCY': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            'SLOW': 'cubic-bezier(0.23, 1, 0.32, 1)',
+            'LINEAR': 'linear'
+          };
+          return easingMap[figmaEasing] || easingMap['GENTLE'];
+        }
+        
+        detectChanges(source, target) {
+          const changes = [];
+
+          // Position changes (critical for countdown animation)
+          if (source.y !== target.y) {
+            changes.push({
+              property: 'translateY',
+              sourceValue: source.y,
+              targetValue: target.y,
+              delta: target.y - source.y
+            });
+          }
+
+          if (source.x !== target.x) {
+            changes.push({
+              property: 'translateX',
+              sourceValue: source.x,
+              targetValue: target.x,
+              delta: target.x - source.x
+            });
+          }
+
+          // Alignment changes (critical for countdown)
+          if (source.counterAxisAlignItems !== target.counterAxisAlignItems) {
+            changes.push({
+              property: 'alignment',
+              sourceValue: source.counterAxisAlignItems,
+              targetValue: target.counterAxisAlignItems
+            });
+          }
+
+          // Opacity changes
+          if (source.opacity !== target.opacity) {
+            changes.push({
+              property: 'opacity',
+              sourceValue: source.opacity || 1,
+              targetValue: target.opacity || 1
+            });
+          }
+
+          return changes;
+        }
+        
+        async executeSmartAnimate(sourceElement, targetElement, changes, options) {
+          return new Promise((resolve) => {
+            console.log('Starting SMART_ANIMATE:', options.duration + 's', options.easing);
+
+            // Setup CSS transitions
+            const properties = this.getTransitionProperties(changes);
+            sourceElement.style.transition = properties
+              .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
+              .join(', ');
+
+            // Apply changes on next frame
+            requestAnimationFrame(() => {
+              changes.forEach(change => this.applyChange(sourceElement, change));
+            });
+
+            // Complete animation
+            setTimeout(() => {
+              console.log('Animation completed, switching to target');
+              this.performInstantSwitch(sourceElement, targetElement);
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+        
+        async executeDissolve(sourceElement, targetElement, options) {
+          return new Promise((resolve) => {
+            console.log('Starting DISSOLVE:', options.duration + 's');
+
+            sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            
+            // Show target with 0 opacity
+            targetElement.style.display = '';
+            targetElement.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+              sourceElement.style.opacity = '0';
+              targetElement.style.opacity = '1';
+            });
+
+            setTimeout(() => {
+              sourceElement.style.display = 'none';
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+        
+        getTransitionProperties(changes) {
+          const properties = new Set();
+          
+          changes.forEach(change => {
+            switch (change.property) {
+              case 'translateX':
+              case 'translateY':
+                properties.add('transform');
+                break;
+              case 'alignment':
+                properties.add('align-items');
+                break;
+              default:
+                properties.add(change.property);
+            }
+          });
+
+          return Array.from(properties);
+        }
+        
+        applyChange(element, change) {
+          console.log('Applying change:', change.property, '=', change.targetValue);
+
+          switch (change.property) {
+            case 'translateY':
+              element.style.transform = 'translateY(' + change.delta + 'px)';
+              break;
+            case 'translateX':
+              element.style.transform = 'translateX(' + change.delta + 'px)';
+              break;
+            case 'alignment':
+              const parent = element.parentElement;
+              if (parent) {
+                const alignMap = { 'MIN': 'flex-start', 'CENTER': 'center', 'MAX': 'flex-end' };
+                parent.style.alignItems = alignMap[change.targetValue] || 'center';
+              }
+              break;
+            case 'opacity':
+              element.style.opacity = change.targetValue.toString();
+              break;
+          }
+        }
+        
+        performInstantSwitch(sourceElement, targetElement) {
+          console.log('Performing instant variant switch');
+          
+          // Hide all variants in the component set
+          const componentSet = sourceElement.closest('[data-component-set]');
+          if (componentSet) {
+            const variants = componentSet.querySelectorAll('[data-variant]');
+            variants.forEach(variant => {
+              variant.style.display = 'none';
+            });
+          }
+
+          // Show target variant
+          targetElement.style.display = '';
+          targetElement.style.opacity = '1';
+          targetElement.style.transform = '';
+        }
+        
+        setupTimeoutReactions(nodeId) {
+          const node = this.nodeRegistry.get(nodeId);
+          if (!node || !node.reactions) return;
+
+          node.reactions
+            .filter(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')
+            .forEach(reaction => {
+              console.log('Setting up timeout reaction:', reaction.trigger.timeout + 's delay');
+              
+              const timeout = setTimeout(() => {
+                this.executeAnimation(nodeId, reaction.action.destinationId);
+              }, (reaction.trigger.timeout || 0) * 1000);
+              
+              this.timeouts.add(timeout);
+            });
+        }
+        
+        clearAllTimeouts() {
+          this.timeouts.forEach(timeout => clearTimeout(timeout));
+          this.timeouts.clear();
+          console.log('All timeout reactions cleared');
+        }
+        
+        destroy() {
+          this.clearAllTimeouts();
+          this.elementRegistry.clear();
+          this.nodeRegistry.clear();
+          console.log('FigmaAnimationSystem destroyed');
+        }
+      }
+    
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        window.figmaAnimationSystem = new FigmaAnimationSystem();
+        
+        // Register all nodes and elements
+        
+        const element_5533_4251 = document.querySelector('[data-figma-id="5533:4251"]');
+        if (element_5533_4251) {
+          window.figmaAnimationSystem.registerElement(
+            '5533:4251',
+            element_5533_4251,
+            {"id":"5533:4251","name":"glydcar/info-bar/counter-sm","type":"INSTANCE","x":17566,"y":1271,"width":144,"height":144,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1.600000262260437,"cornerRadius":0,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":16,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"componentProperties":{"Property 1":{"value":"3","type":"VARIANT","boundVariables":{}}},"variantProperties":{"Property 1":"3"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5533:3911","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","easing":{"type":"GENTLE"},"duration":1.0220937728881836}}}],"children":[{"id":"I5533:4251;5533:3903","name":"Frame 1233","type":"FRAME","x":0,"y":0,"width":144,"height":144,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1.6000001430511475,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"MIN","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5533:4251;5533:3904","name":"Frame 1232","type":"FRAME","x":0,"y":0,"width":144,"height":720,"opacity":1,"fills":[{"type":"SOLID","opacity":0.5799999833106995,"color":{"r":0.3919771611690521,"g":0.20735450088977814,"b":0.20735450088977814}}],"strokes":[],"strokeWeight":1.6000001430511475,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":144.00001525878906,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5533:4251;5533:3905","name":"Frame 1236","type":"FRAME","x":0,"y":0,"width":144,"height":144,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1.6000001430511475,"cornerRadius":0,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":1.6000001430511475,"paddingRight":0,"paddingTop":3.200000286102295,"paddingBottom":0,"reactions":[],"children":[{"id":"I5533:4251;5533:3906","name":"3","type":"VECTOR","x":45.670166015625,"y":35.4686279296875,"width":54.25920104980469,"height":76.26240539550781,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":1,"g":1,"b":1}}],"strokes":[],"strokeWeight":0.43928295373916626,"cornerRadius":0,"reactions":[]}]},{"id":"I5533:4251;5533:3907","name":"Frame 1235","type":"FRAME","x":0,"y":288,"width":144,"height":144,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1.6000001430511475,"cornerRadius":0,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5533:4251;5533:3908","name":"2","type":"VECTOR","x":46.310302734375,"y":33.86865234375,"width":51.37920379638672,"height":76.26240539550781,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":1,"g":1,"b":1}}],"strokes":[],"strokeWeight":0.43928295373916626,"cornerRadius":0,"reactions":[]}]},{"id":"I5533:4251;5533:3909","name":"Frame 1234","type":"FRAME","x":0,"y":576,"width":144,"height":144,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1.6000001430511475,"cornerRadius":0,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":11.200000762939453,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5533:4251;5533:3910","name":"1","type":"VECTOR","x":52.518310546875,"y":34.675048828125,"width":27.763200759887695,"height":74.64959716796875,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":1,"g":1,"b":1}}],"strokes":[],"strokeWeight":0.43928295373916626,"cornerRadius":0,"reactions":[]}]}]}]}]}
+          );
+        } else {
+          console.warn('Element not found for node: 5533:4251');
+        }
+      
+        
+        // Setup initial timeout reactions
+        
+      // Setup timeout reactions for glydcar/info-bar/counter-sm
+      window.figmaAnimationSystem.setupTimeoutReactions('5533:4251');
+    
+        
+        console.log('Animation system initialized with 1 nodes');
+      });
+    
+  </script>
+</body>
+</html>

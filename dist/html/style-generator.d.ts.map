@@ -1,0 +1,1 @@
+{"version":3,"file":"style-generator.d.ts","sourceRoot":"","sources":["../../src/html/style-generator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAa,MAAM,eAAe,CAAC;AAErD,qBAAa,cAAc;IACzB,cAAc,CAAC,IAAI,EAAE,SAAS,EAAE,MAAM,GAAE,OAAe,GAAG,MAAM;IAiBhE,OAAO,CAAC,qBAAqB;IA0F7B,OAAO,CAAC,qBAAqB;CAY9B"}

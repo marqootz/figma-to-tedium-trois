@@ -1,0 +1,412 @@
+<!doctype html><html><head><meta charset="utf-8"><style>* {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #333;
+      background: #fff;
+    }
+    
+    .container {
+      padding: 16px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 11px;
+    }
+    
+    .section {
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+    }
+    
+    .button {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .button:hover {
+      background: #f8f8f8;
+      border-color: #ccc;
+    }
+    
+    .button.primary {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+    
+    .button.primary:hover {
+      background: #0052a3;
+    }
+    
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      display: none;
+    }
+    
+    .status.success {
+      background: #e8f5e8;
+      color: #2d5a2d;
+      border: 1px solid #b8e6b8;
+    }
+    
+    .status.error {
+      background: #ffe8e8;
+      color: #5a2d2d;
+      border: 1px solid #e6b8b8;
+    }
+    
+    .status.info {
+      background: #e8f2ff;
+      color: #2d4a5a;
+      border: 1px solid #b8d4e6;
+    }
+    
+    .analysis-result {
+      font-size: 11px;
+      background: #f8f8f8;
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .analysis-result h4 {
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    
+    .analysis-result ul {
+      list-style: none;
+      padding-left: 12px;
+    }
+    
+    .analysis-result li {
+      margin-bottom: 2px;
+    }
+    
+    .output-area {
+      margin-top: 16px;
+      display: none;
+    }
+    
+    .output-area textarea {
+      width: 100%;
+      height: 200px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 10px;
+      resize: vertical;
+    }
+    
+    .copy-button {
+      margin-top: 8px;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-left: 8px;
+      border: 2px solid #ddd;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }</style></head><body><div class="container"><div class="header"><h1>Figma Animation Export</h1><p>Export Figma animations to HTML</p></div><div id="status" class="status"></div><div class="section"><div class="section-title">Plugin Testing</div><button id="test-connection-btn" class="button">Test Connection</button></div><div class="section"><div class="section-title">Selection Analysis</div><button id="analyze-btn" class="button">Analyze Selection</button><div id="analysis-result" class="analysis-result"></div></div><div class="section"><div class="section-title">Export Options</div><button id="export-json-btn" class="button">Export Raw JSON</button> <button id="export-html-btn" class="button">Export HTML Only</button> <button id="export-both-btn" class="button primary">Export JSON + HTML</button></div><div id="loading" class="loading">Processing...</div></div><script>// UI State
+    // Removed currentHTML and currentJSON since we're downloading directly
+    
+    // DOM Elements
+    const statusEl = document.getElementById('status');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const exportJsonBtn = document.getElementById('export-json-btn');
+    const exportHtmlBtn = document.getElementById('export-html-btn');
+    const exportBothBtn = document.getElementById('export-both-btn');
+    const analysisResult = document.getElementById('analysis-result');
+    const loadingEl = document.getElementById('loading');
+    
+    // Event Listeners
+    const testConnectionBtn = document.getElementById('test-connection-btn');
+    
+    testConnectionBtn.addEventListener('click', () => {
+      showLoading();
+      parent.postMessage({ pluginMessage: { type: 'test' } }, '*');
+    });
+    
+    analyzeBtn.addEventListener('click', () => {
+      showLoading();
+      parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
+    });
+    
+    exportJsonBtn.addEventListener('click', () => {
+      showLoading();
+      parent.postMessage({ pluginMessage: { type: 'export-json' } }, '*');
+    });
+    
+    exportHtmlBtn.addEventListener('click', () => {
+      showLoading();
+      parent.postMessage({ pluginMessage: { type: 'export-html' } }, '*');
+    });
+    
+    exportBothBtn.addEventListener('click', () => {
+      showLoading();
+      parent.postMessage({ pluginMessage: { type: 'export-both' } }, '*');
+    });
+    
+
+    
+    // Message Handler
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      hideLoading();
+      
+      switch (msg.type) {
+        case 'plugin-ready':
+          showStatus('Plugin ready - select components to analyze', 'info');
+          break;
+          
+        case 'analysis-result':
+          handleAnalysisResult(msg);
+          break;
+          
+        case 'json-generated':
+          handleJSONGenerated(msg);
+          break;
+          
+        case 'html-generated':
+          handleHTMLGenerated(msg);
+          break;
+          
+        case 'both-generated':
+          handleBothGenerated(msg);
+          break;
+          
+        case 'test-response':
+          showStatus('Test successful: ' + msg.message, 'success');
+          console.log('Test response received:', msg);
+          break;
+          
+        case 'error':
+          showStatus('Error: ' + msg.message, 'error');
+          break;
+          
+        default:
+          console.log('Unknown message:', msg);
+      }
+    };
+    
+    // Helper Functions
+    function showStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = 'status ' + type;
+      statusEl.style.display = 'block';
+      
+      if (type === 'success' || type === 'info') {
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 3000);
+      }
+    }
+    
+    function showLoading() {
+      loadingEl.style.display = 'block';
+      analyzeBtn.disabled = true;
+      exportJsonBtn.disabled = true;
+      exportHtmlBtn.disabled = true;
+      exportBothBtn.disabled = true;
+    }
+    
+    function hideLoading() {
+      loadingEl.style.display = 'none';
+      analyzeBtn.disabled = false;
+      exportJsonBtn.disabled = false;
+      exportHtmlBtn.disabled = false;
+      exportBothBtn.disabled = false;
+    }
+    
+    function downloadFile(content, filename, contentType) {
+      const blob = new Blob([content], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showStatus(`Downloaded ${filename}`, 'success');
+    }
+    
+    function handleAnalysisResult(msg) {
+      if (!msg.success) {
+        showStatus(msg.message, 'error');
+        return;
+      }
+      
+      const data = msg.data;
+      let html = '<h4>Analysis Results</h4><ul>';
+      
+      html += '<li>Total nodes: ' + data.totalNodes + '</li>';
+      html += '<li>Component sets: ' + data.componentSets + '</li>';
+      html += '<li>Components: ' + data.components + '</li>';
+      html += '<li>Nodes with reactions: ' + data.nodesWithReactions + '</li>';
+      html += '<li>Timeout reactions: ' + data.timeoutReactions + '</li>';
+      html += '<li>Animation chains: ' + data.animationChains.length + '</li>';
+      
+      if (data.animationChains.length > 0) {
+        html += '<li>Chain lengths: ' + data.animationChains.map(chain => chain.length).join(', ') + '</li>';
+      }
+      
+      html += '</ul>';
+      
+      analysisResult.innerHTML = html;
+      analysisResult.style.display = 'block';
+      
+      showStatus('Analysis completed - ' + data.totalNodes + ' nodes found', 'success');
+    }
+    
+    function handleJSONGenerated(msg) {
+      if (!msg.success) {
+        showStatus('JSON export failed: ' + (msg.error || 'Unknown error'), 'error');
+        return;
+      }
+      
+      // Use simple filename
+      const filename = 'figma-export.json';
+      
+      // Download the JSON file directly
+      downloadFile(msg.json, filename, 'application/json');
+      
+      const metadata = msg.metadata || {};
+      showStatus(
+        'JSON exported successfully! ' + 
+        metadata.nodeCount + ' nodes, ' + 
+        metadata.componentSets + ' component sets',
+        'success'
+      );
+    }
+    
+    function handleHTMLGenerated(msg) {
+      if (!msg.success) {
+        showStatus('HTML export failed: ' + (msg.error || 'Unknown error'), 'error');
+        return;
+      }
+      
+      // Use simple filename
+      const filename = 'figma-export.html';
+      
+      // Download the HTML file directly
+      downloadFile(msg.html, filename, 'text/html');
+      
+      const metadata = msg.metadata || {};
+      showStatus(
+        'HTML exported successfully! ' + 
+        metadata.nodeCount + ' nodes, ' + 
+        metadata.componentSets + ' component sets',
+        'success'
+      );
+    }
+    
+    function handleBothGenerated(msg) {
+      if (!msg.success) {
+        showStatus('Export failed: ' + (msg.error || 'Unknown error'), 'error');
+        return;
+      }
+      
+      // Use simple filenames
+      const jsonFilename = 'figma-export.json';
+      const htmlFilename = 'figma-export.html';
+      
+      // Download both files with a longer delay to ensure both downloads trigger
+      downloadFile(msg.json, jsonFilename, 'application/json');
+      setTimeout(() => {
+        downloadFile(msg.html, htmlFilename, 'text/html');
+      }, 500);
+      
+      const metadata = msg.metadata || {};
+      showStatus(
+        'JSON + HTML exported successfully! ' + 
+        metadata.nodeCount + ' nodes, ' + 
+        metadata.componentSets + ' component sets',
+        'success'
+      );
+    }
+    
+    function handleFileExported(msg) {
+      if (!msg.success) {
+        showStatus('File export failed: ' + (msg.error || 'Unknown error'), 'error');
+        return;
+      }
+      
+      // Create download link
+      const blob = new Blob([msg.html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = msg.filename || 'figma-export.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      const metadata = msg.metadata || {};
+      showStatus(
+        'File exported successfully! ' + 
+        metadata.nodeCount + ' nodes exported to ' + a.download,
+        'success'
+      );
+    }</script></body></html>
