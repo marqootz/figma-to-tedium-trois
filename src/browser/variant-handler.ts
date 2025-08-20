@@ -158,19 +158,37 @@ export class VariantHandler {
   ): void {
     console.log('Performing variant switch:', sourceId, '→', targetId);
     
-    // Hide all variants in the instance
+    // Hide all variants in the instance and reset their states
     variantInstance.variants.forEach(variantId => {
       const element = document.querySelector(`[data-figma-id="${variantId}"]`) as HTMLElement;
       if (element) {
         element.style.display = 'none';
+        // Reset any applied transitions and transforms
+        element.style.transition = '';
+        element.style.transform = '';
+        
+        // Reset child elements as well
+        const childElements = element.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+        childElements.forEach(child => {
+          child.style.transition = '';
+          child.style.transform = '';
+        });
       }
     });
 
-    // Show target variant
+    // Show target variant with clean state
     if (targetElement) {
       targetElement.style.display = 'block';
       targetElement.style.opacity = '1';
       targetElement.style.transform = '';
+      targetElement.style.transition = '';
+      
+      // Reset child elements of target variant
+      const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+      childElements.forEach(child => {
+        child.style.transition = '';
+        child.style.transform = '';
+      });
     }
   }
 }

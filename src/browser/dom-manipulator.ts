@@ -132,19 +132,38 @@ export class DOMManipulator {
   static performVariantSwitch(sourceElement: HTMLElement, targetElement: HTMLElement): void {
     console.log('Performing instant variant switch');
     
-    // Hide all variants in the component set
+    // Hide all variants in the component set and reset their states
     const componentSet = sourceElement.closest('[data-component-set]');
     if (componentSet) {
       const variants = componentSet.querySelectorAll('[data-variant]');
       variants.forEach(variant => {
-        (variant as HTMLElement).style.display = 'none';
+        const variantElement = variant as HTMLElement;
+        variantElement.style.display = 'none';
+        // Reset any applied transitions and transforms
+        variantElement.style.transition = '';
+        variantElement.style.transform = '';
+        
+        // Reset child elements as well
+        const childElements = variantElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+        childElements.forEach(child => {
+          child.style.transition = '';
+          child.style.transform = '';
+        });
       });
     }
 
-    // Show target variant
+    // Show target variant with clean state
     targetElement.style.display = '';
     targetElement.style.opacity = '1';
     targetElement.style.transform = '';
+    targetElement.style.transition = '';
+    
+    // Reset child elements of target variant
+    const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+    childElements.forEach(child => {
+      child.style.transition = '';
+      child.style.transform = '';
+    });
   }
 
   /**
