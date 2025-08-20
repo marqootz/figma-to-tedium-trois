@@ -106,28 +106,7 @@
       border: 1px solid #b8d4e6;
     }
     
-    .analysis-result {
-      font-size: 11px;
-      background: #f8f8f8;
-      padding: 8px;
-      border-radius: 4px;
-      margin-top: 8px;
-      display: none;
-    }
-    
-    .analysis-result h4 {
-      margin-bottom: 4px;
-      font-size: 12px;
-    }
-    
-    .analysis-result ul {
-      list-style: none;
-      padding-left: 12px;
-    }
-    
-    .analysis-result li {
-      margin-bottom: 2px;
-    }
+
     
     .output-area {
       margin-top: 16px;
@@ -182,22 +161,13 @@
     
     <div id="status" class="status"></div>
     
-    <div class="section">
-      <div class="section-title">Plugin Testing</div>
-      <button id="test-connection-btn" class="button">Test Connection</button>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Selection Analysis</div>
-      <button id="analyze-btn" class="button">Analyze Selection</button>
-      <div id="analysis-result" class="analysis-result"></div>
-    </div>
+
     
     <div class="section">
       <div class="section-title">Export Options</div>
       <button id="export-json-btn" class="button">Export Raw JSON</button>
       <button id="export-html-btn" class="button">Export HTML Only</button>
-      <button id="export-both-btn" class="button primary">Export JSON + HTML</button>
+      <button id="export-both-btn" class="button primary">Export Both Files</button>
     </div>
     
     <div id="loading" class="loading">
@@ -213,25 +183,10 @@
     
     // DOM Elements
     const statusEl = document.getElementById('status');
-    const analyzeBtn = document.getElementById('analyze-btn');
     const exportJsonBtn = document.getElementById('export-json-btn');
     const exportHtmlBtn = document.getElementById('export-html-btn');
     const exportBothBtn = document.getElementById('export-both-btn');
-    const analysisResult = document.getElementById('analysis-result');
     const loadingEl = document.getElementById('loading');
-    
-    // Event Listeners
-    const testConnectionBtn = document.getElementById('test-connection-btn');
-    
-    testConnectionBtn.addEventListener('click', () => {
-      showLoading();
-      parent.postMessage({ pluginMessage: { type: 'test' } }, '*');
-    });
-    
-    analyzeBtn.addEventListener('click', () => {
-      showLoading();
-      parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
-    });
     
     exportJsonBtn.addEventListener('click', () => {
       showLoading();
@@ -259,11 +214,7 @@
       
       switch (msg.type) {
         case 'plugin-ready':
-          showStatus('Plugin ready - select components to analyze', 'info');
-          break;
-          
-        case 'analysis-result':
-          handleAnalysisResult(msg);
+          showStatus('Plugin ready - select components to export', 'info');
           break;
           
         case 'json-generated':
@@ -276,11 +227,6 @@
           
         case 'both-generated':
           handleBothGenerated(msg);
-          break;
-          
-        case 'test-response':
-          showStatus('Test successful: ' + msg.message, 'success');
-          console.log('Test response received:', msg);
           break;
           
         case 'error':
@@ -307,7 +253,6 @@
     
     function showLoading() {
       loadingEl.style.display = 'block';
-      analyzeBtn.disabled = true;
       exportJsonBtn.disabled = true;
       exportHtmlBtn.disabled = true;
       exportBothBtn.disabled = true;
@@ -315,54 +260,36 @@
     
     function hideLoading() {
       loadingEl.style.display = 'none';
-      analyzeBtn.disabled = false;
       exportJsonBtn.disabled = false;
       exportHtmlBtn.disabled = false;
       exportBothBtn.disabled = false;
     }
     
-    function downloadFile(content, filename, contentType) {
-      const blob = new Blob([content], { type: contentType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showStatus(`Downloaded ${filename}`, 'success');
+    function downloadFile(content, filename, contentType, suppressMessage = false) {
+      return new Promise((resolve) => {
+        const blob = new Blob([content], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Only show individual success message if not suppressed
+        if (!suppressMessage) {
+          showStatus(`Downloaded ${filename}`, 'success');
+        }
+        
+        // Resolve after a short delay to allow the download dialog to appear
+        setTimeout(resolve, 100);
+      });
     }
     
-    function handleAnalysisResult(msg) {
-      if (!msg.success) {
-        showStatus(msg.message, 'error');
-        return;
-      }
-      
-      const data = msg.data;
-      let html = '<h4>Analysis Results</h4><ul>';
-      
-      html += '<li>Total nodes: ' + data.totalNodes + '</li>';
-      html += '<li>Component sets: ' + data.componentSets + '</li>';
-      html += '<li>Components: ' + data.components + '</li>';
-      html += '<li>Nodes with reactions: ' + data.nodesWithReactions + '</li>';
-      html += '<li>Timeout reactions: ' + data.timeoutReactions + '</li>';
-      html += '<li>Animation chains: ' + data.animationChains.length + '</li>';
-      
-      if (data.animationChains.length > 0) {
-        html += '<li>Chain lengths: ' + data.animationChains.map(chain => chain.length).join(', ') + '</li>';
-      }
-      
-      html += '</ul>';
-      
-      analysisResult.innerHTML = html;
-      analysisResult.style.display = 'block';
-      
-      showStatus('Analysis completed - ' + data.totalNodes + ' nodes found', 'success');
-    }
+
     
-    function handleJSONGenerated(msg) {
+    async function handleJSONGenerated(msg) {
       if (!msg.success) {
         showStatus('JSON export failed: ' + (msg.error || 'Unknown error'), 'error');
         return;
@@ -372,7 +299,7 @@
       const filename = 'figma-export.json';
       
       // Download the JSON file directly
-      downloadFile(msg.json, filename, 'application/json');
+      await downloadFile(msg.json, filename, 'application/json');
       
       const metadata = msg.metadata || {};
       showStatus(
@@ -383,7 +310,7 @@
       );
     }
     
-    function handleHTMLGenerated(msg) {
+    async function handleHTMLGenerated(msg) {
       if (!msg.success) {
         showStatus('HTML export failed: ' + (msg.error || 'Unknown error'), 'error');
         return;
@@ -393,7 +320,7 @@
       const filename = 'figma-export.html';
       
       // Download the HTML file directly
-      downloadFile(msg.html, filename, 'text/html');
+      await downloadFile(msg.html, filename, 'text/html');
       
       const metadata = msg.metadata || {};
       showStatus(
@@ -404,7 +331,7 @@
       );
     }
     
-    function handleBothGenerated(msg) {
+    async function handleBothGenerated(msg) {
       if (!msg.success) {
         showStatus('Export failed: ' + (msg.error || 'Unknown error'), 'error');
         return;
@@ -414,17 +341,16 @@
       const jsonFilename = 'figma-export.json';
       const htmlFilename = 'figma-export.html';
       
-      // Download both files with a longer delay to ensure both downloads trigger
-      downloadFile(msg.json, jsonFilename, 'application/json');
-      setTimeout(() => {
-        downloadFile(msg.html, htmlFilename, 'text/html');
-      }, 500);
+      // Download files sequentially to avoid browser blocking
+      await downloadFile(msg.json, jsonFilename, 'application/json', true);
+      await downloadFile(msg.html, htmlFilename, 'text/html', true);
       
+      // Success message
       const metadata = msg.metadata || {};
       showStatus(
-        'JSON + HTML exported successfully! ' + 
-        metadata.nodeCount + ' nodes, ' + 
-        metadata.componentSets + ' component sets',
+        'Both files exported! Check your downloads folder. ' + 
+        '(' + metadata.nodeCount + ' nodes, ' + 
+        metadata.componentSets + ' component sets)',
         'success'
       );
     }

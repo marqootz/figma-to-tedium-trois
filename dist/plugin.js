@@ -164,14 +164,33 @@ class StyleGenerator {
     }
 }
 
-;// ./src/html/animation-handler.ts
-class AnimationHandler {
-    generateAnimationCode(nodes, resolvedInstances) {
+;// ./src/browser/bundle-generator.ts
+class BundleGenerator {
+    /**
+     * Generate the complete browser bundle as a string
+     */
+    static generateBundle() {
         return `
-      // Initialize Figma Animation System
+      // Figma Animation System Bundle
+      // Generated from TypeScript modules
+      
+      ${this.getTypesCode()}
+      ${this.getChangeDetectorCode()}
+      ${this.getDOMManipulatorCode()}
+      ${this.getVariantHandlerCode()}
       ${this.getAnimationSystemCode()}
       
+      // Global initialization
+      window.FigmaAnimationSystem = FigmaAnimationSystem;
+    `;
+    }
+    /**
+     * Generate initialization code for the animation system
+     */
+    static generateInitializationCode(nodes, resolvedInstances) {
+        return `
       document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animation system
         window.figmaAnimationSystem = new FigmaAnimationSystem();
         
         // Register all nodes and elements
@@ -181,400 +200,165 @@ class AnimationHandler {
         ${resolvedInstances ? this.generateVariantRegistrations(resolvedInstances) : ''}
         
         // Setup initial timeout reactions
-        ${this.generateInitialTimeouts(nodes)}
+        ${this.generateInitialTimeouts(nodes, resolvedInstances)}
         
         // Setup variant animation system
         ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
+        
+        // Register all collected variant instances
+        if (window._tempVariantInstances && window._tempVariantInstances.length > 0) {
+          console.log('🎭 Final registration of', window._tempVariantInstances.length, 'variant instances');
+          window.figmaAnimationSystem.registerVariantInstances(window._tempVariantInstances);
+          
+          // Initialize variant visibility - ensure only active variants are visible
+          window._tempVariantInstances.forEach(variantInstance => {
+            // Hide the instance element initially - we only want variants visible
+            const instanceElement = document.querySelector(\`[data-figma-id="\${variantInstance.instanceId}"]\`);
+            if (instanceElement) {
+              instanceElement.style.display = 'none';
+            }
+            
+            variantInstance.variants.forEach(variantId => {
+              const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
+              if (element) {
+                if (variantId === variantInstance.activeVariant) {
+                  element.style.display = 'block';
+                  element.style.opacity = '1';
+                } else {
+                  element.style.display = 'none';
+                  element.style.opacity = '0';
+                }
+              }
+            });
+          });
+          
+          delete window._tempVariantInstances;
+        }
         
         console.log('Animation system initialized with ${nodes.length} nodes${resolvedInstances ? ' and ' + resolvedInstances.length + ' resolved instances' : ''}');
       });
     `;
     }
-    getAnimationSystemCode() {
-        // Return the complete FigmaAnimationSystem class as a string
-        // This is a simplified browser-compatible version
+    static getTypesCode() {
         return `
-      class FigmaAnimationSystem {
-        constructor() {
-          this.elementRegistry = new Map();
-          this.nodeRegistry = new Map();
-          this.timeouts = new Set();
-          console.log('FigmaAnimationSystem initialized');
+      // Type definitions
+      class AnimationChange {
+        constructor(property, sourceValue, targetValue, delta, childName, childId) {
+          this.property = property;
+          this.sourceValue = sourceValue;
+          this.targetValue = targetValue;
+          this.delta = delta;
+          this.childName = childName;
+          this.childId = childId;
         }
-        
-        registerElement(figmaId, element, node) {
-          this.elementRegistry.set(figmaId, element);
-          this.nodeRegistry.set(figmaId, node);
-          element.setAttribute('data-figma-id', figmaId);
-          console.log('Registered element:', figmaId, node.name);
+      }
+      
+      class AnimationOptions {
+        constructor(duration, easing, transitionType) {
+          this.duration = duration;
+          this.easing = easing;
+          this.transitionType = transitionType;
         }
-        
-        async executeAnimation(sourceId, targetId) {
-          console.log('Executing animation:', sourceId, '→', targetId);
-          
-          // Check if this is a variant animation
-          const variantInstance = this.findVariantInstance(sourceId);
-          if (variantInstance) {
-            await this.executeVariantAnimation(variantInstance, sourceId, targetId);
-            return;
-          }
-          
-          // Fallback to regular element animation
-          const sourceElement = this.elementRegistry.get(sourceId);
-          const targetElement = this.elementRegistry.get(targetId);
-          const sourceNode = this.nodeRegistry.get(sourceId);
-          const targetNode = this.nodeRegistry.get(targetId);
-
-          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
-            console.error('Missing elements or nodes for animation');
-            return;
-          }
-
-          // Get animation configuration
-          const reaction = sourceNode.reactions && sourceNode.reactions[0];
-          if (!reaction) {
-            console.log('No reaction found, performing instant switch');
-            this.performInstantSwitch(sourceElement, targetElement);
-            return;
-          }
-
-          const options = {
-            duration: reaction.action.transition.duration,
-            easing: this.mapFigmaEasing(reaction.action.transition.easing.type),
-            transitionType: reaction.action.transition.type
-          };
-
-          // Detect changes
-          const changes = this.detectChanges(sourceNode, targetNode);
-          console.log('Animation changes detected:', changes);
-
-          // Execute animation
-          switch (options.transitionType) {
-            case 'SMART_ANIMATE':
-              await this.executeSmartAnimate(sourceElement, targetElement, changes, options);
-              break;
-            case 'DISSOLVE':
-              await this.executeDissolve(sourceElement, targetElement, options);
-              break;
-            default:
-              this.performInstantSwitch(sourceElement, targetElement);
-          }
-
-          // Setup timeout reactions for new active variant
-          this.setupTimeoutReactions(targetId);
+      }
+      
+      class VariantInstance {
+        constructor(instanceId, variants, activeVariant, currentIndex) {
+          this.instanceId = instanceId;
+          this.variants = variants;
+          this.activeVariant = activeVariant;
+          this.currentIndex = currentIndex;
         }
-        
-        mapFigmaEasing(figmaEasing) {
-          const easingMap = {
-            'GENTLE': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-            'QUICK': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
-            'BOUNCY': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-            'SLOW': 'cubic-bezier(0.23, 1, 0.32, 1)',
-            'LINEAR': 'linear'
-          };
-          return easingMap[figmaEasing] || easingMap['GENTLE'];
-        }
-        
-        detectChanges(source, target) {
+      }
+    `;
+    }
+    static getChangeDetectorCode() {
+        return `
+      class ChangeDetector {
+        static detectChanges(source, target) {
           const changes = [];
 
-          // Position changes (critical for countdown animation)
-          if (source.y !== target.y) {
-            changes.push({
-              property: 'translateY',
-              sourceValue: source.y,
-              targetValue: target.y,
-              delta: target.y - source.y
-            });
-          }
+          // Note: We ignore position changes of top-level components since they should all be at (0,0)
+          // Only child element position changes are relevant for animations
 
-          if (source.x !== target.x) {
-            changes.push({
-              property: 'translateX',
-              sourceValue: source.x,
-              targetValue: target.x,
-              delta: target.x - source.x
-            });
-          }
-
-          // Alignment changes (critical for countdown)
-          if (source.counterAxisAlignItems !== target.counterAxisAlignItems) {
-            changes.push({
-              property: 'alignment',
-              sourceValue: source.counterAxisAlignItems,
-              targetValue: target.counterAxisAlignItems
-            });
-          }
-
-          // Opacity changes
-          if (source.opacity !== target.opacity) {
-            changes.push({
-              property: 'opacity',
-              sourceValue: source.opacity || 1,
-              targetValue: target.opacity || 1
-            });
-          }
-
-          return changes;
-        }
-        
-        async executeSmartAnimate(sourceElement, targetElement, changes, options) {
-          return new Promise((resolve) => {
-            console.log('Starting SMART_ANIMATE:', options.duration + 's', options.easing);
-
-            // Setup CSS transitions
-            const properties = this.getTransitionProperties(changes);
-            sourceElement.style.transition = properties
-              .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
-              .join(', ');
-
-            // Apply changes on next frame
-            requestAnimationFrame(() => {
-              changes.forEach(change => this.applyChange(sourceElement, change));
-            });
-
-            // Complete animation
-            setTimeout(() => {
-              console.log('Animation completed, switching to target');
-              this.performInstantSwitch(sourceElement, targetElement);
-              resolve();
-            }, options.duration * 1000);
-          });
-        }
-        
-        async executeDissolve(sourceElement, targetElement, options) {
-          return new Promise((resolve) => {
-            console.log('Starting DISSOLVE:', options.duration + 's');
-
-            sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
-            targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
-            
-            // Show target with 0 opacity
-            targetElement.style.display = '';
-            targetElement.style.opacity = '0';
-
-            requestAnimationFrame(() => {
-              sourceElement.style.opacity = '0';
-              targetElement.style.opacity = '1';
-            });
-
-            setTimeout(() => {
-              sourceElement.style.display = 'none';
-              resolve();
-            }, options.duration * 1000);
-          });
-        }
-        
-        getTransitionProperties(changes) {
-          const properties = new Set();
-          
-          changes.forEach(change => {
-            switch (change.property) {
-              case 'translateX':
-              case 'translateY':
-                properties.add('transform');
-                break;
-              case 'alignment':
-                properties.add('align-items');
-                break;
-              default:
-                properties.add(change.property);
-            }
-          });
-
-          return Array.from(properties);
-        }
-        
-        applyChange(element, change) {
-          console.log('Applying change:', change.property, '=', change.targetValue);
-
-          switch (change.property) {
-            case 'translateY':
-              element.style.transform = 'translateY(' + change.delta + 'px)';
-              break;
-            case 'translateX':
-              element.style.transform = 'translateX(' + change.delta + 'px)';
-              break;
-            case 'alignment':
-              const parent = element.parentElement;
-              if (parent) {
-                const alignMap = { 'MIN': 'flex-start', 'CENTER': 'center', 'MAX': 'flex-end' };
-                parent.style.alignItems = alignMap[change.targetValue] || 'center';
-              }
-              break;
-            case 'opacity':
-              element.style.opacity = change.targetValue.toString();
-              break;
-          }
-        }
-        
-        performInstantSwitch(sourceElement, targetElement) {
-          console.log('Performing instant variant switch');
-          
-          // Hide all variants in the component set
-          const componentSet = sourceElement.closest('[data-component-set]');
-          if (componentSet) {
-            const variants = componentSet.querySelectorAll('[data-variant]');
-            variants.forEach(variant => {
-              variant.style.display = 'none';
-            });
-          }
-
-          // Show target variant
-          targetElement.style.display = '';
-          targetElement.style.opacity = '1';
-          targetElement.style.transform = '';
-        }
-        
-        setupTimeoutReactions(nodeId) {
-          const node = this.nodeRegistry.get(nodeId);
-          if (!node || !node.reactions) return;
-
-          node.reactions
-            .filter(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')
-            .forEach(reaction => {
-              console.log('Setting up timeout reaction:', reaction.trigger.timeout + 's delay');
-              
-              const timeout = setTimeout(() => {
-                this.executeAnimation(nodeId, reaction.action.destinationId);
-              }, (reaction.trigger.timeout || 0) * 1000);
-              
-              this.timeouts.add(timeout);
-            });
-        }
-        
-        clearAllTimeouts() {
-          this.timeouts.forEach(timeout => clearTimeout(timeout));
-          this.timeouts.clear();
-          console.log('All timeout reactions cleared');
-        }
-        
-        destroy() {
-          this.clearAllTimeouts();
-          this.elementRegistry.clear();
-          this.nodeRegistry.clear();
-          console.log('FigmaAnimationSystem destroyed');
-        }
-        
-        // Variant Animation Methods
-        findVariantInstance(nodeId) {
-          if (!this.variantInstances) return null;
-          return this.variantInstances.find(instance => 
-            instance.variants.includes(nodeId)
-          );
-        }
-        
-        async executeVariantAnimation(variantInstance, sourceId, targetId) {
-          console.log('Executing variant animation:', sourceId, '→', targetId);
-          
-          const sourceElement = this.elementRegistry.get(sourceId);
-          const targetElement = this.elementRegistry.get(targetId);
-          const sourceNode = this.nodeRegistry.get(sourceId);
-          const targetNode = this.nodeRegistry.get(targetId);
-
-          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
-            console.error('Missing variant elements or nodes for animation');
-            return;
-          }
-
-          // Get animation configuration from the source node
-          const reaction = sourceNode.reactions && sourceNode.reactions[0];
-          if (!reaction) {
-            console.log('No reaction found, performing instant variant switch');
-            this.performVariantSwitch(variantInstance, sourceId, targetId);
-            return;
-          }
-
-          const options = {
-            duration: reaction.action.transition.duration,
-            easing: this.mapFigmaEasing(reaction.action.transition.easing.type),
-            transitionType: reaction.action.transition.type
-          };
-
-          // Detect comprehensive changes between variants
-          const changes = this.detectVariantChanges(sourceNode, targetNode);
-          console.log('Variant changes detected:', changes);
-
-          // Execute variant animation
-          switch (options.transitionType) {
-            case 'SMART_ANIMATE':
-              await this.executeVariantSmartAnimate(variantInstance, sourceId, targetId, changes, options);
-              break;
-            case 'DISSOLVE':
-              await this.executeVariantDissolve(variantInstance, sourceId, targetId, options);
-              break;
-            default:
-              this.performVariantSwitch(variantInstance, sourceId, targetId);
-          }
-
-          // Update variant instance state
-          variantInstance.activeVariant = targetId;
-          variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
-
-          // Setup timeout reactions for new active variant
-          this.setupTimeoutReactions(targetId);
-        }
-        
-        detectVariantChanges(source, target) {
-          const changes = [];
-
-          // Position and size changes
-          if (source.x !== target.x || source.y !== target.y) {
-            changes.push({
-              property: 'position',
-              sourceValue: { x: source.x, y: source.y },
-              targetValue: { x: target.x, y: target.y }
-            });
-          }
-
+          // Size changes
           if (source.width !== target.width || source.height !== target.height) {
-            changes.push({
-              property: 'size',
-              sourceValue: { width: source.width, height: source.height },
-              targetValue: { width: target.width, height: target.height }
-            });
+            changes.push(new AnimationChange('size', { width: source.width, height: source.height }, { width: target.width, height: target.height }));
           }
 
           // Opacity changes
           if (source.opacity !== target.opacity) {
-            changes.push({
-              property: 'opacity',
-              sourceValue: source.opacity || 1,
-              targetValue: target.opacity || 1
-            });
+            changes.push(new AnimationChange('opacity', source.opacity || 1, target.opacity || 1));
           }
 
           // Background color changes
           if (this.fillsAreDifferent(source.fills, target.fills)) {
-            changes.push({
-              property: 'background',
-              sourceValue: source.fills,
-              targetValue: target.fills
-            });
+            changes.push(new AnimationChange('background', source.fills, target.fills));
           }
 
           // Corner radius changes
           if (source.cornerRadius !== target.cornerRadius) {
-            changes.push({
-              property: 'borderRadius',
-              sourceValue: source.cornerRadius || 0,
-              targetValue: target.cornerRadius || 0
-            });
+            changes.push(new AnimationChange('borderRadius', source.cornerRadius || 0, target.cornerRadius || 0));
           }
 
-          // Layout changes (for hybrid flattening)
+          // Layout changes
           if (this.layoutHasChanged(source, target)) {
-            changes.push({
-              property: 'layout',
-              sourceValue: this.getLayoutProperties(source),
-              targetValue: this.getLayoutProperties(target)
-            });
+            changes.push(new AnimationChange('layout', this.getLayoutProperties(source), this.getLayoutProperties(target)));
           }
+
+          // Child element changes
+          const childChanges = this.detectChildElementChanges(source, target);
+          changes.push(...childChanges);
 
           return changes;
         }
-        
-        fillsAreDifferent(sourceFills, targetFills) {
+
+        static detectChildElementChanges(source, target) {
+          const changes = [];
+          
+          // Recursively find all children with their full paths
+          const sourceChildren = this.createRecursiveChildMap(source);
+          const targetChildren = this.createRecursiveChildMap(target);
+          
+          for (const [childPath, sourceChild] of sourceChildren) {
+            const targetChild = targetChildren.get(childPath);
+            if (targetChild) {
+              if (sourceChild.x !== targetChild.x || sourceChild.y !== targetChild.y) {
+                changes.push(new AnimationChange('childPosition', { x: sourceChild.x, y: sourceChild.y }, { x: targetChild.x, y: targetChild.y }, null, childPath, sourceChild.id));
+              }
+              
+              if (sourceChild.width !== targetChild.width || sourceChild.height !== targetChild.height) {
+                changes.push(new AnimationChange('childSize', { width: sourceChild.width, height: sourceChild.height }, { width: targetChild.width, height: targetChild.height }, null, childPath, sourceChild.id));
+              }
+              
+              if (sourceChild.opacity !== targetChild.opacity) {
+                changes.push(new AnimationChange('childOpacity', sourceChild.opacity || 1, targetChild.opacity || 1, null, childPath, sourceChild.id));
+              }
+            }
+          }
+          
+          return changes;
+        }
+
+
+
+        static createRecursiveChildMap(node, prefix = '') {
+          const childMap = new Map();
+          if (node.children) {
+            node.children.forEach(child => {
+              const childPath = prefix ? \`\${prefix}/\${child.name}\` : child.name;
+              childMap.set(childPath, child);
+              
+              // Recursively add children of this child
+              const nestedChildren = this.createRecursiveChildMap(child, childPath);
+              nestedChildren.forEach((nestedChild, nestedPath) => {
+                childMap.set(nestedPath, nestedChild);
+              });
+            });
+          }
+          return childMap;
+        }
+
+        static fillsAreDifferent(sourceFills, targetFills) {
           if (!sourceFills && !targetFills) return false;
           if (!sourceFills || !targetFills) return true;
           if (sourceFills.length !== targetFills.length) return true;
@@ -589,8 +373,8 @@ class AnimationHandler {
                      fill.color.b !== targetFill.color.b));
           });
         }
-        
-        layoutHasChanged(source, target) {
+
+        static layoutHasChanged(source, target) {
           return source.layoutMode !== target.layoutMode ||
                  source.counterAxisAlignItems !== target.counterAxisAlignItems ||
                  source.primaryAxisAlignItems !== target.primaryAxisAlignItems ||
@@ -600,8 +384,8 @@ class AnimationHandler {
                  source.paddingTop !== target.paddingTop ||
                  source.paddingBottom !== target.paddingBottom;
         }
-        
-        getLayoutProperties(node) {
+
+        static getLayoutProperties(node) {
           return {
             layoutMode: node.layoutMode,
             counterAxisAlignItems: node.counterAxisAlignItems,
@@ -613,89 +397,14 @@ class AnimationHandler {
             paddingBottom: node.paddingBottom
           };
         }
-        
-        async executeVariantSmartAnimate(variantInstance, sourceId, targetId, changes, options) {
-          return new Promise((resolve) => {
-            console.log('Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
-
-            const sourceElement = this.elementRegistry.get(sourceId);
-            const targetElement = this.elementRegistry.get(targetId);
-
-            // Apply hybrid flattening if layout changes detected
-            const layoutChange = changes.find(change => change.property === 'layout');
-            if (layoutChange) {
-              this.applyLayoutFlattening(sourceElement, layoutChange);
-            }
-
-            // Setup CSS transitions for all changing properties
-            const transitionProperties = this.getVariantTransitionProperties(changes);
-            sourceElement.style.transition = transitionProperties
-              .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
-              .join(', ');
-
-            // Apply changes on next frame
-            requestAnimationFrame(() => {
-              changes.forEach(change => this.applyVariantChange(sourceElement, change));
-            });
-
-            // Complete animation
-            setTimeout(() => {
-              console.log('Variant animation completed, switching to target');
-              this.performVariantSwitch(variantInstance, sourceId, targetId);
-              resolve();
-            }, options.duration * 1000);
-          });
-        }
-        
-        applyLayoutFlattening(element, layoutChange) {
-          // Convert flexbox layout to absolute positioning for animation
-          const parent = element.parentElement;
-          if (parent && parent.style.display === 'flex') {
-            const children = Array.from(parent.children);
-            children.forEach(child => {
-              const rect = child.getBoundingClientRect();
-              const parentRect = parent.getBoundingClientRect();
-              
-              child.style.position = 'absolute';
-              child.style.left = (rect.left - parentRect.left) + 'px';
-              child.style.top = (rect.top - parentRect.top) + 'px';
-              child.style.width = rect.width + 'px';
-              child.style.height = rect.height + 'px';
-            });
-            
-            parent.style.display = 'block';
-          }
-        }
-        
-        getVariantTransitionProperties(changes) {
-          const properties = new Set();
-          
-          changes.forEach(change => {
-            switch (change.property) {
-              case 'position':
-              case 'size':
-                properties.add('transform');
-                break;
-              case 'opacity':
-                properties.add('opacity');
-                break;
-              case 'background':
-                properties.add('background-color');
-                break;
-              case 'borderRadius':
-                properties.add('border-radius');
-                break;
-              case 'layout':
-                properties.add('all');
-                break;
-            }
-          });
-
-          return Array.from(properties);
-        }
-        
-        applyVariantChange(element, change) {
-          console.log('Applying variant change:', change.property, '=', change.targetValue);
+      }
+    `;
+    }
+    static getDOMManipulatorCode() {
+        return `
+      class DOMManipulator {
+        static applyChange(element, change) {
+          console.log('Applying change:', change.property, '=', change.targetValue);
 
           switch (change.property) {
             case 'position':
@@ -721,23 +430,215 @@ class AnimationHandler {
             case 'borderRadius':
               element.style.borderRadius = change.targetValue + 'px';
               break;
-            case 'layout':
-              // Layout changes are handled by flattening
+            case 'childPosition':
+              // Try to find the child by the change.childId
+              let childElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              
+              if (!childElement) {
+                // If not found, try to find by name path instead
+                const pathParts = change.childName.split('/');
+                const childName = pathParts[pathParts.length - 1]; // Get the last part
+                const allChildrenWithName = element.querySelectorAll(\`[data-figma-name="\${childName}"]\`);
+                if (allChildrenWithName.length > 0) {
+                  childElement = allChildrenWithName[0]; // Take the first match
+                }
+              }
+              
+              if (childElement) {
+                // Calculate relative delta instead of absolute position
+                const deltaX = change.targetValue.x - change.sourceValue.x;
+                const deltaY = change.targetValue.y - change.sourceValue.y;
+                childElement.style.transform = \`translate(\${deltaX}px, \${deltaY}px)\`;
+              }
+              break;
+            case 'childSize':
+              const sizeChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (sizeChildElement) {
+                const { width, height } = change.targetValue;
+                sizeChildElement.style.width = width + 'px';
+                sizeChildElement.style.height = height + 'px';
+                console.log('Applied child size change to', change.childName, ':', width, height);
+              }
+              break;
+            case 'childOpacity':
+              const opacityChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (opacityChildElement) {
+                opacityChildElement.style.opacity = change.targetValue.toString();
+                console.log('Applied child opacity change to', change.childName, ':', change.targetValue);
+              }
               break;
           }
         }
-        
-        async executeVariantDissolve(variantInstance, sourceId, targetId, options) {
+
+        static setupTransitions(element, changes, options) {
+          const transitionProperties = this.getTransitionProperties(changes);
+          element.style.transition = transitionProperties
+            .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
+            .join(', ');
+        }
+
+        static setupChildTransitions(element, changes, options) {
+          const childChanges = changes.filter(change => 
+            change.property === 'childPosition' || 
+            change.property === 'childSize' || 
+            change.property === 'childOpacity'
+          );
+          
+          childChanges.forEach(change => {
+            const childElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+            if (childElement) {
+              const childTransitionProps = [];
+              if (change.property === 'childPosition' || change.property === 'childSize') {
+                childTransitionProps.push('transform');
+              }
+              if (change.property === 'childOpacity') {
+                childTransitionProps.push('opacity');
+              }
+              if (childTransitionProps.length > 0) {
+                childElement.style.transition = childTransitionProps
+                  .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
+                  .join(', ');
+              }
+            }
+          });
+        }
+
+        static applyLayoutFlattening(element, layoutChange) {
+          const parent = element.parentElement;
+          if (parent && parent.style.display === 'flex') {
+            const children = Array.from(parent.children);
+            children.forEach(child => {
+              const rect = child.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              
+              child.style.position = 'absolute';
+              child.style.left = (rect.left - parentRect.left) + 'px';
+              child.style.top = (rect.top - parentRect.top) + 'px';
+              child.style.width = rect.width + 'px';
+              child.style.height = rect.height + 'px';
+            });
+            
+            parent.style.display = 'block';
+          }
+        }
+
+        static performVariantSwitch(sourceElement, targetElement) {
+          console.log('Performing instant variant switch');
+          
+          const componentSet = sourceElement.closest('[data-component-set]');
+          if (componentSet) {
+            const variants = componentSet.querySelectorAll('[data-variant]');
+            variants.forEach(variant => {
+              variant.style.display = 'none';
+            });
+          }
+
+          targetElement.style.display = '';
+          targetElement.style.opacity = '1';
+          targetElement.style.transform = '';
+        }
+
+        static getTransitionProperties(changes) {
+          const properties = new Set();
+          
+          changes.forEach(change => {
+            switch (change.property) {
+              case 'position':
+              case 'size':
+              case 'childPosition':
+              case 'childSize':
+                properties.add('transform');
+                break;
+              case 'opacity':
+              case 'childOpacity':
+                properties.add('opacity');
+                break;
+              case 'background':
+                properties.add('background-color');
+                break;
+              case 'borderRadius':
+                properties.add('border-radius');
+                break;
+              case 'layout':
+                properties.add('all');
+                break;
+            }
+          });
+
+          return Array.from(properties);
+        }
+      }
+    `;
+    }
+    static getVariantHandlerCode() {
+        return `
+      class VariantHandler {
+        constructor() {
+          this.variantInstances = [];
+        }
+
+        registerVariantInstances(instances) {
+          this.variantInstances = instances;
+        }
+
+        findVariantInstance(nodeId) {
+          return this.variantInstances.find(instance => 
+            instance.variants.includes(nodeId) || instance.instanceId === nodeId
+          ) || null;
+        }
+
+        async executeVariantAnimation(variantInstance, sourceId, targetId, sourceElement, targetElement, sourceNode, targetNode, options) {
+          console.log('Executing variant animation:', sourceId, '→', targetId);
+
+          const changes = ChangeDetector.detectChanges(sourceNode, targetNode);
+          console.log('Variant changes detected:', changes);
+
+          switch (options.transitionType) {
+            case 'SMART_ANIMATE':
+              await this.executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options);
+              break;
+            case 'DISSOLVE':
+              await this.executeVariantDissolve(variantInstance, sourceId, targetId, sourceElement, targetElement, options);
+              break;
+            default:
+              this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
+          }
+
+          variantInstance.activeVariant = targetId;
+          variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
+        }
+
+        async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
+          return new Promise((resolve) => {
+            console.log('Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
+
+            const layoutChange = changes.find(change => change.property === 'layout');
+            if (layoutChange) {
+              DOMManipulator.applyLayoutFlattening(sourceElement, layoutChange);
+            }
+
+            DOMManipulator.setupTransitions(sourceElement, changes, options);
+            DOMManipulator.setupChildTransitions(sourceElement, changes, options);
+
+            requestAnimationFrame(() => {
+              changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
+            });
+
+            setTimeout(() => {
+              console.log('Variant animation completed, switching to target');
+              this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+
+        async executeVariantDissolve(variantInstance, sourceId, targetId, sourceElement, targetElement, options) {
           return new Promise((resolve) => {
             console.log('Starting variant DISSOLVE:', options.duration + 's');
-
-            const sourceElement = this.elementRegistry.get(sourceId);
-            const targetElement = this.elementRegistry.get(targetId);
 
             sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
             targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
             
-            // Show target with 0 opacity
             targetElement.style.display = 'block';
             targetElement.style.opacity = '0';
 
@@ -747,25 +648,22 @@ class AnimationHandler {
             });
 
             setTimeout(() => {
-              this.performVariantSwitch(variantInstance, sourceId, targetId);
+              this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
               resolve();
             }, options.duration * 1000);
           });
         }
-        
-        performVariantSwitch(variantInstance, sourceId, targetId) {
+
+        performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement) {
           console.log('Performing variant switch:', sourceId, '→', targetId);
           
-          // Hide all variants in the instance
           variantInstance.variants.forEach(variantId => {
-            const element = this.elementRegistry.get(variantId);
+            const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
             if (element) {
               element.style.display = 'none';
             }
           });
 
-          // Show target variant
-          const targetElement = this.elementRegistry.get(targetId);
           if (targetElement) {
             targetElement.style.display = 'block';
             targetElement.style.opacity = '1';
@@ -775,7 +673,206 @@ class AnimationHandler {
       }
     `;
     }
-    generateNodeRegistrations(nodes) {
+    static getAnimationSystemCode() {
+        return `
+      class FigmaAnimationSystem {
+        constructor() {
+          this.elementRegistry = new Map();
+          this.nodeRegistry = new Map();
+          this.timeouts = new Set();
+          this.variantHandler = new VariantHandler();
+          console.log('FigmaAnimationSystem initialized');
+        }
+
+        registerElement(figmaId, element, node) {
+          this.elementRegistry.set(figmaId, element);
+          this.nodeRegistry.set(figmaId, node);
+          element.setAttribute('data-figma-id', figmaId);
+          console.log('Registered element:', figmaId, node.name);
+        }
+
+        registerVariantInstances(instances) {
+          this.variantHandler.registerVariantInstances(instances);
+        }
+
+        async executeAnimation(sourceId, targetId) {
+          console.log('Executing animation:', sourceId, '→', targetId);
+          
+          const variantInstance = this.variantHandler.findVariantInstance(sourceId);
+          if (variantInstance) {
+            await this.executeVariantAnimation(variantInstance, sourceId, targetId);
+            return;
+          }
+          
+          await this.executeElementAnimation(sourceId, targetId);
+        }
+
+        async executeVariantAnimation(variantInstance, sourceId, targetId) {
+          const sourceElement = this.elementRegistry.get(sourceId);
+          const targetElement = this.elementRegistry.get(targetId);
+          const sourceNode = this.nodeRegistry.get(sourceId);
+          const targetNode = this.nodeRegistry.get(targetId);
+
+          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
+            console.error('Missing variant elements or nodes for animation');
+            return;
+          }
+
+          // Hide the instance element during variant animation to prevent double visibility
+          // We only want to see the variant elements, not the instance template
+          const instanceElement = this.elementRegistry.get(variantInstance.instanceId);
+          if (instanceElement) {
+            instanceElement.style.display = 'none';
+          }
+
+          const options = this.getAnimationOptions(sourceNode);
+          if (!options) {
+            console.log('No reaction found, performing instant variant switch');
+            this.variantHandler.executeVariantAnimation(
+              variantInstance, sourceId, targetId, sourceElement, targetElement, 
+              sourceNode, targetNode, { duration: 0, easing: 'linear', transitionType: 'SMART_ANIMATE' }
+            );
+            return;
+          }
+
+          await this.variantHandler.executeVariantAnimation(
+            variantInstance, sourceId, targetId, sourceElement, targetElement, 
+            sourceNode, targetNode, options
+          );
+
+          this.setupTimeoutReactions(targetId);
+        }
+
+        async executeElementAnimation(sourceId, targetId) {
+          const sourceElement = this.elementRegistry.get(sourceId);
+          const targetElement = this.elementRegistry.get(targetId);
+          const sourceNode = this.nodeRegistry.get(sourceId);
+          const targetNode = this.nodeRegistry.get(targetId);
+
+          if (!sourceElement || !targetElement || !sourceNode || !targetNode) {
+            console.error('Missing elements or nodes for animation');
+            return;
+          }
+
+          const options = this.getAnimationOptions(sourceNode);
+          if (!options) {
+            console.log('No reaction found, performing instant switch');
+            DOMManipulator.performVariantSwitch(sourceElement, targetElement);
+            return;
+          }
+
+          const changes = ChangeDetector.detectChanges(sourceNode, targetNode);
+          console.log('Animation changes detected:', changes);
+
+          switch (options.transitionType) {
+            case 'SMART_ANIMATE':
+              await this.executeSmartAnimate(sourceElement, targetElement, changes, options);
+              break;
+            case 'DISSOLVE':
+              await this.executeDissolve(sourceElement, targetElement, options);
+              break;
+            default:
+              DOMManipulator.performVariantSwitch(sourceElement, targetElement);
+          }
+
+          this.setupTimeoutReactions(targetId);
+        }
+
+        async executeSmartAnimate(sourceElement, targetElement, changes, options) {
+          return new Promise((resolve) => {
+            console.log('Starting SMART_ANIMATE:', options.duration + 's', options.easing);
+
+            DOMManipulator.setupTransitions(sourceElement, changes, options);
+
+            requestAnimationFrame(() => {
+              changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
+            });
+
+            setTimeout(() => {
+              console.log('Animation completed, switching to target');
+              DOMManipulator.performVariantSwitch(sourceElement, targetElement);
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+
+        async executeDissolve(sourceElement, targetElement, options) {
+          return new Promise((resolve) => {
+            console.log('Starting DISSOLVE:', options.duration + 's');
+
+            sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
+            
+            targetElement.style.display = '';
+            targetElement.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+              sourceElement.style.opacity = '0';
+              targetElement.style.opacity = '1';
+            });
+
+            setTimeout(() => {
+              sourceElement.style.display = 'none';
+              resolve();
+            }, options.duration * 1000);
+          });
+        }
+
+        getAnimationOptions(node) {
+          const reaction = node.reactions && node.reactions[0];
+          if (!reaction) return null;
+
+          return new AnimationOptions(
+            reaction.action.transition.duration,
+            this.mapFigmaEasing(reaction.action.transition.easing.type),
+            reaction.action.transition.type
+          );
+        }
+
+        mapFigmaEasing(figmaEasing) {
+          const easingMap = {
+            'GENTLE': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            'QUICK': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
+            'BOUNCY': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            'SLOW': 'cubic-bezier(0.23, 1, 0.32, 1)',
+            'LINEAR': 'linear'
+          };
+          return easingMap[figmaEasing] || easingMap['GENTLE'];
+        }
+
+        setupTimeoutReactions(nodeId) {
+          const node = this.nodeRegistry.get(nodeId);
+          if (!node || !node.reactions) return;
+
+          node.reactions
+            .filter(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')
+            .forEach(reaction => {
+              console.log('Setting up timeout reaction:', reaction.trigger.timeout + 's delay');
+              
+              const timeout = setTimeout(() => {
+                this.executeAnimation(nodeId, reaction.action.destinationId);
+              }, (reaction.trigger.timeout || 0) * 1000);
+              
+              this.timeouts.add(timeout);
+            });
+        }
+
+        clearAllTimeouts() {
+          this.timeouts.forEach(timeout => clearTimeout(timeout));
+          this.timeouts.clear();
+          console.log('All timeout reactions cleared');
+        }
+
+        destroy() {
+          this.clearAllTimeouts();
+          this.elementRegistry.clear();
+          this.nodeRegistry.clear();
+          console.log('FigmaAnimationSystem destroyed');
+        }
+      }
+    `;
+    }
+    static generateNodeRegistrations(nodes) {
         return nodes.map(node => {
             const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
             return `
@@ -792,15 +889,7 @@ class AnimationHandler {
       `;
         }).join('\n');
     }
-    generateInitialTimeouts(nodes) {
-        const nodesWithTimeouts = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'AFTER_TIMEOUT'); });
-        return nodesWithTimeouts.map(node => `
-      // Setup timeout reactions for ${node.name}
-      window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');
-    `).join('\n');
-    }
-    // Generate registrations for variant elements
-    generateVariantRegistrations(resolvedInstances) {
+    static generateVariantRegistrations(resolvedInstances) {
         let registrations = '';
         resolvedInstances.forEach(instance => {
             const { variants } = instance;
@@ -822,26 +911,60 @@ class AnimationHandler {
         });
         return registrations;
     }
-    // Generate variant animation setup
-    generateVariantAnimationSetup(resolvedInstances) {
+    static generateInitialTimeouts(nodes, resolvedInstances) {
+        const nodesWithTimeouts = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'AFTER_TIMEOUT'); });
+        return nodesWithTimeouts.map(node => {
+            // Check if this is an instance with variants
+            const instanceWithVariants = resolvedInstances === null || resolvedInstances === void 0 ? void 0 : resolvedInstances.find(instance => { var _a; return ((_a = instance.instance) === null || _a === void 0 ? void 0 : _a.id) === node.id; });
+            if (instanceWithVariants) {
+                // Use the active variant instead of the instance for timeout setup
+                const activeVariantId = instanceWithVariants.activeVariant.id;
+                return `
+      // Setup timeout reactions for ${node.name} using active variant
+      window.figmaAnimationSystem.setupTimeoutReactions('${activeVariantId}');`;
+            }
+            else {
+                // Regular node without variants
+                return `
+      // Setup timeout reactions for ${node.name}
+      window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');`;
+            }
+        }).join('\n');
+    }
+    static generateVariantAnimationSetup(resolvedInstances) {
         let setup = '';
         resolvedInstances.forEach(instance => {
             const { instance: instanceNode, variants, activeVariant } = instance;
             setup += `
       // Setup variant animation for ${instanceNode.name}
-      const instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')} = {
-        instanceId: '${instanceNode.id}',
-        variants: [${variants.map((v) => `'${v.id}'`).join(', ')}],
-        activeVariant: '${activeVariant.id}',
-        currentIndex: ${variants.findIndex((v) => v.id === activeVariant.id)}
-      };
+      const instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')} = new VariantInstance(
+        '${instanceNode.id}',
+        [${variants.map((v) => `'${v.id}'`).join(', ')}],
+        '${activeVariant.id}',
+        ${variants.findIndex((v) => v.id === activeVariant.id)}
+      );
       
-      // Add variant switching methods to animation system
-      window.figmaAnimationSystem.variantInstances = window.figmaAnimationSystem.variantInstances || [];
-      window.figmaAnimationSystem.variantInstances.push(instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
+      console.log('🎭 Registering variant instance:', instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
+      
+      // Collect all instances and register them together at the end
+      window._tempVariantInstances = window._tempVariantInstances || [];
+      window._tempVariantInstances.push(instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
       `;
         });
         return setup;
+    }
+}
+
+;// ./src/html/animation-handler.ts
+
+class AnimationHandler {
+    generateAnimationCode(nodes, resolvedInstances) {
+        return `
+      // Initialize Figma Animation System
+      ${BundleGenerator.generateBundle()}
+      
+      ${BundleGenerator.generateInitializationCode(nodes, resolvedInstances)}
+    `;
     }
 }
 
@@ -956,19 +1079,17 @@ ${css}
 ;// ./src/plugin/figma-data-extractor.ts
 class FigmaDataExtractor {
     async extractNodes(selection) {
+        const nodes = [];
         console.log('Extracting data from', selection.length, 'selected nodes');
-        if (selection.length === 0) {
-            throw new Error('Please select at least one node to export');
-        }
-        const extractedNodes = [];
         for (const node of selection) {
-            const figmaNode = await this.extractNode(node);
-            extractedNodes.push(figmaNode);
+            const extractedNode = await this.extractNode(node);
+            nodes.push(extractedNode);
         }
-        console.log('Extracted', extractedNodes.length, 'nodes with animation data');
-        return extractedNodes;
+        console.log('Extracted', nodes.length, 'nodes with animation data');
+        return nodes;
     }
     async extractNode(node) {
+        console.log('Checking node:', node.id, node.type, node.mainComponentId);
         const baseNode = {
             id: node.id,
             name: node.name,
@@ -976,126 +1097,224 @@ class FigmaDataExtractor {
             x: node.x,
             y: node.y,
             width: node.width,
-            height: node.height
+            height: node.height,
+            opacity: 'opacity' in node ? node.opacity : 1,
+            fills: this.extractFills(node),
+            strokes: this.extractStrokes(node),
+            strokeWeight: this.extractStrokeWeight(node),
+            cornerRadius: this.extractCornerRadius(node),
+            layoutMode: this.extractLayoutMode(node),
+            counterAxisAlignItems: this.extractCounterAxisAlignItems(node),
+            primaryAxisAlignItems: this.extractPrimaryAxisAlignItems(node),
+            itemSpacing: this.extractItemSpacing(node),
+            paddingLeft: this.extractPaddingLeft(node),
+            paddingRight: this.extractPaddingRight(node),
+            paddingTop: this.extractPaddingTop(node),
+            paddingBottom: this.extractPaddingBottom(node),
+            characters: this.extractCharacters(node),
+            fontName: this.extractFontName(node),
+            fontFamily: this.extractFontFamily(node),
+            fontSize: this.extractFontSize(node),
+            fontWeight: this.extractFontWeight(node),
+            textAlignHorizontal: this.extractTextAlignHorizontal(node),
+            textAlignVertical: this.extractTextAlignVertical(node),
+            letterSpacing: this.extractLetterSpacing(node),
+            lineHeight: this.extractLineHeight(node),
+            componentProperties: this.extractComponentProperties(node),
+            mainComponentId: this.extractMainComponentId(node),
+            variantProperties: this.extractVariantProperties(node),
+            reactions: this.extractReactions(node),
+            children: []
         };
-        // Extract opacity
-        if ('opacity' in node) {
-            baseNode.opacity = node.opacity;
-        }
-        // Extract fills
-        if ('fills' in node && Array.isArray(node.fills)) {
-            baseNode.fills = this.extractFills(node.fills);
-        }
-        // Extract strokes  
-        if ('strokes' in node && Array.isArray(node.strokes)) {
-            baseNode.strokes = this.extractFills(node.strokes);
-        }
-        if ('strokeWeight' in node) {
-            baseNode.strokeWeight = node.strokeWeight;
-        }
-        // Extract corner radius
-        if ('cornerRadius' in node && typeof node.cornerRadius === 'number') {
-            baseNode.cornerRadius = node.cornerRadius;
-        }
-        // Extract layout properties
-        if ('layoutMode' in node) {
-            baseNode.layoutMode = node.layoutMode;
-        }
-        if ('counterAxisAlignItems' in node) {
-            baseNode.counterAxisAlignItems = node.counterAxisAlignItems;
-        }
-        if ('primaryAxisAlignItems' in node) {
-            baseNode.primaryAxisAlignItems = node.primaryAxisAlignItems;
-        }
-        // Extract spacing and padding
-        if ('itemSpacing' in node && typeof node.itemSpacing === 'number') {
-            baseNode.itemSpacing = node.itemSpacing;
-        }
-        if ('paddingLeft' in node && typeof node.paddingLeft === 'number') {
-            baseNode.paddingLeft = node.paddingLeft;
-        }
-        if ('paddingRight' in node && typeof node.paddingRight === 'number') {
-            baseNode.paddingRight = node.paddingRight;
-        }
-        if ('paddingTop' in node && typeof node.paddingTop === 'number') {
-            baseNode.paddingTop = node.paddingTop;
-        }
-        if ('paddingBottom' in node && typeof node.paddingBottom === 'number') {
-            baseNode.paddingBottom = node.paddingBottom;
-        }
-        // Extract text properties
-        if (node.type === 'TEXT') {
-            if ('characters' in node) {
-                baseNode.characters = node.characters;
-            }
-            if ('fontName' in node) {
-                baseNode.fontName = node.fontName;
-            }
-            if ('fontFamily' in node && typeof node.fontFamily === 'string') {
-                baseNode.fontFamily = node.fontFamily;
-            }
-            if ('fontSize' in node && typeof node.fontSize === 'number') {
-                baseNode.fontSize = node.fontSize;
-            }
-            if ('fontWeight' in node && typeof node.fontWeight === 'number') {
-                baseNode.fontWeight = node.fontWeight;
-            }
-            if ('textAlignHorizontal' in node) {
-                baseNode.textAlignHorizontal = node.textAlignHorizontal;
-            }
-            if ('textAlignVertical' in node) {
-                baseNode.textAlignVertical = node.textAlignVertical;
-            }
-            if ('letterSpacing' in node) {
-                baseNode.letterSpacing = node.letterSpacing;
-            }
-            if ('lineHeight' in node) {
-                baseNode.lineHeight = node.lineHeight;
-            }
-        }
-        // Extract component properties
-        if ('componentProperties' in node) {
-            baseNode.componentProperties = node.componentProperties;
-        }
-        if ('mainComponentId' in node && typeof node.mainComponentId === 'string') {
-            baseNode.mainComponentId = node.mainComponentId;
-        }
-        if ('variantProperties' in node) {
-            baseNode.variantProperties = node.variantProperties;
-        }
-        // Extract reactions (critical for animations)
-        if ('reactions' in node && Array.isArray(node.reactions)) {
-            baseNode.reactions = this.extractReactions(node.reactions);
-        }
-        // Extract children
-        if ('children' in node && Array.isArray(node.children)) {
-            baseNode.children = [];
+        // Extract children recursively
+        if ('children' in node && node.children) {
             for (const child of node.children) {
-                const childNode = await this.extractNode(child);
-                baseNode.children.push(childNode);
+                const extractedChild = await this.extractNode(child);
+                baseNode.children.push(extractedChild);
             }
         }
         return baseNode;
     }
-    extractFills(fills) {
-        return fills
-            .filter((fill) => fill.type === 'SOLID' || fill.type === 'GRADIENT_LINEAR' || fill.type === 'GRADIENT_RADIAL')
-            .map(fill => {
-            const figmaFill = {
+    extractFills(node) {
+        if ('fills' in node && node.fills && Array.isArray(node.fills)) {
+            return node.fills
+                .filter(fill => fill.visible !== false)
+                .map(fill => ({
                 type: fill.type,
-                opacity: fill.opacity
-            };
-            if (fill.type === 'SOLID') {
-                figmaFill.color = this.extractColor(fill.color);
-            }
-            else if (fill.type === 'GRADIENT_LINEAR' || fill.type === 'GRADIENT_RADIAL') {
-                figmaFill.gradientStops = fill.gradientStops.map(stop => ({
-                    position: stop.position,
-                    color: this.extractColor(stop.color)
-                }));
-            }
-            return figmaFill;
-        });
+                opacity: fill.opacity,
+                color: fill.type === 'SOLID' ? this.extractColor(fill.color) : undefined
+            }));
+        }
+        return [];
+    }
+    extractStrokes(node) {
+        if ('strokes' in node && node.strokes && Array.isArray(node.strokes)) {
+            return node.strokes
+                .filter(stroke => stroke.visible !== false)
+                .map(stroke => ({
+                type: stroke.type,
+                opacity: stroke.opacity,
+                color: stroke.type === 'SOLID' ? this.extractColor(stroke.color) : undefined
+            }));
+        }
+        return [];
+    }
+    extractStrokeWeight(node) {
+        if ('strokeWeight' in node && typeof node.strokeWeight === 'number') {
+            return node.strokeWeight;
+        }
+        return undefined;
+    }
+    extractCornerRadius(node) {
+        if ('cornerRadius' in node && typeof node.cornerRadius === 'number') {
+            return node.cornerRadius;
+        }
+        return undefined;
+    }
+    extractLayoutMode(node) {
+        if ('layoutMode' in node && node.layoutMode) {
+            return node.layoutMode;
+        }
+        return undefined;
+    }
+    extractCounterAxisAlignItems(node) {
+        if ('counterAxisAlignItems' in node && node.counterAxisAlignItems && node.counterAxisAlignItems !== figma.mixed) {
+            return node.counterAxisAlignItems;
+        }
+        return undefined;
+    }
+    extractPrimaryAxisAlignItems(node) {
+        if ('primaryAxisAlignItems' in node && node.primaryAxisAlignItems && node.primaryAxisAlignItems !== figma.mixed) {
+            return node.primaryAxisAlignItems;
+        }
+        return undefined;
+    }
+    extractItemSpacing(node) {
+        if ('itemSpacing' in node && typeof node.itemSpacing === 'number') {
+            return node.itemSpacing;
+        }
+        return undefined;
+    }
+    extractPaddingLeft(node) {
+        if ('paddingLeft' in node && typeof node.paddingLeft === 'number') {
+            return node.paddingLeft;
+        }
+        return undefined;
+    }
+    extractPaddingRight(node) {
+        if ('paddingRight' in node && typeof node.paddingRight === 'number') {
+            return node.paddingRight;
+        }
+        return undefined;
+    }
+    extractPaddingTop(node) {
+        if ('paddingTop' in node && typeof node.paddingTop === 'number') {
+            return node.paddingTop;
+        }
+        return undefined;
+    }
+    extractPaddingBottom(node) {
+        if ('paddingBottom' in node && typeof node.paddingBottom === 'number') {
+            return node.paddingBottom;
+        }
+        return undefined;
+    }
+    extractCharacters(node) {
+        if ('characters' in node && node.characters) {
+            return node.characters;
+        }
+        return undefined;
+    }
+    extractFontName(node) {
+        if ('fontName' in node && node.fontName && node.fontName !== figma.mixed) {
+            return node.fontName;
+        }
+        return undefined;
+    }
+    extractFontFamily(node) {
+        if ('fontName' in node && node.fontName && node.fontName !== figma.mixed && 'family' in node.fontName) {
+            return node.fontName.family;
+        }
+        return undefined;
+    }
+    extractFontSize(node) {
+        if ('fontSize' in node && typeof node.fontSize === 'number') {
+            return node.fontSize;
+        }
+        return undefined;
+    }
+    extractFontWeight(node) {
+        if ('fontWeight' in node && typeof node.fontWeight === 'number') {
+            return node.fontWeight;
+        }
+        return undefined;
+    }
+    extractTextAlignHorizontal(node) {
+        if ('textAlignHorizontal' in node && node.textAlignHorizontal && node.textAlignHorizontal !== figma.mixed) {
+            return node.textAlignHorizontal;
+        }
+        return undefined;
+    }
+    extractTextAlignVertical(node) {
+        if ('textAlignVertical' in node && node.textAlignVertical && node.textAlignVertical !== figma.mixed) {
+            return node.textAlignVertical;
+        }
+        return undefined;
+    }
+    extractLetterSpacing(node) {
+        if ('letterSpacing' in node && node.letterSpacing) {
+            return node.letterSpacing;
+        }
+        return undefined;
+    }
+    extractLineHeight(node) {
+        if ('lineHeight' in node && node.lineHeight) {
+            return node.lineHeight;
+        }
+        return undefined;
+    }
+    extractComponentProperties(node) {
+        if ('componentProperties' in node && node.componentProperties && node.componentProperties !== figma.mixed) {
+            return node.componentProperties;
+        }
+        return undefined;
+    }
+    extractMainComponentId(node) {
+        if ('mainComponentId' in node && node.mainComponentId && node.mainComponentId !== figma.mixed) {
+            return node.mainComponentId;
+        }
+        return undefined;
+    }
+    extractVariantProperties(node) {
+        if ('variantProperties' in node && node.variantProperties) {
+            return node.variantProperties;
+        }
+        return undefined;
+    }
+    extractReactions(node) {
+        if ('reactions' in node && node.reactions && Array.isArray(node.reactions)) {
+            return node.reactions.map(reaction => ({
+                trigger: {
+                    type: reaction.trigger.type,
+                    timeout: reaction.trigger.type === 'AFTER_TIMEOUT' ? reaction.trigger.timeout : undefined
+                },
+                action: {
+                    type: reaction.action.type,
+                    destinationId: reaction.action.type === 'NODE' ? reaction.action.destinationId : undefined,
+                    navigation: reaction.action.type === 'NODE' ? reaction.action.navigation : undefined,
+                    transition: reaction.action.type === 'NODE' ? {
+                        type: reaction.action.transition.type,
+                        duration: reaction.action.transition.duration,
+                        easing: reaction.action.transition.easing
+                    } : {
+                        type: 'SMART_ANIMATE',
+                        duration: 0.3,
+                        easing: { type: 'GENTLE' }
+                    }
+                }
+            }));
+        }
+        return [];
     }
     extractColor(color) {
         return {
@@ -1104,59 +1323,22 @@ class FigmaDataExtractor {
             b: color.b
         };
     }
-    extractReactions(reactions) {
-        return reactions
-            .filter((reaction) => reaction.action && reaction.action.type === 'NODE')
-            .map(reaction => {
-            var _a, _b, _c, _d;
-            const figmaReaction = {
-                trigger: {
-                    type: reaction.trigger.type
-                },
-                action: {
-                    type: 'NODE',
-                    destinationId: reaction.action.destinationId || '',
-                    navigation: 'CHANGE_TO',
-                    transition: {
-                        type: ((_a = reaction.action.transition) === null || _a === void 0 ? void 0 : _a.type) || 'SMART_ANIMATE',
-                        easing: {
-                            type: ((_c = (_b = reaction.action.transition) === null || _b === void 0 ? void 0 : _b.easing) === null || _c === void 0 ? void 0 : _c.type) || 'GENTLE'
-                        },
-                        duration: ((_d = reaction.action.transition) === null || _d === void 0 ? void 0 : _d.duration) || 0.3
-                    }
-                }
-            };
-            // Extract timeout value for AFTER_TIMEOUT triggers
-            if (reaction.trigger.type === 'AFTER_TIMEOUT' && 'timeout' in reaction.trigger) {
-                figmaReaction.trigger.timeout = reaction.trigger.timeout;
-            }
-            return figmaReaction;
-        });
-    }
-    // Helper method to find component sets and their variants
-    findComponentSets(nodes) {
-        const componentSets = [];
-        nodes.forEach(node => {
-            var _a;
-            if (node.type === 'COMPONENT_SET') {
-                const variants = ((_a = node.children) === null || _a === void 0 ? void 0 : _a.filter(child => child.type === 'COMPONENT')) || [];
-                componentSets.push({
-                    componentSet: node,
-                    variants: variants
-                });
-            }
-        });
-        return componentSets;
-    }
     // Enhanced method to resolve instances and find their component sets
     async resolveInstancesAndComponentSets(nodes) {
         const resolvedInstances = [];
+        console.log('Starting instance resolution for', nodes.length, 'nodes');
         for (const node of nodes) {
+            console.log('Checking node:', node.id, node.type, node.mainComponentId);
             if (node.type === 'INSTANCE' && node.mainComponentId) {
+                console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
                 try {
                     const resolved = await this.resolveInstance(node);
                     if (resolved) {
+                        console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
                         resolvedInstances.push(resolved);
+                    }
+                    else {
+                        console.warn('Instance resolution returned null for:', node.id);
                     }
                 }
                 catch (error) {
@@ -1164,6 +1346,40 @@ class FigmaDataExtractor {
                 }
             }
         }
+        console.log('Instance resolution complete. Found', resolvedInstances.length, 'resolved instances');
+        return resolvedInstances;
+    }
+    // Alternative method that works with the original selection
+    async resolveInstancesFromSelection(selection) {
+        const resolvedInstances = [];
+        console.log('Starting instance resolution from selection for', selection.length, 'nodes');
+        for (const node of selection) {
+            console.log('Checking selection node:', node.id, node.type);
+            if (node.type === 'INSTANCE') {
+                const instanceNode = node;
+                console.log('Found INSTANCE node:', instanceNode.id);
+                try {
+                    const mainComponent = await instanceNode.getMainComponentAsync();
+                    if (mainComponent) {
+                        const resolved = await this.resolveInstanceFromSelection(instanceNode, mainComponent);
+                        if (resolved) {
+                            console.log('Successfully resolved instance:', instanceNode.id, 'with', resolved.variants.length, 'variants');
+                            resolvedInstances.push(resolved);
+                        }
+                        else {
+                            console.warn('Instance resolution returned null for:', instanceNode.id);
+                        }
+                    }
+                    else {
+                        console.warn('Instance has no mainComponent:', instanceNode.id);
+                    }
+                }
+                catch (error) {
+                    console.warn('Failed to get mainComponent for instance:', instanceNode.id, error);
+                }
+            }
+        }
+        console.log('Instance resolution from selection complete. Found', resolvedInstances.length, 'resolved instances');
         return resolvedInstances;
     }
     // Resolve a single instance to its component set and variants
@@ -1214,6 +1430,68 @@ class FigmaDataExtractor {
             return null;
         }
     }
+    // Resolve a single instance from the original selection
+    async resolveInstanceFromSelection(instanceNode, mainComponent) {
+        try {
+            // Use the provided main component
+            console.log('Main component found:', mainComponent.id, mainComponent.name);
+            // Find the parent component set
+            const componentSet = mainComponent.parent;
+            if (!componentSet || componentSet.type !== 'COMPONENT_SET') {
+                console.warn('Component set not found for main component:', mainComponent.id);
+                return null;
+            }
+            console.log('Component set found:', componentSet.id, componentSet.name);
+            // Extract all variants from the component set
+            const variants = [];
+            for (const variant of componentSet.children) {
+                if (variant.type === 'COMPONENT') {
+                    console.log('Found variant:', variant.id, variant.name);
+                    const variantNode = await this.extractNode(variant);
+                    variants.push(variantNode);
+                }
+            }
+            console.log('Extracted', variants.length, 'variants');
+            // Find the active variant based on instance properties
+            const activeVariant = this.findActiveVariantFromInstance(instanceNode, variants);
+            if (!activeVariant) {
+                console.warn('Active variant not found for instance:', instanceNode.id);
+                return null;
+            }
+            console.log('Active variant found:', activeVariant.id);
+            // Extract the component set and main component
+            const componentSetNode = await this.extractNode(componentSet);
+            const mainComponentNode = await this.extractNode(mainComponent);
+            const instanceNodeData = await this.extractNode(instanceNode);
+            return {
+                instance: instanceNodeData,
+                mainComponent: mainComponentNode,
+                componentSet: componentSetNode,
+                variants,
+                activeVariant
+            };
+        }
+        catch (error) {
+            console.error('Error resolving instance from selection:', instanceNode.id, error);
+            return null;
+        }
+    }
+    // Find the active variant based on instance variant properties
+    findActiveVariantFromInstance(instanceNode, variants) {
+        if (!instanceNode.variantProperties || Object.keys(instanceNode.variantProperties).length === 0) {
+            // If no variant properties, return the first variant
+            return variants[0] || null;
+        }
+        console.log('Instance variant properties:', instanceNode.variantProperties);
+        // Find variant that matches the instance's variant properties
+        for (const variant of variants) {
+            if (this.variantPropertiesMatch(instanceNode.variantProperties, variant.variantProperties)) {
+                return variant;
+            }
+        }
+        // If no exact match, return the first variant
+        return variants[0] || null;
+    }
     // Find the active variant based on instance variant properties
     findActiveVariant(instance, variants) {
         if (!instance.variantProperties) {
@@ -1240,6 +1518,10 @@ class FigmaDataExtractor {
             }
         }
         return true;
+    }
+    // Helper method to find component sets
+    findComponentSets(nodes) {
+        return nodes.filter(node => node.type === 'COMPONENT_SET');
     }
     // Helper method to trace animation chains
     traceAnimationChain(startNodeId, nodes) {
@@ -1326,7 +1608,7 @@ async function handleExportHTML() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {
@@ -1366,7 +1648,7 @@ async function handleExportJSON() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
     // Create comprehensive export data
     const exportData = {
         meta: {
@@ -1413,7 +1695,7 @@ async function handleExportBoth() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {
@@ -1493,12 +1775,16 @@ async function handleAnalyzeSelection() {
     // Find animation chains
     const componentSets = extractor.findComponentSets(nodes);
     componentSets.forEach(cs => {
-        cs.variants.forEach(variant => {
-            const chain = extractor.traceAnimationChain(variant.id, nodes);
-            if (chain.length > 1) {
-                analysis.animationChains.push(chain);
-            }
-        });
+        if (cs.children) {
+            cs.children.forEach(child => {
+                if (child.type === 'COMPONENT') {
+                    const chain = extractor.traceAnimationChain(child.id, nodes);
+                    if (chain.length > 1) {
+                        analysis.animationChains.push(chain);
+                    }
+                }
+            });
+        }
     });
     figma.ui.postMessage({
         type: 'analysis-result',

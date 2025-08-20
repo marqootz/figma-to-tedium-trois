@@ -69,7 +69,7 @@ async function handleExportHTML(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
   
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
@@ -119,7 +119,7 @@ async function handleExportJSON(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
   
   // Create comprehensive export data
   const exportData = {
@@ -174,7 +174,7 @@ async function handleExportBoth(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
   
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
@@ -267,12 +267,16 @@ async function handleAnalyzeSelection(): Promise<void> {
   // Find animation chains
   const componentSets = extractor.findComponentSets(nodes);
   componentSets.forEach(cs => {
-    cs.variants.forEach(variant => {
-      const chain = extractor.traceAnimationChain(variant.id, nodes);
-      if (chain.length > 1) {
-        analysis.animationChains.push(chain);
-      }
-    });
+    if (cs.children) {
+      cs.children.forEach(child => {
+        if (child.type === 'COMPONENT') {
+          const chain = extractor.traceAnimationChain(child.id, nodes);
+          if (chain.length > 1) {
+            analysis.animationChains.push(chain);
+          }
+        }
+      });
+    }
   });
 
   figma.ui.postMessage({

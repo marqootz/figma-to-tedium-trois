@@ -1,175 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Figma Export</title>
-  <style>
-    /* Reset and base styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: #f5f5f5;
-      overflow: hidden;
-      margin: 0;
-    }
-    
-    /* Component styles */
-[data-figma-id="5829:3372"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 346px;
-  height: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+import { FigmaNodeData } from './types';
 
-[data-figma-id="I5829:3372;6461:694"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 346px;
-  height: 84px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: rgba(79, 79, 79, 1);
-  border-radius: 1000px;
-}
-
-[data-figma-id="I5829:3372;6461:695"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 84px;
-  height: 84px;
-  background-color: rgba(44, 129, 165, 1);
-  border-radius: 1000px;
-}
-
-
-
-
-
-[data-figma-id="6461:693"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 2619.125px;
-  height: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  display: block;
-}
-
-[data-figma-id="6461:694"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 2619.125px;
-  height: 84px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: rgba(79, 79, 79, 1);
-  border-radius: 1000px;
-}
-
-[data-figma-id="6461:695"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 84px;
-  height: 84px;
-  background-color: rgba(44, 129, 165, 1);
-  border-radius: 1000px;
-}
-
-
-[data-figma-id="6461:693"] {
-  display: block;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-
-[data-figma-id="5829:3368"] {
-  position: absolute;
-  left: 0px;
-  top: 130px;
-  width: 2619.125px;
-  height: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  display: block;
-}
-
-[data-figma-id="6457:692"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 2619.125px;
-  height: 84px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  background-color: rgba(79, 79, 79, 1);
-  border-radius: 1000px;
-}
-
-[data-figma-id="6457:681"] {
-  position: absolute;
-  left: 2535.125px;
-  top: 0px;
-  width: 84px;
-  height: 84px;
-  background-color: rgba(44, 129, 165, 1);
-  border-radius: 1000px;
-}
-
-
-[data-figma-id="5829:3368"] {
-  display: none;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-  </style>
-</head>
-<body>
-  <div data-figma-id="5829:3372" data-figma-name="glydcar/info-bar/ride-progress" data-figma-type="INSTANCE" data-layout-mode="VERTICAL" data-reactions='[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}]'><div data-figma-id="I5829:3372;6461:694" data-figma-name="Frame 1308" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="I5829:3372;6461:695" data-figma-name="Frame 1307" data-figma-type="FRAME" data-layout-mode="NONE"></div></div></div>
-
-<!-- Variants for glydcar/info-bar/ride-progress -->
-<div class="variant-container" data-instance-id="5829:3372">
-<div data-figma-id="6461:693" data-figma-name="Property 1=start" data-figma-type="COMPONENT" data-variant="true" data-layout-mode="VERTICAL" data-reactions='[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}]'><div data-figma-id="6461:694" data-figma-name="Frame 1308" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="6461:695" data-figma-name="Frame 1307" data-figma-type="FRAME" data-layout-mode="NONE"></div></div></div>
-<div data-figma-id="5829:3368" data-figma-name="Property 1=end" data-figma-type="COMPONENT" data-variant="true" data-layout-mode="VERTICAL"><div data-figma-id="6457:692" data-figma-name="Frame 1308" data-figma-type="FRAME" data-layout-mode="HORIZONTAL"><div data-figma-id="6457:681" data-figma-name="Frame 1307" data-figma-type="FRAME" data-layout-mode="NONE"></div></div></div>
-</div>
-
-  <script>
-    
-      // Initialize Figma Animation System
-      
+export class BundleGenerator {
+  /**
+   * Generate the complete browser bundle as a string
+   */
+  static generateBundle(): string {
+    return `
       // Figma Animation System Bundle
       // Generated from TypeScript modules
       
+      ${this.getTypesCode()}
+      ${this.getChangeDetectorCode()}
+      ${this.getDOMManipulatorCode()}
+      ${this.getVariantHandlerCode()}
+      ${this.getAnimationSystemCode()}
       
+      // Global initialization
+      window.FigmaAnimationSystem = FigmaAnimationSystem;
+    `;
+  }
+
+  /**
+   * Generate initialization code for the animation system
+   */
+  static generateInitializationCode(
+    nodes: FigmaNodeData[], 
+    resolvedInstances?: any[]
+  ): string {
+    return `
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animation system
+        window.figmaAnimationSystem = new FigmaAnimationSystem();
+        
+        // Register all nodes and elements
+        ${this.generateNodeRegistrations(nodes)}
+        
+        // Register variant elements if we have resolved instances
+        ${resolvedInstances ? this.generateVariantRegistrations(resolvedInstances) : ''}
+        
+        // Setup initial timeout reactions
+        ${this.generateInitialTimeouts(nodes, resolvedInstances)}
+        
+        // Setup variant animation system
+        ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
+        
+        // Register all collected variant instances
+        if (window._tempVariantInstances && window._tempVariantInstances.length > 0) {
+          console.log('🎭 Final registration of', window._tempVariantInstances.length, 'variant instances');
+          window.figmaAnimationSystem.registerVariantInstances(window._tempVariantInstances);
+          
+          // Initialize variant visibility - ensure only active variants are visible
+          window._tempVariantInstances.forEach(variantInstance => {
+            // Hide the instance element initially - we only want variants visible
+            const instanceElement = document.querySelector(\`[data-figma-id="\${variantInstance.instanceId}"]\`);
+            if (instanceElement) {
+              instanceElement.style.display = 'none';
+            }
+            
+            variantInstance.variants.forEach(variantId => {
+              const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
+              if (element) {
+                if (variantId === variantInstance.activeVariant) {
+                  element.style.display = 'block';
+                  element.style.opacity = '1';
+                } else {
+                  element.style.display = 'none';
+                  element.style.opacity = '0';
+                }
+              }
+            });
+          });
+          
+          delete window._tempVariantInstances;
+        }
+        
+        console.log('Animation system initialized with ${nodes.length} nodes${resolvedInstances ? ' and ' + resolvedInstances.length + ' resolved instances' : ''}');
+      });
+    `;
+  }
+
+  private static getTypesCode(): string {
+    return `
       // Type definitions
       class AnimationChange {
         constructor(property, sourceValue, targetValue, delta, childName, childId) {
@@ -198,8 +109,11 @@
           this.currentIndex = currentIndex;
         }
       }
-    
-      
+    `;
+  }
+
+  private static getChangeDetectorCode(): string {
+    return `
       class ChangeDetector {
         static detectChanges(source, target) {
           const changes = [];
@@ -266,21 +180,13 @@
           return changes;
         }
 
-        static createChildMap(node) {
-          const childMap = new Map();
-          if (node.children) {
-            node.children.forEach(child => {
-              childMap.set(child.name, child);
-            });
-          }
-          return childMap;
-        }
+
 
         static createRecursiveChildMap(node, prefix = '') {
           const childMap = new Map();
           if (node.children) {
             node.children.forEach(child => {
-              const childPath = prefix ? `${prefix}/${child.name}` : child.name;
+              const childPath = prefix ? \`\${prefix}/\${child.name}\` : child.name;
               childMap.set(childPath, child);
               
               // Recursively add children of this child
@@ -333,8 +239,11 @@
           };
         }
       }
-    
-      
+    `;
+  }
+
+  private static getDOMManipulatorCode(): string {
+    return `
       class DOMManipulator {
         static applyChange(element, change) {
           console.log('Applying change:', change.property, '=', change.targetValue);
@@ -342,7 +251,7 @@
           switch (change.property) {
             case 'position':
               const { x, y } = change.targetValue;
-              element.style.transform = `translate(${x}px, ${y}px)`;
+              element.style.transform = \`translate(\${x}px, \${y}px)\`;
               break;
             case 'size':
               const { width, height } = change.targetValue;
@@ -357,7 +266,7 @@
               if (fill && fill.color) {
                 const { r, g, b } = fill.color;
                 const alpha = fill.opacity || 1;
-                element.style.backgroundColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha})`;
+                element.style.backgroundColor = \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`;
               }
               break;
             case 'borderRadius':
@@ -365,13 +274,13 @@
               break;
             case 'childPosition':
               // Try to find the child by the change.childId
-              let childElement = element.querySelector(`[data-figma-id="${change.childId}"]`);
+              let childElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
               
               if (!childElement) {
                 // If not found, try to find by name path instead
                 const pathParts = change.childName.split('/');
                 const childName = pathParts[pathParts.length - 1]; // Get the last part
-                const allChildrenWithName = element.querySelectorAll(`[data-figma-name="${childName}"]`);
+                const allChildrenWithName = element.querySelectorAll(\`[data-figma-name="\${childName}"]\`);
                 if (allChildrenWithName.length > 0) {
                   childElement = allChildrenWithName[0]; // Take the first match
                 }
@@ -381,11 +290,11 @@
                 // Calculate relative delta instead of absolute position
                 const deltaX = change.targetValue.x - change.sourceValue.x;
                 const deltaY = change.targetValue.y - change.sourceValue.y;
-                childElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                childElement.style.transform = \`translate(\${deltaX}px, \${deltaY}px)\`;
               }
               break;
             case 'childSize':
-              const sizeChildElement = element.querySelector(`[data-figma-id="${change.childId}"]`);
+              const sizeChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
               if (sizeChildElement) {
                 const { width, height } = change.targetValue;
                 sizeChildElement.style.width = width + 'px';
@@ -394,7 +303,7 @@
               }
               break;
             case 'childOpacity':
-              const opacityChildElement = element.querySelector(`[data-figma-id="${change.childId}"]`);
+              const opacityChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
               if (opacityChildElement) {
                 opacityChildElement.style.opacity = change.targetValue.toString();
                 console.log('Applied child opacity change to', change.childName, ':', change.targetValue);
@@ -418,7 +327,7 @@
           );
           
           childChanges.forEach(change => {
-            const childElement = element.querySelector(`[data-figma-id="${change.childId}"]`);
+            const childElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
             if (childElement) {
               const childTransitionProps = [];
               if (change.property === 'childPosition' || change.property === 'childSize') {
@@ -501,8 +410,11 @@
           return Array.from(properties);
         }
       }
-    
-      
+    `;
+  }
+
+  private static getVariantHandlerCode(): string {
+    return `
       class VariantHandler {
         constructor() {
           this.variantInstances = [];
@@ -589,7 +501,7 @@
           console.log('Performing variant switch:', sourceId, '→', targetId);
           
           variantInstance.variants.forEach(variantId => {
-            const element = document.querySelector(`[data-figma-id="${variantId}"]`);
+            const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
             if (element) {
               element.style.display = 'none';
             }
@@ -602,8 +514,11 @@
           }
         }
       }
-    
-      
+    `;
+  }
+
+  private static getAnimationSystemCode(): string {
+    return `
       class FigmaAnimationSystem {
         constructor() {
           this.elementRegistry = new Map();
@@ -799,112 +714,102 @@
           console.log('FigmaAnimationSystem destroyed');
         }
       }
+    `;
+  }
+
+  private static generateNodeRegistrations(nodes: FigmaNodeData[]): string {
+    return nodes.map(node => {
+      const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
+      return `
+        const element_${sanitizedId} = document.querySelector('[data-figma-id="${node.id}"]');
+        if (element_${sanitizedId}) {
+          window.figmaAnimationSystem.registerElement(
+            '${node.id}',
+            element_${sanitizedId},
+            ${JSON.stringify(node)}
+          );
+        } else {
+          console.warn('Element not found for node: ${node.id}');
+        }
+      `;
+    }).join('\n');
+  }
+
+  private static generateVariantRegistrations(resolvedInstances: any[]): string {
+    let registrations = '';
     
+    resolvedInstances.forEach(instance => {
+      const { variants } = instance;
       
-      // Global initialization
-      window.FigmaAnimationSystem = FigmaAnimationSystem;
+      variants.forEach((variant: FigmaNodeData) => {
+        const sanitizedId = variant.id.replace(/[^a-zA-Z0-9]/g, '_');
+        registrations += `
+        const variant_${sanitizedId} = document.querySelector('[data-figma-id="${variant.id}"]');
+        if (variant_${sanitizedId}) {
+          window.figmaAnimationSystem.registerElement(
+            '${variant.id}',
+            variant_${sanitizedId},
+            ${JSON.stringify(variant)}
+          );
+        } else {
+          console.warn('Variant element not found: ${variant.id}');
+        }
+      `;
+      });
+    });
     
-      
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        // Initialize animation system
-        window.figmaAnimationSystem = new FigmaAnimationSystem();
-        
-        // Register all nodes and elements
-        
-        const element_5829_3372 = document.querySelector('[data-figma-id="5829:3372"]');
-        if (element_5829_3372) {
-          window.figmaAnimationSystem.registerElement(
-            '5829:3372',
-            element_5829_3372,
-            {"id":"5829:3372","name":"glydcar/info-bar/ride-progress","type":"INSTANCE","x":17523,"y":2018,"width":346,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"componentProperties":{"Property 1":{"value":"start","type":"VARIANT","boundVariables":{}}},"variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"I5829:3372;6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5829:3372;6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
-          );
-        } else {
-          console.warn('Element not found for node: 5829:3372');
-        }
-      
-        
-        // Register variant elements if we have resolved instances
-        
-        const variant_6461_693 = document.querySelector('[data-figma-id="6461:693"]');
-        if (variant_6461_693) {
-          window.figmaAnimationSystem.registerElement(
-            '6461:693',
-            variant_6461_693,
-            {"id":"6461:693","name":"Property 1=start","type":"COMPONENT","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
-          );
-        } else {
-          console.warn('Variant element not found: 6461:693');
-        }
-      
-        const variant_5829_3368 = document.querySelector('[data-figma-id="5829:3368"]');
-        if (variant_5829_3368) {
-          window.figmaAnimationSystem.registerElement(
-            '5829:3368',
-            variant_5829_3368,
-            {"id":"5829:3368","name":"Property 1=end","type":"COMPONENT","x":0,"y":130,"width":2619.125,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"variantProperties":{"Property 1":"end"},"reactions":[],"children":[{"id":"6457:692","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MAX","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"6457:681","name":"Frame 1307","type":"FRAME","x":2535.125,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
-          );
-        } else {
-          console.warn('Variant element not found: 5829:3368');
-        }
-      
-        
-        // Setup initial timeout reactions
-        
-      // Setup timeout reactions for glydcar/info-bar/ride-progress using active variant
-      window.figmaAnimationSystem.setupTimeoutReactions('6461:693');
-        
-        // Setup variant animation system
-        
-      // Setup variant animation for glydcar/info-bar/ride-progress
-      const instance_5829_3372 = new VariantInstance(
-        '5829:3372',
-        ['6461:693', '5829:3368'],
-        '6461:693',
-        0
+    return registrations;
+  }
+
+  private static generateInitialTimeouts(nodes: FigmaNodeData[], resolvedInstances?: any[]): string {
+    const nodesWithTimeouts = nodes.filter(node => 
+      node.reactions?.some(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')
+    );
+
+    return nodesWithTimeouts.map(node => {
+      // Check if this is an instance with variants
+      const instanceWithVariants = resolvedInstances?.find(instance => 
+        instance.instance?.id === node.id
       );
       
-      console.log('🎭 Registering variant instance:', instance_5829_3372);
+      if (instanceWithVariants) {
+        // Use the active variant instead of the instance for timeout setup
+        const activeVariantId = instanceWithVariants.activeVariant.id;
+        return `
+      // Setup timeout reactions for ${node.name} using active variant
+      window.figmaAnimationSystem.setupTimeoutReactions('${activeVariantId}');`;
+      } else {
+        // Regular node without variants
+        return `
+      // Setup timeout reactions for ${node.name}
+      window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');`;
+      }
+    }).join('\n');
+  }
+
+  private static generateVariantAnimationSetup(resolvedInstances: any[]): string {
+    let setup = '';
+    
+    resolvedInstances.forEach(instance => {
+      const { instance: instanceNode, variants, activeVariant } = instance;
+      
+      setup += `
+      // Setup variant animation for ${instanceNode.name}
+      const instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')} = new VariantInstance(
+        '${instanceNode.id}',
+        [${variants.map((v: FigmaNodeData) => `'${v.id}'`).join(', ')}],
+        '${activeVariant.id}',
+        ${variants.findIndex((v: FigmaNodeData) => v.id === activeVariant.id)}
+      );
+      
+      console.log('🎭 Registering variant instance:', instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
       
       // Collect all instances and register them together at the end
       window._tempVariantInstances = window._tempVariantInstances || [];
-      window._tempVariantInstances.push(instance_5829_3372);
-      
-        
-        // Register all collected variant instances
-        if (window._tempVariantInstances && window._tempVariantInstances.length > 0) {
-          console.log('🎭 Final registration of', window._tempVariantInstances.length, 'variant instances');
-          window.figmaAnimationSystem.registerVariantInstances(window._tempVariantInstances);
-          
-          // Initialize variant visibility - ensure only active variants are visible
-          window._tempVariantInstances.forEach(variantInstance => {
-            // Hide the instance element initially - we only want variants visible
-            const instanceElement = document.querySelector(`[data-figma-id="${variantInstance.instanceId}"]`);
-            if (instanceElement) {
-              instanceElement.style.display = 'none';
-            }
-            
-            variantInstance.variants.forEach(variantId => {
-              const element = document.querySelector(`[data-figma-id="${variantId}"]`);
-              if (element) {
-                if (variantId === variantInstance.activeVariant) {
-                  element.style.display = 'block';
-                  element.style.opacity = '1';
-                } else {
-                  element.style.display = 'none';
-                  element.style.opacity = '0';
-                }
-              }
-            });
-          });
-          
-          delete window._tempVariantInstances;
-        }
-        
-        console.log('Animation system initialized with 1 nodes and 1 resolved instances');
-      });
+      window._tempVariantInstances.push(instance_${instanceNode.id.replace(/[^a-zA-Z0-9]/g, '_')});
+      `;
+    });
     
-    
-  </script>
-</body>
-</html>
+    return setup;
+  }
+}

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "exportedAt": "2025-08-19T02:32:29.630Z",
+    "exportedAt": "2025-08-20T03:20:00.756Z",
     "figmaFileKey": "unknown",
     "figmaFileName": "ATL Rider Experience UI",
     "nodeCount": 1,
@@ -50,10 +50,10 @@
             "navigation": "CHANGE_TO",
             "transition": {
               "type": "SMART_ANIMATE",
+              "duration": 1.0220937728881836,
               "easing": {
                 "type": "GENTLE"
-              },
-              "duration": 1.0220937728881836
+              }
             }
           }
         }
@@ -149,29 +149,38 @@
                   "reactions": [],
                   "children": [
                     {
-                      "id": "I5533:4251;5533:3906",
-                      "name": "3",
-                      "type": "VECTOR",
-                      "x": 45.670166015625,
-                      "y": 35.4686279296875,
-                      "width": 54.25920104980469,
-                      "height": 76.26240539550781,
+                      "id": "I5533:4251;7840:225",
+                      "name": "Frame 1318",
+                      "type": "FRAME",
+                      "x": 35.29999923706055,
+                      "y": 36.10000228881836,
+                      "width": 75,
+                      "height": 75,
                       "opacity": 1,
                       "fills": [
                         {
                           "type": "SOLID",
                           "opacity": 1,
                           "color": {
-                            "r": 1,
-                            "g": 1,
-                            "b": 1
+                            "r": 0.7556340098381042,
+                            "g": 0.22923888266086578,
+                            "b": 0.22923888266086578
                           }
                         }
                       ],
                       "strokes": [],
-                      "strokeWeight": 0.43928295373916626,
+                      "strokeWeight": 1,
                       "cornerRadius": 0,
-                      "reactions": []
+                      "layoutMode": "NONE",
+                      "counterAxisAlignItems": "MIN",
+                      "primaryAxisAlignItems": "MIN",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": []
                     }
                   ]
                 },
@@ -199,29 +208,38 @@
                   "reactions": [],
                   "children": [
                     {
-                      "id": "I5533:4251;5533:3908",
-                      "name": "2",
-                      "type": "VECTOR",
-                      "x": 46.310302734375,
-                      "y": 33.86865234375,
-                      "width": 51.37920379638672,
-                      "height": 76.26240539550781,
+                      "id": "I5533:4251;7840:306",
+                      "name": "Frame 1318",
+                      "type": "FRAME",
+                      "x": 34.5,
+                      "y": 34.5,
+                      "width": 75,
+                      "height": 75,
                       "opacity": 1,
                       "fills": [
                         {
                           "type": "SOLID",
                           "opacity": 1,
                           "color": {
-                            "r": 1,
-                            "g": 1,
-                            "b": 1
+                            "r": 0.22923888266086578,
+                            "g": 0.7556340098381042,
+                            "b": 0.3608376681804657
                           }
                         }
                       ],
                       "strokes": [],
-                      "strokeWeight": 0.43928295373916626,
+                      "strokeWeight": 1,
                       "cornerRadius": 0,
-                      "reactions": []
+                      "layoutMode": "NONE",
+                      "counterAxisAlignItems": "MIN",
+                      "primaryAxisAlignItems": "MIN",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": []
                     }
                   ]
                 },
@@ -249,29 +267,38 @@
                   "reactions": [],
                   "children": [
                     {
-                      "id": "I5533:4251;5533:3910",
-                      "name": "1",
-                      "type": "VECTOR",
-                      "x": 52.518310546875,
-                      "y": 34.675048828125,
-                      "width": 27.763200759887695,
-                      "height": 74.64959716796875,
+                      "id": "I5533:4251;7840:335",
+                      "name": "Frame 1318",
+                      "type": "FRAME",
+                      "x": 28.899999618530273,
+                      "y": 34.5,
+                      "width": 75,
+                      "height": 75,
                       "opacity": 1,
                       "fills": [
                         {
                           "type": "SOLID",
                           "opacity": 1,
                           "color": {
-                            "r": 1,
-                            "g": 1,
-                            "b": 1
+                            "r": 0.22923888266086578,
+                            "g": 0.448570191860199,
+                            "b": 0.7556340098381042
                           }
                         }
                       ],
                       "strokes": [],
-                      "strokeWeight": 0.43928295373916626,
+                      "strokeWeight": 1,
                       "cornerRadius": 0,
-                      "reactions": []
+                      "layoutMode": "NONE",
+                      "counterAxisAlignItems": "MIN",
+                      "primaryAxisAlignItems": "MIN",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": []
                     }
                   ]
                 }
@@ -283,5 +310,2665 @@
     }
   ],
   "componentSets": [],
-  "animationChains": []
+  "resolvedInstances": [
+    {
+      "instance": {
+        "id": "5533:4251",
+        "name": "glydcar/info-bar/counter-sm",
+        "type": "INSTANCE",
+        "x": 17566,
+        "y": 1271,
+        "width": 144,
+        "height": 144,
+        "opacity": 1,
+        "fills": [],
+        "strokes": [],
+        "strokeWeight": 1.600000262260437,
+        "cornerRadius": 0,
+        "layoutMode": "HORIZONTAL",
+        "counterAxisAlignItems": "CENTER",
+        "primaryAxisAlignItems": "CENTER",
+        "itemSpacing": 16,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "componentProperties": {
+          "Property 1": {
+            "value": "3",
+            "type": "VARIANT",
+            "boundVariables": {}
+          }
+        },
+        "variantProperties": {
+          "Property 1": "3"
+        },
+        "reactions": [
+          {
+            "trigger": {
+              "type": "AFTER_TIMEOUT",
+              "timeout": 0.8
+            },
+            "action": {
+              "type": "NODE",
+              "destinationId": "5533:3911",
+              "navigation": "CHANGE_TO",
+              "transition": {
+                "type": "SMART_ANIMATE",
+                "duration": 1.0220937728881836,
+                "easing": {
+                  "type": "GENTLE"
+                }
+              }
+            }
+          }
+        ],
+        "children": [
+          {
+            "id": "I5533:4251;5533:3903",
+            "name": "Frame 1233",
+            "type": "FRAME",
+            "x": 0,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [
+              {
+                "type": "SOLID",
+                "opacity": 1,
+                "color": {
+                  "r": 0.1730685830116272,
+                  "g": 0.5052500367164612,
+                  "b": 0.6483436226844788
+                }
+              }
+            ],
+            "strokes": [],
+            "strokeWeight": 1.6000001430511475,
+            "cornerRadius": 1000,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "MIN",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 10,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "reactions": [],
+            "children": [
+              {
+                "id": "I5533:4251;5533:3904",
+                "name": "Frame 1232",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 720,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 0.5799999833106995,
+                    "color": {
+                      "r": 0.3919771611690521,
+                      "g": 0.20735450088977814,
+                      "b": 0.20735450088977814
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 0,
+                "layoutMode": "VERTICAL",
+                "counterAxisAlignItems": "CENTER",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 144.00001525878906,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "I5533:4251;5533:3905",
+                    "name": "Frame 1236",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 0,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 1.6000001430511475,
+                    "paddingRight": 0,
+                    "paddingTop": 3.200000286102295,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "I5533:4251;7840:225",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 35.29999923706055,
+                        "y": 36.10000228881836,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.7556340098381042,
+                              "g": 0.22923888266086578,
+                              "b": 0.22923888266086578
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I5533:4251;5533:3907",
+                    "name": "Frame 1235",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 288,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "I5533:4251;7840:306",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 34.5,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.7556340098381042,
+                              "b": 0.3608376681804657
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I5533:4251;5533:3909",
+                    "name": "Frame 1234",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 576,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 11.200000762939453,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "I5533:4251;7840:335",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 28.899999618530273,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.448570191860199,
+                              "b": 0.7556340098381042
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "mainComponent": {
+        "id": "5533:3902",
+        "name": "Property 1=3",
+        "type": "COMPONENT",
+        "x": 0,
+        "y": 0,
+        "width": 144,
+        "height": 144,
+        "opacity": 1,
+        "fills": [],
+        "strokes": [],
+        "strokeWeight": 1.600000262260437,
+        "cornerRadius": 0,
+        "layoutMode": "HORIZONTAL",
+        "counterAxisAlignItems": "CENTER",
+        "primaryAxisAlignItems": "CENTER",
+        "itemSpacing": 16,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "variantProperties": {
+          "Property 1": "3"
+        },
+        "reactions": [
+          {
+            "trigger": {
+              "type": "AFTER_TIMEOUT",
+              "timeout": 0.8
+            },
+            "action": {
+              "type": "NODE",
+              "destinationId": "5533:3911",
+              "navigation": "CHANGE_TO",
+              "transition": {
+                "type": "SMART_ANIMATE",
+                "duration": 1.0220937728881836,
+                "easing": {
+                  "type": "GENTLE"
+                }
+              }
+            }
+          }
+        ],
+        "children": [
+          {
+            "id": "5533:3903",
+            "name": "Frame 1233",
+            "type": "FRAME",
+            "x": 0,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [
+              {
+                "type": "SOLID",
+                "opacity": 1,
+                "color": {
+                  "r": 0.1730685830116272,
+                  "g": 0.5052500367164612,
+                  "b": 0.6483436226844788
+                }
+              }
+            ],
+            "strokes": [],
+            "strokeWeight": 1.6000001430511475,
+            "cornerRadius": 1000,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "MIN",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 10,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "reactions": [],
+            "children": [
+              {
+                "id": "5533:3904",
+                "name": "Frame 1232",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 720,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 0.5799999833106995,
+                    "color": {
+                      "r": 0.3919771611690521,
+                      "g": 0.20735450088977814,
+                      "b": 0.20735450088977814
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 0,
+                "layoutMode": "VERTICAL",
+                "counterAxisAlignItems": "CENTER",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 144.00001525878906,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "5533:3905",
+                    "name": "Frame 1236",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 0,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 1.6000001430511475,
+                    "paddingRight": 0,
+                    "paddingTop": 3.200000286102295,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:225",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 35.29999923706055,
+                        "y": 36.10000228881836,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.7556340098381042,
+                              "g": 0.22923888266086578,
+                              "b": 0.22923888266086578
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5533:3907",
+                    "name": "Frame 1235",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 288,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:306",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 34.5,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.7556340098381042,
+                              "b": 0.3608376681804657
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5533:3909",
+                    "name": "Frame 1234",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 576,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 11.200000762939453,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:335",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 28.899999618530273,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.448570191860199,
+                              "b": 0.7556340098381042
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "componentSet": {
+        "id": "5533:3901",
+        "name": "glydcar/info-bar/counter-sm",
+        "type": "COMPONENT_SET",
+        "x": 18406,
+        "y": 1251,
+        "width": 472,
+        "height": 144,
+        "opacity": 1,
+        "fills": [],
+        "strokes": [
+          {
+            "type": "SOLID",
+            "opacity": 1,
+            "color": {
+              "r": 0.5411764979362488,
+              "g": 0.21960784494876862,
+              "b": 0.9607843160629272
+            }
+          }
+        ],
+        "strokeWeight": 1,
+        "cornerRadius": 5,
+        "layoutMode": "HORIZONTAL",
+        "counterAxisAlignItems": "CENTER",
+        "primaryAxisAlignItems": "CENTER",
+        "itemSpacing": 20,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "reactions": [],
+        "children": [
+          {
+            "id": "5533:3902",
+            "name": "Property 1=3",
+            "type": "COMPONENT",
+            "x": 0,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.600000262260437,
+            "cornerRadius": 0,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "CENTER",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 16,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "variantProperties": {
+              "Property 1": "3"
+            },
+            "reactions": [
+              {
+                "trigger": {
+                  "type": "AFTER_TIMEOUT",
+                  "timeout": 0.8
+                },
+                "action": {
+                  "type": "NODE",
+                  "destinationId": "5533:3911",
+                  "navigation": "CHANGE_TO",
+                  "transition": {
+                    "type": "SMART_ANIMATE",
+                    "duration": 1.0220937728881836,
+                    "easing": {
+                      "type": "GENTLE"
+                    }
+                  }
+                }
+              }
+            ],
+            "children": [
+              {
+                "id": "5533:3903",
+                "name": "Frame 1233",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 144,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 1,
+                    "color": {
+                      "r": 0.1730685830116272,
+                      "g": 0.5052500367164612,
+                      "b": 0.6483436226844788
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 1000,
+                "layoutMode": "HORIZONTAL",
+                "counterAxisAlignItems": "MIN",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 10,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "5533:3904",
+                    "name": "Frame 1232",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 0,
+                    "width": 144,
+                    "height": 720,
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "opacity": 0.5799999833106995,
+                        "color": {
+                          "r": 0.3919771611690521,
+                          "g": 0.20735450088977814,
+                          "b": 0.20735450088977814
+                        }
+                      }
+                    ],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "VERTICAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 144.00001525878906,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "5533:3905",
+                        "name": "Frame 1236",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 0,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 1.6000001430511475,
+                        "paddingRight": 0,
+                        "paddingTop": 3.200000286102295,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:225",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 35.29999923706055,
+                            "y": 36.10000228881836,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.7556340098381042,
+                                  "g": 0.22923888266086578,
+                                  "b": 0.22923888266086578
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "5533:3907",
+                        "name": "Frame 1235",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 288,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:306",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 34.5,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.7556340098381042,
+                                  "b": 0.3608376681804657
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "5533:3909",
+                        "name": "Frame 1234",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 576,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 11.200000762939453,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:335",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 28.899999618530273,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.448570191860199,
+                                  "b": 0.7556340098381042
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "5533:3911",
+            "name": "Property 1=2",
+            "type": "COMPONENT",
+            "x": 164,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.600000262260437,
+            "cornerRadius": 0,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "CENTER",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 16,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "variantProperties": {
+              "Property 1": "2"
+            },
+            "reactions": [
+              {
+                "trigger": {
+                  "type": "AFTER_TIMEOUT",
+                  "timeout": 0.8
+                },
+                "action": {
+                  "type": "NODE",
+                  "destinationId": "7335:742",
+                  "navigation": "CHANGE_TO",
+                  "transition": {
+                    "type": "SMART_ANIMATE",
+                    "duration": 1.0220937728881836,
+                    "easing": {
+                      "type": "GENTLE"
+                    }
+                  }
+                }
+              }
+            ],
+            "children": [
+              {
+                "id": "7235:2051",
+                "name": "Frame 1233",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 144,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 1,
+                    "color": {
+                      "r": 0.1730685830116272,
+                      "g": 0.5052500367164612,
+                      "b": 0.6483436226844788
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 1000,
+                "layoutMode": "HORIZONTAL",
+                "counterAxisAlignItems": "CENTER",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 10,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "7840:364",
+                    "name": "Frame 1232",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": -288,
+                    "width": 144,
+                    "height": 720,
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "opacity": 0.5799999833106995,
+                        "color": {
+                          "r": 0.3919771611690521,
+                          "g": 0.20735450088977814,
+                          "b": 0.20735450088977814
+                        }
+                      }
+                    ],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "VERTICAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 144.00001525878906,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:365",
+                        "name": "Frame 1236",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 0,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 1.6000001430511475,
+                        "paddingRight": 0,
+                        "paddingTop": 3.200000286102295,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:366",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 35.29999923706055,
+                            "y": 36.10000228881836,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.7556340098381042,
+                                  "g": 0.22923888266086578,
+                                  "b": 0.22923888266086578
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "7840:367",
+                        "name": "Frame 1235",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 288,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:368",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 34.5,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.7556340098381042,
+                                  "b": 0.3608376681804657
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "7840:369",
+                        "name": "Frame 1234",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 576,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 11.200000762939453,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:370",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 28.899999618530273,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.448570191860199,
+                                  "b": 0.7556340098381042
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "7335:742",
+            "name": "Property 1=1",
+            "type": "COMPONENT",
+            "x": 328,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.600000262260437,
+            "cornerRadius": 0,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "CENTER",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 16,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "variantProperties": {
+              "Property 1": "1"
+            },
+            "reactions": [],
+            "children": [
+              {
+                "id": "7335:743",
+                "name": "Frame 1233",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 144,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 1,
+                    "color": {
+                      "r": 0.1730685830116272,
+                      "g": 0.5052500367164612,
+                      "b": 0.6483436226844788
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 1000,
+                "layoutMode": "HORIZONTAL",
+                "counterAxisAlignItems": "MAX",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 10,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "7840:372",
+                    "name": "Frame 1232",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": -576,
+                    "width": 144,
+                    "height": 720,
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "opacity": 0.5799999833106995,
+                        "color": {
+                          "r": 0.3919771611690521,
+                          "g": 0.20735450088977814,
+                          "b": 0.20735450088977814
+                        }
+                      }
+                    ],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "VERTICAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 144.00001525878906,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:373",
+                        "name": "Frame 1236",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 0,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 1.6000001430511475,
+                        "paddingRight": 0,
+                        "paddingTop": 3.200000286102295,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:374",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 35.29999923706055,
+                            "y": 36.10000228881836,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.7556340098381042,
+                                  "g": 0.22923888266086578,
+                                  "b": 0.22923888266086578
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "7840:375",
+                        "name": "Frame 1235",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 288,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:376",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 34.5,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.7556340098381042,
+                                  "b": 0.3608376681804657
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "id": "7840:377",
+                        "name": "Frame 1234",
+                        "type": "FRAME",
+                        "x": 0,
+                        "y": 576,
+                        "width": 144,
+                        "height": 144,
+                        "opacity": 1,
+                        "fills": [],
+                        "strokes": [],
+                        "strokeWeight": 1.6000001430511475,
+                        "cornerRadius": 0,
+                        "layoutMode": "HORIZONTAL",
+                        "counterAxisAlignItems": "CENTER",
+                        "primaryAxisAlignItems": "CENTER",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 11.200000762939453,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": [
+                          {
+                            "id": "7840:378",
+                            "name": "Frame 1318",
+                            "type": "FRAME",
+                            "x": 28.899999618530273,
+                            "y": 34.5,
+                            "width": 75,
+                            "height": 75,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "opacity": 1,
+                                "color": {
+                                  "r": 0.22923888266086578,
+                                  "g": 0.448570191860199,
+                                  "b": 0.7556340098381042
+                                }
+                              }
+                            ],
+                            "strokes": [],
+                            "strokeWeight": 1,
+                            "cornerRadius": 0,
+                            "layoutMode": "NONE",
+                            "counterAxisAlignItems": "MIN",
+                            "primaryAxisAlignItems": "MIN",
+                            "itemSpacing": 0,
+                            "paddingLeft": 0,
+                            "paddingRight": 0,
+                            "paddingTop": 0,
+                            "paddingBottom": 0,
+                            "reactions": [],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "variants": [
+        {
+          "id": "5533:3902",
+          "name": "Property 1=3",
+          "type": "COMPONENT",
+          "x": 0,
+          "y": 0,
+          "width": 144,
+          "height": 144,
+          "opacity": 1,
+          "fills": [],
+          "strokes": [],
+          "strokeWeight": 1.600000262260437,
+          "cornerRadius": 0,
+          "layoutMode": "HORIZONTAL",
+          "counterAxisAlignItems": "CENTER",
+          "primaryAxisAlignItems": "CENTER",
+          "itemSpacing": 16,
+          "paddingLeft": 0,
+          "paddingRight": 0,
+          "paddingTop": 0,
+          "paddingBottom": 0,
+          "variantProperties": {
+            "Property 1": "3"
+          },
+          "reactions": [
+            {
+              "trigger": {
+                "type": "AFTER_TIMEOUT",
+                "timeout": 0.8
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "5533:3911",
+                "navigation": "CHANGE_TO",
+                "transition": {
+                  "type": "SMART_ANIMATE",
+                  "duration": 1.0220937728881836,
+                  "easing": {
+                    "type": "GENTLE"
+                  }
+                }
+              }
+            }
+          ],
+          "children": [
+            {
+              "id": "5533:3903",
+              "name": "Frame 1233",
+              "type": "FRAME",
+              "x": 0,
+              "y": 0,
+              "width": 144,
+              "height": 144,
+              "opacity": 1,
+              "fills": [
+                {
+                  "type": "SOLID",
+                  "opacity": 1,
+                  "color": {
+                    "r": 0.1730685830116272,
+                    "g": 0.5052500367164612,
+                    "b": 0.6483436226844788
+                  }
+                }
+              ],
+              "strokes": [],
+              "strokeWeight": 1.6000001430511475,
+              "cornerRadius": 1000,
+              "layoutMode": "HORIZONTAL",
+              "counterAxisAlignItems": "MIN",
+              "primaryAxisAlignItems": "CENTER",
+              "itemSpacing": 10,
+              "paddingLeft": 0,
+              "paddingRight": 0,
+              "paddingTop": 0,
+              "paddingBottom": 0,
+              "reactions": [],
+              "children": [
+                {
+                  "id": "5533:3904",
+                  "name": "Frame 1232",
+                  "type": "FRAME",
+                  "x": 0,
+                  "y": 0,
+                  "width": 144,
+                  "height": 720,
+                  "opacity": 1,
+                  "fills": [
+                    {
+                      "type": "SOLID",
+                      "opacity": 0.5799999833106995,
+                      "color": {
+                        "r": 0.3919771611690521,
+                        "g": 0.20735450088977814,
+                        "b": 0.20735450088977814
+                      }
+                    }
+                  ],
+                  "strokes": [],
+                  "strokeWeight": 1.6000001430511475,
+                  "cornerRadius": 0,
+                  "layoutMode": "VERTICAL",
+                  "counterAxisAlignItems": "CENTER",
+                  "primaryAxisAlignItems": "CENTER",
+                  "itemSpacing": 144.00001525878906,
+                  "paddingLeft": 0,
+                  "paddingRight": 0,
+                  "paddingTop": 0,
+                  "paddingBottom": 0,
+                  "reactions": [],
+                  "children": [
+                    {
+                      "id": "5533:3905",
+                      "name": "Frame 1236",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 0,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 1.6000001430511475,
+                      "paddingRight": 0,
+                      "paddingTop": 3.200000286102295,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:225",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 35.29999923706055,
+                          "y": 36.10000228881836,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.7556340098381042,
+                                "g": 0.22923888266086578,
+                                "b": 0.22923888266086578
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "5533:3907",
+                      "name": "Frame 1235",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 288,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:306",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 34.5,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.7556340098381042,
+                                "b": 0.3608376681804657
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "5533:3909",
+                      "name": "Frame 1234",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 576,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 11.200000762939453,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:335",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 28.899999618530273,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.448570191860199,
+                                "b": 0.7556340098381042
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "5533:3911",
+          "name": "Property 1=2",
+          "type": "COMPONENT",
+          "x": 164,
+          "y": 0,
+          "width": 144,
+          "height": 144,
+          "opacity": 1,
+          "fills": [],
+          "strokes": [],
+          "strokeWeight": 1.600000262260437,
+          "cornerRadius": 0,
+          "layoutMode": "HORIZONTAL",
+          "counterAxisAlignItems": "CENTER",
+          "primaryAxisAlignItems": "CENTER",
+          "itemSpacing": 16,
+          "paddingLeft": 0,
+          "paddingRight": 0,
+          "paddingTop": 0,
+          "paddingBottom": 0,
+          "variantProperties": {
+            "Property 1": "2"
+          },
+          "reactions": [
+            {
+              "trigger": {
+                "type": "AFTER_TIMEOUT",
+                "timeout": 0.8
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "7335:742",
+                "navigation": "CHANGE_TO",
+                "transition": {
+                  "type": "SMART_ANIMATE",
+                  "duration": 1.0220937728881836,
+                  "easing": {
+                    "type": "GENTLE"
+                  }
+                }
+              }
+            }
+          ],
+          "children": [
+            {
+              "id": "7235:2051",
+              "name": "Frame 1233",
+              "type": "FRAME",
+              "x": 0,
+              "y": 0,
+              "width": 144,
+              "height": 144,
+              "opacity": 1,
+              "fills": [
+                {
+                  "type": "SOLID",
+                  "opacity": 1,
+                  "color": {
+                    "r": 0.1730685830116272,
+                    "g": 0.5052500367164612,
+                    "b": 0.6483436226844788
+                  }
+                }
+              ],
+              "strokes": [],
+              "strokeWeight": 1.6000001430511475,
+              "cornerRadius": 1000,
+              "layoutMode": "HORIZONTAL",
+              "counterAxisAlignItems": "CENTER",
+              "primaryAxisAlignItems": "CENTER",
+              "itemSpacing": 10,
+              "paddingLeft": 0,
+              "paddingRight": 0,
+              "paddingTop": 0,
+              "paddingBottom": 0,
+              "reactions": [],
+              "children": [
+                {
+                  "id": "7840:364",
+                  "name": "Frame 1232",
+                  "type": "FRAME",
+                  "x": 0,
+                  "y": -288,
+                  "width": 144,
+                  "height": 720,
+                  "opacity": 1,
+                  "fills": [
+                    {
+                      "type": "SOLID",
+                      "opacity": 0.5799999833106995,
+                      "color": {
+                        "r": 0.3919771611690521,
+                        "g": 0.20735450088977814,
+                        "b": 0.20735450088977814
+                      }
+                    }
+                  ],
+                  "strokes": [],
+                  "strokeWeight": 1.6000001430511475,
+                  "cornerRadius": 0,
+                  "layoutMode": "VERTICAL",
+                  "counterAxisAlignItems": "CENTER",
+                  "primaryAxisAlignItems": "CENTER",
+                  "itemSpacing": 144.00001525878906,
+                  "paddingLeft": 0,
+                  "paddingRight": 0,
+                  "paddingTop": 0,
+                  "paddingBottom": 0,
+                  "reactions": [],
+                  "children": [
+                    {
+                      "id": "7840:365",
+                      "name": "Frame 1236",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 0,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 1.6000001430511475,
+                      "paddingRight": 0,
+                      "paddingTop": 3.200000286102295,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:366",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 35.29999923706055,
+                          "y": 36.10000228881836,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.7556340098381042,
+                                "g": 0.22923888266086578,
+                                "b": 0.22923888266086578
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "7840:367",
+                      "name": "Frame 1235",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 288,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:368",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 34.5,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.7556340098381042,
+                                "b": 0.3608376681804657
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "7840:369",
+                      "name": "Frame 1234",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 576,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 11.200000762939453,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:370",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 28.899999618530273,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.448570191860199,
+                                "b": 0.7556340098381042
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "7335:742",
+          "name": "Property 1=1",
+          "type": "COMPONENT",
+          "x": 328,
+          "y": 0,
+          "width": 144,
+          "height": 144,
+          "opacity": 1,
+          "fills": [],
+          "strokes": [],
+          "strokeWeight": 1.600000262260437,
+          "cornerRadius": 0,
+          "layoutMode": "HORIZONTAL",
+          "counterAxisAlignItems": "CENTER",
+          "primaryAxisAlignItems": "CENTER",
+          "itemSpacing": 16,
+          "paddingLeft": 0,
+          "paddingRight": 0,
+          "paddingTop": 0,
+          "paddingBottom": 0,
+          "variantProperties": {
+            "Property 1": "1"
+          },
+          "reactions": [],
+          "children": [
+            {
+              "id": "7335:743",
+              "name": "Frame 1233",
+              "type": "FRAME",
+              "x": 0,
+              "y": 0,
+              "width": 144,
+              "height": 144,
+              "opacity": 1,
+              "fills": [
+                {
+                  "type": "SOLID",
+                  "opacity": 1,
+                  "color": {
+                    "r": 0.1730685830116272,
+                    "g": 0.5052500367164612,
+                    "b": 0.6483436226844788
+                  }
+                }
+              ],
+              "strokes": [],
+              "strokeWeight": 1.6000001430511475,
+              "cornerRadius": 1000,
+              "layoutMode": "HORIZONTAL",
+              "counterAxisAlignItems": "MAX",
+              "primaryAxisAlignItems": "CENTER",
+              "itemSpacing": 10,
+              "paddingLeft": 0,
+              "paddingRight": 0,
+              "paddingTop": 0,
+              "paddingBottom": 0,
+              "reactions": [],
+              "children": [
+                {
+                  "id": "7840:372",
+                  "name": "Frame 1232",
+                  "type": "FRAME",
+                  "x": 0,
+                  "y": -576,
+                  "width": 144,
+                  "height": 720,
+                  "opacity": 1,
+                  "fills": [
+                    {
+                      "type": "SOLID",
+                      "opacity": 0.5799999833106995,
+                      "color": {
+                        "r": 0.3919771611690521,
+                        "g": 0.20735450088977814,
+                        "b": 0.20735450088977814
+                      }
+                    }
+                  ],
+                  "strokes": [],
+                  "strokeWeight": 1.6000001430511475,
+                  "cornerRadius": 0,
+                  "layoutMode": "VERTICAL",
+                  "counterAxisAlignItems": "CENTER",
+                  "primaryAxisAlignItems": "CENTER",
+                  "itemSpacing": 144.00001525878906,
+                  "paddingLeft": 0,
+                  "paddingRight": 0,
+                  "paddingTop": 0,
+                  "paddingBottom": 0,
+                  "reactions": [],
+                  "children": [
+                    {
+                      "id": "7840:373",
+                      "name": "Frame 1236",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 0,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 1.6000001430511475,
+                      "paddingRight": 0,
+                      "paddingTop": 3.200000286102295,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:374",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 35.29999923706055,
+                          "y": 36.10000228881836,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.7556340098381042,
+                                "g": 0.22923888266086578,
+                                "b": 0.22923888266086578
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "7840:375",
+                      "name": "Frame 1235",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 288,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 0,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:376",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 34.5,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.7556340098381042,
+                                "b": 0.3608376681804657
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "7840:377",
+                      "name": "Frame 1234",
+                      "type": "FRAME",
+                      "x": 0,
+                      "y": 576,
+                      "width": 144,
+                      "height": 144,
+                      "opacity": 1,
+                      "fills": [],
+                      "strokes": [],
+                      "strokeWeight": 1.6000001430511475,
+                      "cornerRadius": 0,
+                      "layoutMode": "HORIZONTAL",
+                      "counterAxisAlignItems": "CENTER",
+                      "primaryAxisAlignItems": "CENTER",
+                      "itemSpacing": 0,
+                      "paddingLeft": 0,
+                      "paddingRight": 11.200000762939453,
+                      "paddingTop": 0,
+                      "paddingBottom": 0,
+                      "reactions": [],
+                      "children": [
+                        {
+                          "id": "7840:378",
+                          "name": "Frame 1318",
+                          "type": "FRAME",
+                          "x": 28.899999618530273,
+                          "y": 34.5,
+                          "width": 75,
+                          "height": 75,
+                          "opacity": 1,
+                          "fills": [
+                            {
+                              "type": "SOLID",
+                              "opacity": 1,
+                              "color": {
+                                "r": 0.22923888266086578,
+                                "g": 0.448570191860199,
+                                "b": 0.7556340098381042
+                              }
+                            }
+                          ],
+                          "strokes": [],
+                          "strokeWeight": 1,
+                          "cornerRadius": 0,
+                          "layoutMode": "NONE",
+                          "counterAxisAlignItems": "MIN",
+                          "primaryAxisAlignItems": "MIN",
+                          "itemSpacing": 0,
+                          "paddingLeft": 0,
+                          "paddingRight": 0,
+                          "paddingTop": 0,
+                          "paddingBottom": 0,
+                          "reactions": [],
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "activeVariant": {
+        "id": "5533:3902",
+        "name": "Property 1=3",
+        "type": "COMPONENT",
+        "x": 0,
+        "y": 0,
+        "width": 144,
+        "height": 144,
+        "opacity": 1,
+        "fills": [],
+        "strokes": [],
+        "strokeWeight": 1.600000262260437,
+        "cornerRadius": 0,
+        "layoutMode": "HORIZONTAL",
+        "counterAxisAlignItems": "CENTER",
+        "primaryAxisAlignItems": "CENTER",
+        "itemSpacing": 16,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "variantProperties": {
+          "Property 1": "3"
+        },
+        "reactions": [
+          {
+            "trigger": {
+              "type": "AFTER_TIMEOUT",
+              "timeout": 0.8
+            },
+            "action": {
+              "type": "NODE",
+              "destinationId": "5533:3911",
+              "navigation": "CHANGE_TO",
+              "transition": {
+                "type": "SMART_ANIMATE",
+                "duration": 1.0220937728881836,
+                "easing": {
+                  "type": "GENTLE"
+                }
+              }
+            }
+          }
+        ],
+        "children": [
+          {
+            "id": "5533:3903",
+            "name": "Frame 1233",
+            "type": "FRAME",
+            "x": 0,
+            "y": 0,
+            "width": 144,
+            "height": 144,
+            "opacity": 1,
+            "fills": [
+              {
+                "type": "SOLID",
+                "opacity": 1,
+                "color": {
+                  "r": 0.1730685830116272,
+                  "g": 0.5052500367164612,
+                  "b": 0.6483436226844788
+                }
+              }
+            ],
+            "strokes": [],
+            "strokeWeight": 1.6000001430511475,
+            "cornerRadius": 1000,
+            "layoutMode": "HORIZONTAL",
+            "counterAxisAlignItems": "MIN",
+            "primaryAxisAlignItems": "CENTER",
+            "itemSpacing": 10,
+            "paddingLeft": 0,
+            "paddingRight": 0,
+            "paddingTop": 0,
+            "paddingBottom": 0,
+            "reactions": [],
+            "children": [
+              {
+                "id": "5533:3904",
+                "name": "Frame 1232",
+                "type": "FRAME",
+                "x": 0,
+                "y": 0,
+                "width": 144,
+                "height": 720,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "opacity": 0.5799999833106995,
+                    "color": {
+                      "r": 0.3919771611690521,
+                      "g": 0.20735450088977814,
+                      "b": 0.20735450088977814
+                    }
+                  }
+                ],
+                "strokes": [],
+                "strokeWeight": 1.6000001430511475,
+                "cornerRadius": 0,
+                "layoutMode": "VERTICAL",
+                "counterAxisAlignItems": "CENTER",
+                "primaryAxisAlignItems": "CENTER",
+                "itemSpacing": 144.00001525878906,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "paddingTop": 0,
+                "paddingBottom": 0,
+                "reactions": [],
+                "children": [
+                  {
+                    "id": "5533:3905",
+                    "name": "Frame 1236",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 0,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 1.6000001430511475,
+                    "paddingRight": 0,
+                    "paddingTop": 3.200000286102295,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:225",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 35.29999923706055,
+                        "y": 36.10000228881836,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.7556340098381042,
+                              "g": 0.22923888266086578,
+                              "b": 0.22923888266086578
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5533:3907",
+                    "name": "Frame 1235",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 288,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 0,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:306",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 34.5,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.7556340098381042,
+                              "b": 0.3608376681804657
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5533:3909",
+                    "name": "Frame 1234",
+                    "type": "FRAME",
+                    "x": 0,
+                    "y": 576,
+                    "width": 144,
+                    "height": 144,
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": [],
+                    "strokeWeight": 1.6000001430511475,
+                    "cornerRadius": 0,
+                    "layoutMode": "HORIZONTAL",
+                    "counterAxisAlignItems": "CENTER",
+                    "primaryAxisAlignItems": "CENTER",
+                    "itemSpacing": 0,
+                    "paddingLeft": 0,
+                    "paddingRight": 11.200000762939453,
+                    "paddingTop": 0,
+                    "paddingBottom": 0,
+                    "reactions": [],
+                    "children": [
+                      {
+                        "id": "7840:335",
+                        "name": "Frame 1318",
+                        "type": "FRAME",
+                        "x": 28.899999618530273,
+                        "y": 34.5,
+                        "width": 75,
+                        "height": 75,
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "opacity": 1,
+                            "color": {
+                              "r": 0.22923888266086578,
+                              "g": 0.448570191860199,
+                              "b": 0.7556340098381042
+                            }
+                          }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1,
+                        "cornerRadius": 0,
+                        "layoutMode": "NONE",
+                        "counterAxisAlignItems": "MIN",
+                        "primaryAxisAlignItems": "MIN",
+                        "itemSpacing": 0,
+                        "paddingLeft": 0,
+                        "paddingRight": 0,
+                        "paddingTop": 0,
+                        "paddingBottom": 0,
+                        "reactions": [],
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "animationChains": [
+    [
+      "5533:3902"
+    ]
+  ]
 }
