@@ -70,6 +70,10 @@ export class VariantHandler {
     // Update variant instance state
     variantInstance.activeVariant = targetId;
     variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
+    
+    // CRITICAL: Reset the scene state so the target becomes the new source
+    // This ensures each animation cycle is treated as an isolated scene
+    console.log('Animation cycle complete. Target', targetId, 'is now the new source for next animation.');
   }
 
   /**
@@ -188,23 +192,32 @@ export class VariantHandler {
         childElements.forEach(child => {
           child.style.transition = '';
           child.style.transform = '';
+          child.style.width = '';
+          child.style.height = '';
+          child.style.opacity = '';
         });
       }
     });
 
-    // Show target variant with clean state
+    // Show target variant with clean state - this will be the new source for next animation
     if (targetElement) {
       targetElement.style.display = 'block';
       targetElement.style.opacity = '1';
       targetElement.style.transform = '';
       targetElement.style.transition = '';
       
-      // Reset child elements of target variant
+      // Reset child elements of target variant to their natural state
+      // This ensures they're ready to be animated from their initial state in the next cycle
       const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
       childElements.forEach(child => {
         child.style.transition = '';
         child.style.transform = '';
+        child.style.width = '';
+        child.style.height = '';
+        child.style.opacity = '';
       });
+      
+      console.log('Target variant', targetId, 'is now visible and reset to initial state for next animation cycle');
     }
   }
 }
