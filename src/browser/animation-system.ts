@@ -218,7 +218,9 @@ export class FigmaAnimationSystem {
       'QUICK': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
       'BOUNCY': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       'SLOW': 'cubic-bezier(0.23, 1, 0.32, 1)',
-      'LINEAR': 'linear'
+      'LINEAR': 'linear',
+      'EASE_IN_AND_OUT_BACK': 'cubic-bezier(0.68, -0.6, 0.32, 1.6)',
+      'EASE_OUT': 'cubic-bezier(0, 0, 0.2, 1)'
     };
     return easingMap[figmaEasing] || easingMap['GENTLE'];
   }
