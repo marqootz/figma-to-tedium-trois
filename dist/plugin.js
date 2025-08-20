@@ -870,7 +870,7 @@ class BundleGenerator {
           variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
           
           // Setup click reactions for the new active variant
-          this.setupClickReactions(targetId);
+          // Note: setupClickReactions is handled by the main animation system
         }
 
         async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
@@ -1093,6 +1093,7 @@ class BundleGenerator {
           );
 
           this.setupTimeoutReactions(targetId);
+          this.setupClickReactions(targetId);
         }
 
         async executeElementAnimation(sourceId, targetId) {
@@ -1128,6 +1129,7 @@ class BundleGenerator {
           }
 
           this.setupTimeoutReactions(targetId);
+          this.setupClickReactions(targetId);
         }
 
         async executeSmartAnimate(sourceElement, targetElement, changes, options) {
@@ -1212,8 +1214,12 @@ class BundleGenerator {
         }
 
         setupClickReactions(nodeId) {
+          console.log('🔍 Setting up click reactions for node:', nodeId);
           const node = this.nodeRegistry.get(nodeId);
-          if (!node || !node.reactions) return;
+          if (!node || !node.reactions) {
+            console.log('🔍 No node or reactions found for:', nodeId);
+            return;
+          }
 
           const element = this.elementRegistry.get(nodeId);
           if (!element) {
@@ -1222,7 +1228,7 @@ class BundleGenerator {
           }
 
           node.reactions
-            .filter(reaction => reaction.trigger.type === 'ON_CLICK')
+            .filter(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
             .forEach(reaction => {
               console.log('Setting up click reaction for:', nodeId, '→', reaction.action.destinationId);
               
@@ -1315,7 +1321,8 @@ class BundleGenerator {
         }).join('\n');
     }
     static generateInitialClicks(nodes, resolvedInstances) {
-        const nodesWithClicks = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'ON_CLICK'); });
+        const nodesWithClicks = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS'); });
+        console.log('🔍 Found nodes with click/press reactions:', nodesWithClicks.map(n => ({ id: n.id, name: n.name, reactions: n.reactions })));
         return nodesWithClicks.map(node => {
             // Check if this is an instance with variants
             const instanceWithVariants = resolvedInstances === null || resolvedInstances === void 0 ? void 0 : resolvedInstances.find(instance => { var _a; return ((_a = instance.instance) === null || _a === void 0 ? void 0 : _a.id) === node.id; });

@@ -627,7 +627,7 @@ export class BundleGenerator {
           variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
           
           // Setup click reactions for the new active variant
-          this.setupClickReactions(targetId);
+          // Note: setupClickReactions is handled by the main animation system
         }
 
         async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
@@ -851,6 +851,7 @@ export class BundleGenerator {
           );
 
           this.setupTimeoutReactions(targetId);
+          this.setupClickReactions(targetId);
         }
 
         async executeElementAnimation(sourceId, targetId) {
@@ -886,6 +887,7 @@ export class BundleGenerator {
           }
 
           this.setupTimeoutReactions(targetId);
+          this.setupClickReactions(targetId);
         }
 
         async executeSmartAnimate(sourceElement, targetElement, changes, options) {
@@ -970,8 +972,12 @@ export class BundleGenerator {
         }
 
         setupClickReactions(nodeId) {
+          console.log('🔍 Setting up click reactions for node:', nodeId);
           const node = this.nodeRegistry.get(nodeId);
-          if (!node || !node.reactions) return;
+          if (!node || !node.reactions) {
+            console.log('🔍 No node or reactions found for:', nodeId);
+            return;
+          }
 
           const element = this.elementRegistry.get(nodeId);
           if (!element) {
@@ -980,7 +986,7 @@ export class BundleGenerator {
           }
 
           node.reactions
-            .filter(reaction => reaction.trigger.type === 'ON_CLICK')
+            .filter(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
             .forEach(reaction => {
               console.log('Setting up click reaction for:', nodeId, '→', reaction.action.destinationId);
               
@@ -1086,8 +1092,10 @@ export class BundleGenerator {
 
   private static generateInitialClicks(nodes: FigmaNodeData[], resolvedInstances?: any[]): string {
     const nodesWithClicks = nodes.filter(node => 
-      node.reactions?.some(reaction => reaction.trigger.type === 'ON_CLICK')
+      node.reactions?.some(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
     );
+
+    console.log('🔍 Found nodes with click/press reactions:', nodesWithClicks.map(n => ({ id: n.id, name: n.name, reactions: n.reactions })));
 
     return nodesWithClicks.map(node => {
       // Check if this is an instance with variants

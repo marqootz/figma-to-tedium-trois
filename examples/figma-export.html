@@ -705,6 +705,9 @@
 
           variantInstance.activeVariant = targetId;
           variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
+          
+          // Setup click reactions for the new active variant
+          this.setupClickReactions(targetId);
         }
 
         async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
@@ -1043,6 +1046,39 @@
             });
         }
 
+        setupClickReactions(nodeId) {
+          console.log('🔍 Setting up click reactions for node:', nodeId);
+          const node = this.nodeRegistry.get(nodeId);
+          if (!node || !node.reactions) {
+            console.log('🔍 No node or reactions found for:', nodeId);
+            return;
+          }
+
+          const element = this.elementRegistry.get(nodeId);
+          if (!element) {
+            console.warn('Element not found for click setup:', nodeId);
+            return;
+          }
+
+          node.reactions
+            .filter(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
+            .forEach(reaction => {
+              console.log('Setting up click reaction for:', nodeId, '→', reaction.action.destinationId);
+              
+              // Add click event listener
+              element.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('Click detected on:', nodeId, 'triggering animation to:', reaction.action.destinationId);
+                this.executeAnimation(nodeId, reaction.action.destinationId);
+              });
+              
+              // Add visual feedback for clickable elements
+              element.style.cursor = 'pointer';
+              element.style.userSelect = 'none';
+            });
+        }
+
         clearAllTimeouts() {
           this.timeouts.forEach(timeout => clearTimeout(timeout));
           this.timeouts.clear();
@@ -1108,6 +1144,11 @@
         
         // Setup initial timeout reactions
         
+        
+        // Setup initial click reactions
+        
+      // Setup click reactions for glydcar/control-panel/button-map-light using active variant
+      window.figmaAnimationSystem.setupClickReactions('5332:2483');
         
         // Setup variant animation system
         
