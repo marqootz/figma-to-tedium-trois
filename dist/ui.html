@@ -75,31 +75,7 @@
       cursor: not-allowed;
     }
     
-    .status {
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 12px;
-      font-size: 11px;
-      display: none;
-    }
-    
-    .status.success {
-      background: #e8f5e8;
-      color: #2d5a2d;
-      border: 1px solid #b8e6b8;
-    }
-    
-    .status.error {
-      background: #ffe8e8;
-      color: #5a2d2d;
-      border: 1px solid #e6b8b8;
-    }
-    
-    .status.info {
-      background: #e8f2ff;
-      color: #2d4a5a;
-      border: 1px solid #b8d4e6;
-    }
+    /* Status notifications removed */
     
 
     
@@ -144,11 +120,10 @@
     
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }</style></head><body><div class="container"><div class="header"><h1>Figma Animation Export</h1><p>Export Figma animations to HTML</p></div><div id="status" class="status"></div><div class="section"><div class="section-title">Export Options</div><button id="export-json-btn" class="button">Export Raw JSON</button> <button id="export-html-btn" class="button">Export HTML Only</button> <button id="export-both-btn" class="button primary">Export Both Files</button></div><div id="loading" class="loading">Processing...</div></div><script>// UI State
+    }</style></head><body><div class="container"><div class="header"><h1>Figma Animation Export</h1><p>Export Figma animations to HTML</p></div><div class="section"><div class="section-title">Export Options</div><button id="export-json-btn" class="button">Export Raw JSON</button> <button id="export-html-btn" class="button">Export HTML Only</button> <button id="export-both-btn" class="button primary">Export Both Files</button></div><div id="loading" class="loading">Processing...</div></div><script>// UI State
     // Removed currentHTML and currentJSON since we're downloading directly
     
     // DOM Elements
-    const statusEl = document.getElementById('status');
     const exportJsonBtn = document.getElementById('export-json-btn');
     const exportHtmlBtn = document.getElementById('export-html-btn');
     const exportBothBtn = document.getElementById('export-both-btn');
@@ -206,15 +181,8 @@
     
     // Helper Functions
     function showStatus(message, type = 'info') {
-      statusEl.textContent = message;
-      statusEl.className = 'status ' + type;
-      statusEl.style.display = 'block';
-      
-      if (type === 'success' || type === 'info') {
-        setTimeout(() => {
-          statusEl.style.display = 'none';
-        }, 3000);
-      }
+      // Notifications disabled
+      return;
     }
     
     function showLoading() {
