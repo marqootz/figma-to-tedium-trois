@@ -642,8 +642,8 @@ export class FigmaDataExtractor {
       return propagatedVariant;
     });
 
-    // Find the active variant (assuming it's the first one for now)
-    const activeVariant = propagatedVariants[0] || variants[0];
+    // Find the active variant based on instance variant properties
+    const activeVariant = this.findActiveVariant(instance, propagatedVariants) || propagatedVariants[0] || variants[0];
 
     console.log('Propagated sizing and dimensions to component set and', propagatedVariants.length, 'variants');
 
