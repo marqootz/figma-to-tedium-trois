@@ -313,6 +313,101 @@
     
     // Download Queue Manager - REMOVED (using direct sequential downloads instead)
     
+    // Smart Dialog Detection System
+    class DialogDetector {
+      constructor() {
+        this.isDialogOpen = false;
+        this.dialogStartTime = 0;
+        this.focusListeners = [];
+      }
+      
+      startDialogDetection() {
+        this.isDialogOpen = true;
+        this.dialogStartTime = Date.now();
+        
+        // Method 1: Focus events
+        const onFocus = () => {
+          if (this.isDialogOpen) {
+            console.log('Window regained focus - dialog likely closed');
+            this.handleDialogClosed();
+          }
+        };
+        
+        const onBlur = () => {
+          if (this.isDialogOpen) {
+            console.log('Window lost focus - dialog opened');
+          }
+        };
+        
+        // Method 2: Visibility change
+        const onVisibilityChange = () => {
+          if (this.isDialogOpen && !document.hidden) {
+            console.log('Page became visible - dialog likely closed');
+            this.handleDialogClosed();
+          }
+        };
+        
+        // Method 3: User interaction detection
+        const onUserInteraction = () => {
+          if (this.isDialogOpen) {
+            console.log('User interaction detected - dialog likely closed');
+            this.handleDialogClosed();
+          }
+        };
+        
+        // Add event listeners
+        window.addEventListener('focus', onFocus);
+        window.addEventListener('blur', onBlur);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        document.addEventListener('click', onUserInteraction);
+        document.addEventListener('keydown', onUserInteraction);
+        
+        // Store listeners for cleanup
+        this.focusListeners = [
+          () => window.removeEventListener('focus', onFocus),
+          () => window.removeEventListener('blur', onBlur),
+          () => document.removeEventListener('visibilitychange', onVisibilityChange),
+          () => document.removeEventListener('click', onUserInteraction),
+          () => document.removeEventListener('keydown', onUserInteraction)
+        ];
+        
+        // Fallback timer (shorter than before)
+        this.fallbackTimer = setTimeout(() => {
+          if (this.isDialogOpen) {
+            console.log('Fallback timer triggered - proceeding with next download');
+            this.handleDialogClosed();
+          }
+        }, 5000); // 5 seconds instead of 8
+      }
+      
+      handleDialogClosed() {
+        if (!this.isDialogOpen) return;
+        
+        this.isDialogOpen = false;
+        clearTimeout(this.fallbackTimer);
+        
+        // Clean up event listeners
+        this.focusListeners.forEach(cleanup => cleanup());
+        this.focusListeners = [];
+        
+        const duration = Date.now() - this.dialogStartTime;
+        console.log(`Dialog closed after ${duration}ms`);
+        
+        // Resolve the promise
+        if (this.resolvePromise) {
+          this.resolvePromise();
+        }
+      }
+      
+      waitForDialogClose() {
+        return new Promise((resolve) => {
+          this.resolvePromise = resolve;
+        });
+      }
+    }
+    
+    const dialogDetector = new DialogDetector();
+    
     async function handleBothGenerated(msg) {
       if (!msg.success) {
         console.error('Export failed:', msg.error || 'Unknown error');
@@ -322,23 +417,31 @@
       const jsonFilename = 'figma-export.json';
       const htmlFilename = 'figma-export.html';
       
-      console.log('Starting sequential download process...');
-      console.log('IMPORTANT: Please handle each file dialog when it appears!');
+      console.log('Starting smart sequential download process...');
+      console.log('The system will detect when you finish with each file dialog!');
       
       try {
-        // Download JSON first with longer wait
+        // Download JSON first with smart detection
         console.log('Step 1: Downloading JSON file...');
         await downloadFile(msg.json, jsonFilename, 'application/json', true);
         console.log('JSON download initiated. Please save the file when prompted.');
         
-        // Wait for user to handle the dialog
-        console.log('Waiting 8 seconds for JSON dialog to be handled...');
-        await new Promise(resolve => setTimeout(resolve, 8000));
+        // Start dialog detection and wait for user
+        dialogDetector.startDialogDetection();
+        console.log('Waiting for you to handle the JSON dialog...');
+        await dialogDetector.waitForDialogClose();
+        console.log('JSON dialog handled!');
         
-        // Download HTML second
+        // Download HTML second with smart detection
         console.log('Step 2: Downloading HTML file...');
         await downloadFile(msg.html, htmlFilename, 'text/html', true);
         console.log('HTML download initiated. Please save the file when prompted.');
+        
+        // Start dialog detection and wait for user
+        dialogDetector.startDialogDetection();
+        console.log('Waiting for you to handle the HTML dialog...');
+        await dialogDetector.waitForDialogClose();
+        console.log('HTML dialog handled!');
         
         // Log final success
         const metadata = msg.metadata || {};
