@@ -82,18 +82,14 @@ ${css}
     resolvedInstances.forEach(instance => {
       const { variants, activeVariant } = instance;
       
-      // Generate CSS for each variant
+      // Only generate variant-specific visibility rules, not full CSS
       variants.forEach((variant: FigmaNode) => {
-        const variantCSS = this.styleGenerator.generateStyles(variant, false);
-        css += '\n\n' + variantCSS;
-        
-        // Add variant-specific visibility rules
         const isActive = variant.id === activeVariant.id;
         css += `\n[data-figma-id="${variant.id}"] {\n`;
-        css += `  display: ${isActive ? 'block' : 'none'};\n`;
-        css += `  position: absolute;\n`;
-        css += `  left: 0;\n`;
-        css += `  top: 0;\n`;
+        css += `  display: ${isActive ? 'block' : 'none'} !important;\n`;
+        css += `  position: absolute !important;\n`;
+        css += `  left: 0 !important;\n`;
+        css += `  top: 0 !important;\n`;
         css += `}\n`;
       });
     });
