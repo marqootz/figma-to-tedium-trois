@@ -288,6 +288,9 @@ class BundleGenerator {
         // Setup initial timeout reactions
         ${this.generateInitialTimeouts(nodes, resolvedInstances)}
         
+        // Setup initial click reactions
+        ${this.generateInitialClicks(nodes, resolvedInstances)}
+        
         // Setup variant animation system
         ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
         
@@ -865,6 +868,9 @@ class BundleGenerator {
 
           variantInstance.activeVariant = targetId;
           variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
+          
+          // Setup click reactions for the new active variant
+          this.setupClickReactions(targetId);
         }
 
         async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
@@ -1205,6 +1211,35 @@ class BundleGenerator {
             });
         }
 
+        setupClickReactions(nodeId) {
+          const node = this.nodeRegistry.get(nodeId);
+          if (!node || !node.reactions) return;
+
+          const element = this.elementRegistry.get(nodeId);
+          if (!element) {
+            console.warn('Element not found for click setup:', nodeId);
+            return;
+          }
+
+          node.reactions
+            .filter(reaction => reaction.trigger.type === 'ON_CLICK')
+            .forEach(reaction => {
+              console.log('Setting up click reaction for:', nodeId, '→', reaction.action.destinationId);
+              
+              // Add click event listener
+              element.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('Click detected on:', nodeId, 'triggering animation to:', reaction.action.destinationId);
+                this.executeAnimation(nodeId, reaction.action.destinationId);
+              });
+              
+              // Add visual feedback for clickable elements
+              element.style.cursor = 'pointer';
+              element.style.userSelect = 'none';
+            });
+        }
+
         clearAllTimeouts() {
           this.timeouts.forEach(timeout => clearTimeout(timeout));
           this.timeouts.clear();
@@ -1276,6 +1311,26 @@ class BundleGenerator {
                 return `
       // Setup timeout reactions for ${node.name}
       window.figmaAnimationSystem.setupTimeoutReactions('${node.id}');`;
+            }
+        }).join('\n');
+    }
+    static generateInitialClicks(nodes, resolvedInstances) {
+        const nodesWithClicks = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'ON_CLICK'); });
+        return nodesWithClicks.map(node => {
+            // Check if this is an instance with variants
+            const instanceWithVariants = resolvedInstances === null || resolvedInstances === void 0 ? void 0 : resolvedInstances.find(instance => { var _a; return ((_a = instance.instance) === null || _a === void 0 ? void 0 : _a.id) === node.id; });
+            if (instanceWithVariants) {
+                // Use the active variant instead of the instance for click setup
+                const activeVariantId = instanceWithVariants.activeVariant.id;
+                return `
+      // Setup click reactions for ${node.name} using active variant
+      window.figmaAnimationSystem.setupClickReactions('${activeVariantId}');`;
+            }
+            else {
+                // Regular node without variants
+                return `
+      // Setup click reactions for ${node.name}
+      window.figmaAnimationSystem.setupClickReactions('${node.id}');`;
             }
         }).join('\n');
     }

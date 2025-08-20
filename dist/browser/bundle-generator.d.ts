@@ -16,6 +16,7 @@ export declare class BundleGenerator {
     private static generateNodeRegistrations;
     private static generateVariantRegistrations;
     private static generateInitialTimeouts;
+    private static generateInitialClicks;
     private static generateVariantAnimationSetup;
 }
 //# sourceMappingURL=bundle-generator.d.ts.map
