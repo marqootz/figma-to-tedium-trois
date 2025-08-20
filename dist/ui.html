@@ -216,8 +216,8 @@
           showStatus(`Downloaded ${filename}`, 'success');
         }
         
-        // Resolve after a short delay to allow the download dialog to appear
-        setTimeout(resolve, 100);
+        // Resolve after a longer delay to allow the download dialog to appear and be handled
+        setTimeout(resolve, 500);
       });
     }
     
@@ -273,17 +273,31 @@
       const jsonFilename = 'figma-export.json';
       const htmlFilename = 'figma-export.html';
       
-      // Download files sequentially to avoid browser blocking
-      await downloadFile(msg.json, jsonFilename, 'application/json', true);
-      await downloadFile(msg.html, htmlFilename, 'text/html', true);
-      
-      // Log success for debugging
-      const metadata = msg.metadata || {};
-      console.log(
-        'Both files exported successfully! ' + 
-        '(' + metadata.nodeCount + ' nodes, ' + 
-        metadata.componentSets + ' component sets)'
-      );
+      try {
+        console.log('Starting sequential file downloads...');
+        
+        // Download JSON file first
+        console.log('Downloading JSON file...');
+        await downloadFile(msg.json, jsonFilename, 'application/json', true);
+        
+        // Wait longer to ensure the first download dialog is handled
+        console.log('Waiting for JSON download to complete...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Download HTML file second
+        console.log('Downloading HTML file...');
+        await downloadFile(msg.html, htmlFilename, 'text/html', true);
+        
+        // Log success for debugging
+        const metadata = msg.metadata || {};
+        console.log(
+          'Both files exported successfully! ' + 
+          '(' + metadata.nodeCount + ' nodes, ' + 
+          metadata.componentSets + ' component sets)'
+        );
+      } catch (error) {
+        console.error('Error during file downloads:', error);
+      }
     }
     
     function handleFileExported(msg) {
