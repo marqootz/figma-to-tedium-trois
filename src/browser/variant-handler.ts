@@ -87,21 +87,37 @@ export class VariantHandler {
     return new Promise((resolve) => {
       console.log('Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
 
+      // Ensure target element is visible and reset to initial state
+      targetElement.style.display = 'block';
+      targetElement.style.opacity = '1';
+      targetElement.style.transform = '';
+      targetElement.style.transition = '';
+      
+      // Reset child elements of target variant to initial state
+      const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+      childElements.forEach(child => {
+        child.style.transition = '';
+        child.style.transform = '';
+        child.style.width = '';
+        child.style.height = '';
+        child.style.opacity = '';
+      });
+
       // Apply hybrid flattening if layout changes detected
       const layoutChange = changes.find(change => change.property === 'layout');
       if (layoutChange) {
-        DOMManipulator.applyLayoutFlattening(sourceElement, layoutChange);
+        DOMManipulator.applyLayoutFlattening(targetElement, layoutChange);
       }
 
-      // Setup CSS transitions for all changing properties
-      DOMManipulator.setupTransitions(sourceElement, changes, options);
+      // Setup CSS transitions for all changing properties on target element
+      DOMManipulator.setupTransitions(targetElement, changes, options);
 
       // Setup transitions for child elements that will be animated
-      DOMManipulator.setupChildTransitions(sourceElement, changes, options);
+      DOMManipulator.setupChildTransitions(targetElement, changes, options);
 
-      // Apply changes on next frame
+      // Apply changes on next frame to target element
       requestAnimationFrame(() => {
-        changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
+        changes.forEach(change => DOMManipulator.applyChange(targetElement, change));
       });
 
       // Complete animation
