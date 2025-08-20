@@ -141,9 +141,15 @@
     
     <div class="section">
       <div class="section-title">Export Options</div>
-      <button id="export-json-btn" class="button">Export Raw JSON</button>
-      <button id="export-html-btn" class="button">Export HTML Only</button>
-      <button id="export-both-btn" class="button primary">Export Both Files</button>
+      <button id="export-both-btn" class="button primary">Export Both Files (Auto)</button>
+      <div style="font-size: 10px; color: #666; margin-top: 6px; line-height: 1.3;">
+        Downloads both files with automatic queue management
+      </div>
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
+        <div style="font-size: 10px; color: #666; margin-bottom: 8px;">Individual Downloads:</div>
+        <button id="export-json-btn" class="button" style="font-size: 11px; padding: 6px 10px;">Export Raw JSON</button>
+        <button id="export-html-btn" class="button" style="font-size: 11px; padding: 6px 10px;">Export HTML Only</button>
+      </div>
     </div>
     
     <div id="loading" class="loading">
@@ -297,41 +303,76 @@
       );
     }
     
+    // Download Queue Manager
+    class DownloadQueue {
+      constructor() {
+        this.queue = [];
+        this.isProcessing = false;
+      }
+      
+      addToQueue(downloadTask) {
+        this.queue.push(downloadTask);
+        if (!this.isProcessing) {
+          this.processQueue();
+        }
+      }
+      
+      async processQueue() {
+        if (this.isProcessing || this.queue.length === 0) return;
+        
+        this.isProcessing = true;
+        
+        while (this.queue.length > 0) {
+          const task = this.queue.shift();
+          try {
+            await task();
+            // Wait between downloads to avoid browser blocking
+            if (this.queue.length > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+          } catch (error) {
+            console.error('Download task failed:', error);
+          }
+        }
+        
+        this.isProcessing = false;
+      }
+    }
+    
+    const downloadQueue = new DownloadQueue();
+    
     async function handleBothGenerated(msg) {
       if (!msg.success) {
         console.error('Export failed:', msg.error || 'Unknown error');
         return;
       }
       
-      // Use simple filenames
       const jsonFilename = 'figma-export.json';
       const htmlFilename = 'figma-export.html';
       
-      try {
-        console.log('Starting sequential file downloads...');
-        
-        // Download JSON file first
+      console.log('Queueing both files for download...');
+      
+      // Queue JSON download
+      downloadQueue.addToQueue(async () => {
         console.log('Downloading JSON file...');
         await downloadFile(msg.json, jsonFilename, 'application/json', true);
-        
-        // Wait longer to ensure the first download dialog is handled
-        console.log('Waiting for JSON download to complete...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Download HTML file second
+        console.log('JSON download completed');
+      });
+      
+      // Queue HTML download
+      downloadQueue.addToQueue(async () => {
         console.log('Downloading HTML file...');
         await downloadFile(msg.html, htmlFilename, 'text/html', true);
+        console.log('HTML download completed');
         
-        // Log success for debugging
+        // Log final success
         const metadata = msg.metadata || {};
         console.log(
           'Both files exported successfully! ' + 
           '(' + metadata.nodeCount + ' nodes, ' + 
           metadata.componentSets + ' component sets)'
         );
-      } catch (error) {
-        console.error('Error during file downloads:', error);
-      }
+      });
     }
     
     function handleFileExported(msg) {
