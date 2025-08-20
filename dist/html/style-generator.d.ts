@@ -6,5 +6,6 @@ export declare class StyleGenerator {
     private adjustLayoutDrivenPosition;
     private hasAbsolutelyPositionedChildren;
     private getChildWidthForHugSizing;
+    private isSVGNode;
 }
 //# sourceMappingURL=style-generator.d.ts.map

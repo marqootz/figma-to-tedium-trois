@@ -1,7 +1,30 @@
 import { FigmaNode } from '../core/types';
+import { convertVectorToSVG, convertRectangleToSVG, convertEllipseToSVG } from '../utils/svg-converter';
 
 export class ElementBuilder {
   buildElement(node: FigmaNode): string {
+    // Handle SVG nodes differently
+    if (node.type === 'VECTOR') {
+      const svg = convertVectorToSVG(node);
+      const width = node.width || 0;
+      const height = node.height || 0;
+      return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+    }
+
+    if (node.type === 'RECTANGLE') {
+      const svg = convertRectangleToSVG(node);
+      const width = node.width || 0;
+      const height = node.height || 0;
+      return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+    }
+
+    if (node.type === 'ELLIPSE') {
+      const svg = convertEllipseToSVG(node);
+      const width = node.width || 0;
+      const height = node.height || 0;
+      return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+    }
+
     const attributes = this.generateAttributes(node);
     const content = this.generateContent(node);
     const tag = this.getHTMLTag(node);
@@ -61,6 +84,10 @@ export class ElementBuilder {
         return 'div';
       case 'TEXT':
         return 'span';
+      case 'VECTOR':
+      case 'RECTANGLE':
+      case 'ELLIPSE':
+        return 'svg';
       default:
         return 'div';
     }

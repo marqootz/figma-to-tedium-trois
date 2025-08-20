@@ -122,8 +122,8 @@ export class StyleGenerator {
       }
     }
 
-    // Background fills
-    if (node.fills && node.fills.length > 0) {
+    // Background fills (exclude SVG nodes - they handle fills internally)
+    if (node.fills && node.fills.length > 0 && !this.isSVGNode(node)) {
       const backgroundCSS = this.generateBackgroundCSS(node.fills);
       if (backgroundCSS) {
         properties.push(backgroundCSS);
@@ -213,5 +213,9 @@ export class StyleGenerator {
       return child.width || 0;
     }
     return 0;
+  }
+
+  private isSVGNode(node: FigmaNode): boolean {
+    return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
   }
 }

@@ -57,6 +57,12 @@ export class ChangeDetector {
       });
     }
 
+    // Vector path changes for SVG elements
+    if (source.type === 'VECTOR' && target.type === 'VECTOR') {
+      const pathChanges = this.detectVectorPathChanges(source, target);
+      changes.push(...pathChanges);
+    }
+
     // Child element changes (critical for variant animations)
     const childChanges = this.detectChildElementChanges(source, target);
     changes.push(...childChanges);
@@ -184,5 +190,40 @@ export class ChangeDetector {
       paddingTop: node.paddingTop,
       paddingBottom: node.paddingBottom
     };
+  }
+
+  /**
+   * Detect vector path changes for SVG elements
+   */
+  private static detectVectorPathChanges(source: FigmaNodeData, target: FigmaNodeData): AnimationChange[] {
+    const changes: AnimationChange[] = [];
+
+    // Check if vector paths have changed
+    if (source.vectorPaths && target.vectorPaths) {
+      if (source.vectorPaths.length !== target.vectorPaths.length) {
+        changes.push({
+          property: 'vectorPaths',
+          sourceValue: source.vectorPaths,
+          targetValue: target.vectorPaths
+        });
+      } else {
+        // Check if any individual paths have changed
+        for (let i = 0; i < source.vectorPaths.length; i++) {
+          const sourcePath = source.vectorPaths[i];
+          const targetPath = target.vectorPaths[i];
+          
+          if (sourcePath.data !== targetPath.data || sourcePath.windingRule !== targetPath.windingRule) {
+            changes.push({
+              property: 'vectorPaths',
+              sourceValue: source.vectorPaths,
+              targetValue: target.vectorPaths
+            });
+            break; // One change is enough to trigger animation
+          }
+        }
+      }
+    }
+
+    return changes;
   }
 }

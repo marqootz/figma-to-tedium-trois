@@ -31,6 +31,8 @@ export declare class FigmaDataExtractor {
     private extractMainComponentId;
     private extractVariantProperties;
     private extractReactions;
+    private extractVectorPaths;
+    private extractEffects;
     private extractColor;
     resolveInstancesAndComponentSets(nodes: FigmaNode[]): Promise<{
         instance: FigmaNode;

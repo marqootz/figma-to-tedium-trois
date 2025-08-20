@@ -55,6 +55,8 @@ export class FigmaDataExtractor {
       mainComponentId: this.extractMainComponentId(node),
       variantProperties: this.extractVariantProperties(node),
       reactions: this.extractReactions(node),
+      vectorPaths: this.extractVectorPaths(node),
+      effects: this.extractEffects(node),
       children: [] as FigmaNode[]
     };
 
@@ -292,6 +294,31 @@ export class FigmaDataExtractor {
           }
         }
       }));
+    }
+    return [];
+  }
+
+  private extractVectorPaths(node: SceneNode): any[] {
+    if ('vectorPaths' in node && node.vectorPaths && Array.isArray(node.vectorPaths)) {
+      return node.vectorPaths.map(path => ({
+        data: path.data,
+        windingRule: path.windingRule
+      }));
+    }
+    return [];
+  }
+
+  private extractEffects(node: SceneNode): any[] {
+    if ('effects' in node && node.effects && Array.isArray(node.effects)) {
+      return node.effects
+        .filter(effect => effect.visible !== false)
+        .map(effect => ({
+          type: effect.type,
+          radius: effect.type === 'LAYER_BLUR' || effect.type === 'BACKGROUND_BLUR' ? effect.radius : undefined,
+          color: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? this.extractColor(effect.color) : undefined,
+          offset: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? effect.offset : undefined,
+          spread: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? effect.spread : undefined
+        }));
     }
     return [];
   }

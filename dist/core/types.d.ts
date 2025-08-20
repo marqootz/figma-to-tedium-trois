@@ -31,11 +31,17 @@ export interface FigmaNode {
     textAlignVertical?: string;
     letterSpacing?: any;
     lineHeight?: any;
+    vectorPaths?: VectorPath[];
+    effects?: any[];
     componentProperties?: any;
     mainComponentId?: string;
     variantProperties?: any;
     reactions?: FigmaReaction[];
     children?: FigmaNode[];
+}
+export interface VectorPath {
+    data: string;
+    windingRule?: string;
 }
 export interface FigmaReaction {
     trigger: {

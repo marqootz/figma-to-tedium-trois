@@ -34,12 +34,20 @@ export interface FigmaNode {
   textAlignVertical?: string;
   letterSpacing?: any;
   lineHeight?: any;
+  // Vector properties
+  vectorPaths?: VectorPath[];
+  effects?: any[];
   // Component properties
   componentProperties?: any;
   mainComponentId?: string;
   variantProperties?: any;
   reactions?: FigmaReaction[];
   children?: FigmaNode[];
+}
+
+export interface VectorPath {
+  data: string;
+  windingRule?: string;
 }
 
 export interface FigmaReaction {

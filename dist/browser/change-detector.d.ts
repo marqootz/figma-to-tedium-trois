@@ -26,5 +26,9 @@ export declare class ChangeDetector {
      * Get layout properties from a node
      */
     private static getLayoutProperties;
+    /**
+     * Detect vector path changes for SVG elements
+     */
+    private static detectVectorPathChanges;
 }
 //# sourceMappingURL=change-detector.d.ts.map

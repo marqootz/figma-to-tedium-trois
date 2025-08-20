@@ -1,9 +1,243 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 
+;// ./src/utils/svg-converter.ts
+function colorToRGBA(color, opacity = 1) {
+    const r = Math.round(color.r * 255);
+    const g = Math.round(color.g * 255);
+    const b = Math.round(color.b * 255);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+function base64Decode(str) {
+    if (typeof atob !== 'undefined') {
+        return atob(str);
+    }
+    // Fallback for environments without atob (Figma plugin environment)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let result = '';
+    let i = 0;
+    // Remove any padding
+    str = str.replace(/=+$/, '');
+    while (i < str.length) {
+        const e1 = chars.indexOf(str.charAt(i++));
+        const e2 = chars.indexOf(str.charAt(i++));
+        const e3 = chars.indexOf(str.charAt(i++));
+        const e4 = chars.indexOf(str.charAt(i++));
+        const c1 = (e1 << 2) | (e2 >> 4);
+        const c2 = ((e2 & 15) << 4) | (e3 >> 2);
+        const c3 = ((e3 & 3) << 6) | e4;
+        result += String.fromCharCode(c1);
+        if (e3 !== 64)
+            result += String.fromCharCode(c2);
+        if (e4 !== 64)
+            result += String.fromCharCode(c3);
+    }
+    return result;
+}
+function getVectorStyles(node) {
+    const styles = {
+        fills: [],
+        strokes: [],
+        strokeWeight: node.strokeWeight || 0,
+        gradients: []
+    };
+    // Process fills
+    if (node.fills && Array.isArray(node.fills)) {
+        styles.fills = node.fills.map((fill, fillIndex) => {
+            var _a;
+            if (fill.type === 'SOLID' && fill.color) {
+                const opacity = (_a = fill.opacity) !== null && _a !== void 0 ? _a : 1;
+                return colorToRGBA(fill.color, opacity);
+            }
+            else if (fill.type === 'GRADIENT_LINEAR' || fill.type === 'GRADIENT_RADIAL') {
+                const gradientId = `gradient-${node.id}-${fillIndex}`;
+                styles.gradients.push({
+                    id: gradientId,
+                    type: fill.type,
+                    fill: fill
+                });
+                return `url(#${gradientId})`;
+            }
+            return 'none';
+        });
+    }
+    // Process strokes
+    if (node.strokes && Array.isArray(node.strokes)) {
+        styles.strokes = node.strokes.map((stroke) => {
+            var _a;
+            if (stroke.type === 'SOLID' && stroke.color) {
+                const opacity = (_a = stroke.opacity) !== null && _a !== void 0 ? _a : 1;
+                return colorToRGBA(stroke.color, opacity);
+            }
+            return 'none';
+        });
+    }
+    return styles;
+}
+function createSVGGradientDefinitions(gradients) {
+    if (gradients.length === 0)
+        return '';
+    const defs = gradients.map(gradient => {
+        var _a, _b;
+        const { id, type, fill } = gradient;
+        if (type === 'GRADIENT_LINEAR') {
+            const stops = ((_a = fill.gradientStops) === null || _a === void 0 ? void 0 : _a.map((stop) => {
+                const color = colorToRGBA(stop.color, stop.opacity);
+                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
+            }).join('')) || '';
+            return `<linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%">${stops}</linearGradient>`;
+        }
+        else if (type === 'GRADIENT_RADIAL') {
+            const stops = ((_b = fill.gradientStops) === null || _b === void 0 ? void 0 : _b.map((stop) => {
+                const color = colorToRGBA(stop.color, stop.opacity);
+                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
+            }).join('')) || '';
+            return `<radialGradient id="${id}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>`;
+        }
+        return '';
+    }).join('');
+    return defs ? `<defs>${defs}</defs>` : '';
+}
+function convertVectorToSVG(node) {
+    var _a, _b;
+    console.log('Converting vector to SVG:', {
+        nodeId: node.id,
+        nodeName: node.name,
+        hasVectorPaths: !!node.vectorPaths,
+        vectorPathsLength: ((_a = node.vectorPaths) === null || _a === void 0 ? void 0 : _a.length) || 0,
+        hasFills: !!node.fills,
+        fillsLength: ((_b = node.fills) === null || _b === void 0 ? void 0 : _b.length) || 0
+    });
+    const width = node.width || 0;
+    const height = node.height || 0;
+    if (!width || !height) {
+        console.warn('No valid dimensions found for vector node:', {
+            nodeId: node.id,
+            nodeName: node.name,
+            width: node.width,
+            height: node.height
+        });
+        return '';
+    }
+    const styles = getVectorStyles(node);
+    // Check for blur effects and add filter definitions
+    let blurFilterRef = '';
+    if (node.effects && Array.isArray(node.effects)) {
+        const blur = node.effects.find((effect) => effect.type === 'LAYER_BLUR' || effect.type === 'BACKGROUND_BLUR');
+        if (blur) {
+            const filterId = `blur-${node.id}`;
+            blurFilterRef = ` filter="url(#${filterId})"`;
+        }
+    }
+    if (!node.vectorPaths || !Array.isArray(node.vectorPaths)) {
+        console.warn('No vector paths found for vector:', {
+            nodeId: node.id,
+            nodeName: node.name,
+            vectorPaths: node.vectorPaths
+        });
+        return '';
+    }
+    const paths = node.vectorPaths.map((path, index) => {
+        var _a, _b;
+        console.log('Processing vector path:', {
+            pathIndex: index,
+            pathData: path.data,
+            pathDataLength: ((_a = path.data) === null || _a === void 0 ? void 0 : _a.length) || 0
+        });
+        const fill = styles.fills.length === 1 ? styles.fills[0] : (styles.fills[index] || 'none');
+        const stroke = styles.strokes.length === 1 ? styles.strokes[0] : (styles.strokes[index] || 'none');
+        const strokeWidth = styles.strokeWeight || 0;
+        // Decode path data from base64
+        let decodedPathData = path.data;
+        try {
+            if (/^[A-Za-z0-9+/=]+$/.test(path.data)) {
+                decodedPathData = base64Decode(path.data);
+                console.log('Decoded base64 path data:', {
+                    originalLength: ((_b = path.data) === null || _b === void 0 ? void 0 : _b.length) || 0,
+                    decodedLength: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.length) || 0,
+                    firstChars: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.substring(0, 50)) || 'empty'
+                });
+            }
+            if (!decodedPathData || decodedPathData.trim() === '') {
+                console.warn('Empty decoded path data for path index:', index);
+                return '';
+            }
+            const validCommands = ['M', 'L', 'H', 'V', 'C', 'S', 'Q', 'T', 'A', 'Z'];
+            const firstChar = decodedPathData.trim().charAt(0).toUpperCase();
+            if (!validCommands.includes(firstChar)) {
+                console.warn('Invalid SVG path command:', firstChar);
+                return '';
+            }
+        }
+        catch (error) {
+            console.warn('Error decoding path data:', error);
+            decodedPathData = path.data;
+        }
+        return `<path d="${decodedPathData}" 
+            fill="${fill}" 
+            stroke="${stroke}" 
+            stroke-width="${String(strokeWidth)}"
+            fill-rule="nonzero"${blurFilterRef} />`;
+    }).join('\n    ');
+    if (!paths) {
+        console.warn('No path data found for vector');
+        return '';
+    }
+    // Create gradient definitions if any gradients exist
+    const gradientDefs = createSVGGradientDefinitions(styles.gradients);
+    // Wrap paths in a group element
+    const wrappedPaths = `<g id="${node.name.replace(/\s+/g, '_')}">\n    ${paths}\n</g>`;
+    return gradientDefs + '\n    ' + wrappedPaths;
+}
+function convertRectangleToSVG(node) {
+    let fillColor = 'none';
+    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
+        const fill = node.fills[0];
+        if (fill.type === 'SOLID' && fill.color) {
+            fillColor = colorToRGBA(fill.color, fill.opacity);
+        }
+    }
+    const rx = node.cornerRadius && typeof node.cornerRadius === 'number' ? node.cornerRadius : 0;
+    return `<rect width="${node.width}" height="${node.height}" fill="${fillColor}" rx="${rx}"/>`;
+}
+function convertEllipseToSVG(node) {
+    let fillColor = 'none';
+    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
+        const fill = node.fills[0];
+        if (fill.type === 'SOLID' && fill.color) {
+            fillColor = colorToRGBA(fill.color, fill.opacity);
+        }
+    }
+    const cx = node.width / 2;
+    const cy = node.height / 2;
+    const rx = node.width / 2;
+    const ry = node.height / 2;
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fillColor}"/>`;
+}
+
 ;// ./src/html/element-builder.ts
+
 class ElementBuilder {
     buildElement(node) {
+        // Handle SVG nodes differently
+        if (node.type === 'VECTOR') {
+            const svg = convertVectorToSVG(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+        }
+        if (node.type === 'RECTANGLE') {
+            const svg = convertRectangleToSVG(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+        }
+        if (node.type === 'ELLIPSE') {
+            const svg = convertEllipseToSVG(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
+        }
         const attributes = this.generateAttributes(node);
         const content = this.generateContent(node);
         const tag = this.getHTMLTag(node);
@@ -52,6 +286,10 @@ class ElementBuilder {
                 return 'div';
             case 'TEXT':
                 return 'span';
+            case 'VECTOR':
+            case 'RECTANGLE':
+            case 'ELLIPSE':
+                return 'svg';
             default:
                 return 'div';
         }
@@ -170,8 +408,8 @@ class StyleGenerator {
                     break;
             }
         }
-        // Background fills
-        if (node.fills && node.fills.length > 0) {
+        // Background fills (exclude SVG nodes - they handle fills internally)
+        if (node.fills && node.fills.length > 0 && !this.isSVGNode(node)) {
             const backgroundCSS = this.generateBackgroundCSS(node.fills);
             if (backgroundCSS) {
                 properties.push(backgroundCSS);
@@ -247,6 +485,9 @@ class StyleGenerator {
             return child.width || 0;
         }
         return 0;
+    }
+    isSVGNode(node) {
+        return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
     }
 }
 
@@ -1561,6 +1802,8 @@ class FigmaDataExtractor {
             mainComponentId: this.extractMainComponentId(node),
             variantProperties: this.extractVariantProperties(node),
             reactions: this.extractReactions(node),
+            vectorPaths: this.extractVectorPaths(node),
+            effects: this.extractEffects(node),
             children: []
         };
         // Extract children recursively
@@ -1767,6 +2010,29 @@ class FigmaDataExtractor {
                         easing: { type: 'GENTLE' }
                     }
                 }
+            }));
+        }
+        return [];
+    }
+    extractVectorPaths(node) {
+        if ('vectorPaths' in node && node.vectorPaths && Array.isArray(node.vectorPaths)) {
+            return node.vectorPaths.map(path => ({
+                data: path.data,
+                windingRule: path.windingRule
+            }));
+        }
+        return [];
+    }
+    extractEffects(node) {
+        if ('effects' in node && node.effects && Array.isArray(node.effects)) {
+            return node.effects
+                .filter(effect => effect.visible !== false)
+                .map(effect => ({
+                type: effect.type,
+                radius: effect.type === 'LAYER_BLUR' || effect.type === 'BACKGROUND_BLUR' ? effect.radius : undefined,
+                color: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? this.extractColor(effect.color) : undefined,
+                offset: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? effect.offset : undefined,
+                spread: effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW' ? effect.spread : undefined
             }));
         }
         return [];

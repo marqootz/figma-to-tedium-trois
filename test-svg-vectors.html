@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Vector Support Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .test-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .svg-example {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background: #fafafa;
+        }
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>SVG Vector Support Test</h1>
+    
+    <div class="test-container">
+        <h2 class="test-title">Test 1: Basic Vector Path</h2>
+        <p class="test-description">Testing basic SVG vector path rendering</p>
+        <div class="svg-example">
+            <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" data-figma-id="test-vector-1" data-figma-name="Test Vector" data-figma-type="VECTOR">
+                <path d="M10,10 L90,10 L90,90 L10,90 Z" fill="blue" stroke="red" stroke-width="2" fill-rule="nonzero" />
+            </svg>
+        </div>
+        <div class="code-block">
+&lt;svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;path d="M10,10 L90,10 L90,90 L10,90 Z" fill="blue" stroke="red" stroke-width="2" /&gt;
+&lt;/svg&gt;
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-title">Test 2: Rectangle as SVG</h2>
+        <p class="test-description">Testing rectangle conversion to SVG</p>
+        <div class="svg-example">
+            <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" data-figma-id="test-rect-1" data-figma-name="Test Rectangle" data-figma-type="RECTANGLE">
+                <rect width="120" height="80" fill="rgba(255, 0, 0, 0.8)" rx="10"/>
+            </svg>
+        </div>
+        <div class="code-block">
+&lt;svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;rect width="120" height="80" fill="rgba(255, 0, 0, 0.8)" rx="10"/&gt;
+&lt;/svg&gt;
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-title">Test 3: Ellipse as SVG</h2>
+        <p class="test-description">Testing ellipse conversion to SVG</p>
+        <div class="svg-example">
+            <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" data-figma-id="test-ellipse-1" data-figma-name="Test Ellipse" data-figma-type="ELLIPSE">
+                <ellipse cx="50" cy="50" rx="40" ry="30" fill="rgba(0, 255, 0, 0.7)"/>
+            </svg>
+        </div>
+        <div class="code-block">
+&lt;svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;ellipse cx="50" cy="50" rx="40" ry="30" fill="rgba(0, 255, 0, 0.7)"/&gt;
+&lt;/svg&gt;
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-title">Test 4: Complex Vector Path</h2>
+        <p class="test-description">Testing complex SVG path with curves</p>
+        <div class="svg-example">
+            <svg width="150" height="100" viewBox="0 0 150 100" fill="none" xmlns="http://www.w3.org/2000/svg" data-figma-id="test-vector-2" data-figma-name="Complex Vector" data-figma-type="VECTOR">
+                <path d="M10,50 Q25,10 40,50 T70,50 Q85,10 100,50 T130,50" fill="none" stroke="purple" stroke-width="3" fill-rule="nonzero" />
+            </svg>
+        </div>
+        <div class="code-block">
+&lt;svg width="150" height="100" viewBox="0 0 150 100" fill="none" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;path d="M10,50 Q25,10 40,50 T70,50 Q85,10 100,50 T130,50" fill="none" stroke="purple" stroke-width="3" /&gt;
+&lt;/svg&gt;
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-title">Test 5: Vector with Gradient</h2>
+        <p class="test-description">Testing vector with gradient fill (simulated)</p>
+        <div class="svg-example">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" data-figma-id="test-vector-3" data-figma-name="Gradient Vector" data-figma-type="VECTOR">
+                <defs>
+                    <linearGradient id="gradient-test-vector-3-0" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgba(255, 0, 0, 1)" />
+                        <stop offset="100%" stop-color="rgba(0, 0, 255, 1)" />
+                    </linearGradient>
+                </defs>
+                <g id="Gradient_Vector">
+                    <path d="M10,10 L110,10 L110,70 L10,70 Z" fill="url(#gradient-test-vector-3-0)" stroke="black" stroke-width="1" fill-rule="nonzero" />
+                </g>
+            </svg>
+        </div>
+        <div class="code-block">
+&lt;svg width="120" height="80" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;defs&gt;
+        &lt;linearGradient id="gradient-1" x1="0%" y1="0%" x2="100%" y2="0%"&gt;
+            &lt;stop offset="0%" stop-color="red" /&gt;
+            &lt;stop offset="100%" stop-color="blue" /&gt;
+        &lt;/linearGradient&gt;
+    &lt;/defs&gt;
+    &lt;path d="M10,10 L110,10 L110,70 L10,70 Z" fill="url(#gradient-1)" /&gt;
+&lt;/svg&gt;
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-title">Implementation Status</h2>
+        <p class="test-description">Current SVG vector support implementation:</p>
+        <ul>
+            <li>✅ <strong>VECTOR nodes</strong> - Converted to SVG with path data</li>
+            <li>✅ <strong>RECTANGLE nodes</strong> - Converted to SVG rect elements</li>
+            <li>✅ <strong>ELLIPSE nodes</strong> - Converted to SVG ellipse elements</li>
+            <li>✅ <strong>Vector paths</strong> - Base64 decoding and path rendering</li>
+            <li>✅ <strong>Fill colors</strong> - Solid colors and opacity support</li>
+            <li>✅ <strong>Strokes</strong> - Stroke colors and weights</li>
+            <li>✅ <strong>Gradients</strong> - Linear and radial gradient support</li>
+            <li>✅ <strong>Effects</strong> - Blur effects and filters</li>
+            <li>✅ <strong>Animation support</strong> - Vector path changes detected</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('SVG Vector Support Test Loaded');
+        console.log('Testing SVG elements:', document.querySelectorAll('svg').length, 'found');
+        
+        // Test that SVG elements are properly rendered
+        const svgElements = document.querySelectorAll('svg');
+        svgElements.forEach((svg, index) => {
+            console.log(`SVG ${index + 1}:`, {
+                id: svg.getAttribute('data-figma-id'),
+                name: svg.getAttribute('data-figma-name'),
+                type: svg.getAttribute('data-figma-type'),
+                width: svg.getAttribute('width'),
+                height: svg.getAttribute('height'),
+                hasPaths: svg.querySelectorAll('path').length,
+                hasRects: svg.querySelectorAll('rect').length,
+                hasEllipses: svg.querySelectorAll('ellipse').length
+            });
+        });
+    </script>
+</body>
+</html>

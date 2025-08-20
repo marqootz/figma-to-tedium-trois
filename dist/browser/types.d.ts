@@ -27,6 +27,8 @@ export interface FigmaNodeData {
     height: number;
     opacity?: number;
     fills?: any[];
+    strokes?: any[];
+    strokeWeight?: number;
     cornerRadius?: number;
     layoutMode?: string;
     counterAxisAlignItems?: string;
@@ -36,8 +38,14 @@ export interface FigmaNodeData {
     paddingRight?: number;
     paddingTop?: number;
     paddingBottom?: number;
+    vectorPaths?: VectorPath[];
+    effects?: any[];
     children?: FigmaNodeData[];
     reactions?: any[];
+}
+export interface VectorPath {
+    data: string;
+    windingRule?: string;
 }
 export interface ElementRegistry {
     get(figmaId: string): HTMLElement | undefined;
