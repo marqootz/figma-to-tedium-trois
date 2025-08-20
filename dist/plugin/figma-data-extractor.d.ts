@@ -15,6 +15,8 @@ export declare class FigmaDataExtractor {
     private extractPaddingRight;
     private extractPaddingTop;
     private extractPaddingBottom;
+    private extractLayoutSizingHorizontal;
+    private extractLayoutSizingVertical;
     private extractCharacters;
     private extractFontName;
     private extractFontFamily;
@@ -50,5 +52,7 @@ export declare class FigmaDataExtractor {
     private variantPropertiesMatch;
     findComponentSets(nodes: FigmaNode[]): FigmaNode[];
     traceAnimationChain(startNodeId: string, nodes: FigmaNode[]): string[];
+    private propagateSizingProperties;
+    private propagateChildDimensions;
 }
 //# sourceMappingURL=figma-data-extractor.d.ts.map

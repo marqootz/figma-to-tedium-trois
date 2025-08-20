@@ -73,6 +73,35 @@ export class StyleGenerator {
       }
     }
 
+    // Sizing properties (FILL/HUG/FIXED)
+    if (node.layoutSizingHorizontal) {
+      switch (node.layoutSizingHorizontal) {
+        case 'FILL':
+          properties.push(`width: 100%;`);
+          break;
+        case 'HUG':
+          properties.push(`width: fit-content;`);
+          break;
+        case 'FIXED':
+          // Width is already set above, no additional CSS needed
+          break;
+      }
+    }
+
+    if (node.layoutSizingVertical) {
+      switch (node.layoutSizingVertical) {
+        case 'FILL':
+          properties.push(`height: 100%;`);
+          break;
+        case 'HUG':
+          properties.push(`height: fit-content;`);
+          break;
+        case 'FIXED':
+          // Height is already set above, no additional CSS needed
+          break;
+      }
+    }
+
     // Background fills
     if (node.fills && node.fills.length > 0) {
       const backgroundCSS = this.generateBackgroundCSS(node.fills);

@@ -19,6 +19,8 @@ export interface FigmaNode {
     paddingRight?: number;
     paddingTop?: number;
     paddingBottom?: number;
+    layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
+    layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
     characters?: string;
     fontName?: any;
     fontFamily?: string;

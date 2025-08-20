@@ -39,6 +39,8 @@ export class FigmaDataExtractor {
       paddingRight: this.extractPaddingRight(node),
       paddingTop: this.extractPaddingTop(node),
       paddingBottom: this.extractPaddingBottom(node),
+      layoutSizingHorizontal: this.extractLayoutSizingHorizontal(node),
+      layoutSizingVertical: this.extractLayoutSizingVertical(node),
       characters: this.extractCharacters(node),
       fontName: this.extractFontName(node),
       fontFamily: this.extractFontFamily(node),
@@ -158,6 +160,20 @@ export class FigmaDataExtractor {
   private extractPaddingBottom(node: SceneNode): number | undefined {
     if ('paddingBottom' in node && typeof node.paddingBottom === 'number') {
       return node.paddingBottom;
+    }
+    return undefined;
+  }
+
+  private extractLayoutSizingHorizontal(node: SceneNode): 'FIXED' | 'FILL' | 'HUG' | undefined {
+    if ('layoutSizingHorizontal' in node && node.layoutSizingHorizontal && (node.layoutSizingHorizontal as any) !== figma.mixed) {
+      return node.layoutSizingHorizontal as 'FIXED' | 'FILL' | 'HUG';
+    }
+    return undefined;
+  }
+
+  private extractLayoutSizingVertical(node: SceneNode): 'FIXED' | 'FILL' | 'HUG' | undefined {
+    if ('layoutSizingVertical' in node && node.layoutSizingVertical && (node.layoutSizingVertical as any) !== figma.mixed) {
+      return node.layoutSizingVertical as 'FIXED' | 'FILL' | 'HUG';
     }
     return undefined;
   }
@@ -418,12 +434,15 @@ export class FigmaDataExtractor {
       const componentSetNode = await this.extractNode(componentSet as any);
       const mainComponentNode = await this.extractNode(mainComponent);
 
+      // Propagate sizing properties from instance to component set and variants
+      const propagatedData = this.propagateSizingProperties(instance, componentSetNode, variants);
+
       return {
         instance,
         mainComponent: mainComponentNode,
-        componentSet: componentSetNode,
-        variants,
-        activeVariant
+        componentSet: propagatedData.componentSet,
+        variants: propagatedData.variants,
+        activeVariant: propagatedData.activeVariant
       };
 
     } catch (error) {
@@ -479,12 +498,15 @@ export class FigmaDataExtractor {
       const mainComponentNode = await this.extractNode(mainComponent);
       const instanceNodeData = await this.extractNode(instanceNode);
 
+      // Propagate sizing properties from instance to component set and variants
+      const propagatedData = this.propagateSizingProperties(instanceNodeData, componentSetNode, variants);
+
       return {
         instance: instanceNodeData,
         mainComponent: mainComponentNode,
-        componentSet: componentSetNode,
-        variants,
-        activeVariant
+        componentSet: propagatedData.componentSet,
+        variants: propagatedData.variants,
+        activeVariant: propagatedData.activeVariant
       };
 
     } catch (error) {
@@ -575,5 +597,84 @@ export class FigmaDataExtractor {
     }
     
     return chain;
+  }
+
+  // Propagate sizing properties from instance to component set and variants
+  private propagateSizingProperties(
+    instance: FigmaNode, 
+    componentSet: FigmaNode, 
+    variants: FigmaNode[]
+  ): {
+    componentSet: FigmaNode;
+    variants: FigmaNode[];
+    activeVariant: FigmaNode;
+  } {
+    console.log('Propagating sizing properties from instance:', instance.id);
+    console.log('Instance sizing - Horizontal:', instance.layoutSizingHorizontal, 'Vertical:', instance.layoutSizingVertical);
+    console.log('Instance dimensions - Width:', instance.width, 'Height:', instance.height);
+
+    // Create a copy of the component set with propagated sizing properties and dimensions
+    const propagatedComponentSet: FigmaNode = {
+      ...componentSet,
+      layoutSizingHorizontal: instance.layoutSizingHorizontal || componentSet.layoutSizingHorizontal,
+      layoutSizingVertical: instance.layoutSizingVertical || componentSet.layoutSizingVertical,
+      // Propagate actual dimensions from instance
+      width: instance.width,
+      height: instance.height
+    };
+
+    // Create copies of variants with propagated sizing properties and dimensions
+    const propagatedVariants: FigmaNode[] = variants.map(variant => {
+      const propagatedVariant = {
+        ...variant,
+        layoutSizingHorizontal: instance.layoutSizingHorizontal || variant.layoutSizingHorizontal,
+        layoutSizingVertical: instance.layoutSizingVertical || variant.layoutSizingVertical,
+        // Propagate actual dimensions from instance
+        width: instance.width,
+        height: instance.height
+      };
+
+      // Also propagate dimensions to children if they have FILL sizing
+      if (propagatedVariant.children) {
+        propagatedVariant.children = this.propagateChildDimensions(propagatedVariant.children, instance);
+      }
+
+      return propagatedVariant;
+    });
+
+    // Find the active variant (assuming it's the first one for now)
+    const activeVariant = propagatedVariants[0] || variants[0];
+
+    console.log('Propagated sizing and dimensions to component set and', propagatedVariants.length, 'variants');
+
+    return {
+      componentSet: propagatedComponentSet,
+      variants: propagatedVariants,
+      activeVariant
+    };
+  }
+
+  // Helper method to propagate dimensions to children with FILL sizing
+  private propagateChildDimensions(children: FigmaNode[], instance: FigmaNode): FigmaNode[] {
+    return children.map(child => {
+      const propagatedChild = { ...child };
+
+      // If child has FILL horizontal sizing, use instance width
+      if (child.layoutSizingHorizontal === 'FILL') {
+        propagatedChild.width = instance.width;
+      }
+
+      // If child has FILL vertical sizing, use instance height
+      if (child.layoutSizingVertical === 'FILL') {
+        propagatedChild.height = instance.height;
+      }
+
+      // Recursively propagate to nested children
+      if (propagatedChild.children) {
+        propagatedChild.children = this.propagateChildDimensions(propagatedChild.children, instance);
+      }
+
+      return propagatedChild;
+    });
   }
 }

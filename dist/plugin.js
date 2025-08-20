@@ -123,6 +123,33 @@ class StyleGenerator {
                 properties.push(`justify-content: ${justifyMap[node.primaryAxisAlignItems]};`);
             }
         }
+        // Sizing properties (FILL/HUG/FIXED)
+        if (node.layoutSizingHorizontal) {
+            switch (node.layoutSizingHorizontal) {
+                case 'FILL':
+                    properties.push(`width: 100%;`);
+                    break;
+                case 'HUG':
+                    properties.push(`width: fit-content;`);
+                    break;
+                case 'FIXED':
+                    // Width is already set above, no additional CSS needed
+                    break;
+            }
+        }
+        if (node.layoutSizingVertical) {
+            switch (node.layoutSizingVertical) {
+                case 'FILL':
+                    properties.push(`height: 100%;`);
+                    break;
+                case 'HUG':
+                    properties.push(`height: fit-content;`);
+                    break;
+                case 'FIXED':
+                    // Height is already set above, no additional CSS needed
+                    break;
+            }
+        }
         // Background fills
         if (node.fills && node.fills.length > 0) {
             const backgroundCSS = this.generateBackgroundCSS(node.fills);
@@ -305,6 +332,17 @@ class BundleGenerator {
             changes.push(new AnimationChange('layout', this.getLayoutProperties(source), this.getLayoutProperties(target)));
           }
 
+          // Sizing property changes
+          if (source.layoutSizingHorizontal !== target.layoutSizingHorizontal || source.layoutSizingVertical !== target.layoutSizingVertical) {
+            changes.push(new AnimationChange('sizing', { 
+              horizontal: source.layoutSizingHorizontal, 
+              vertical: source.layoutSizingVertical 
+            }, { 
+              horizontal: target.layoutSizingHorizontal, 
+              vertical: target.layoutSizingVertical 
+            }));
+          }
+
           // Child element changes
           const childChanges = this.detectChildElementChanges(source, target);
           changes.push(...childChanges);
@@ -429,6 +467,39 @@ class BundleGenerator {
               break;
             case 'borderRadius':
               element.style.borderRadius = change.targetValue + 'px';
+              break;
+            case 'sizing':
+              const { horizontal, vertical } = change.targetValue;
+              
+              // Apply horizontal sizing
+              if (horizontal) {
+                switch (horizontal) {
+                  case 'FILL':
+                    element.style.width = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.width = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Width should already be set, no change needed
+                    break;
+                }
+              }
+              
+              // Apply vertical sizing
+              if (vertical) {
+                switch (vertical) {
+                  case 'FILL':
+                    element.style.height = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.height = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Height should already be set, no change needed
+                    break;
+                }
+              }
               break;
             case 'childPosition':
               // Try to find the child by the change.childId
@@ -558,6 +629,10 @@ class BundleGenerator {
                 break;
               case 'borderRadius':
                 properties.add('border-radius');
+                break;
+              case 'sizing':
+                properties.add('width');
+                properties.add('height');
                 break;
               case 'layout':
                 properties.add('all');
@@ -1111,6 +1186,8 @@ class FigmaDataExtractor {
             paddingRight: this.extractPaddingRight(node),
             paddingTop: this.extractPaddingTop(node),
             paddingBottom: this.extractPaddingBottom(node),
+            layoutSizingHorizontal: this.extractLayoutSizingHorizontal(node),
+            layoutSizingVertical: this.extractLayoutSizingVertical(node),
             characters: this.extractCharacters(node),
             fontName: this.extractFontName(node),
             fontFamily: this.extractFontFamily(node),
@@ -1216,6 +1293,18 @@ class FigmaDataExtractor {
     extractPaddingBottom(node) {
         if ('paddingBottom' in node && typeof node.paddingBottom === 'number') {
             return node.paddingBottom;
+        }
+        return undefined;
+    }
+    extractLayoutSizingHorizontal(node) {
+        if ('layoutSizingHorizontal' in node && node.layoutSizingHorizontal && node.layoutSizingHorizontal !== figma.mixed) {
+            return node.layoutSizingHorizontal;
+        }
+        return undefined;
+    }
+    extractLayoutSizingVertical(node) {
+        if ('layoutSizingVertical' in node && node.layoutSizingVertical && node.layoutSizingVertical !== figma.mixed) {
+            return node.layoutSizingVertical;
         }
         return undefined;
     }
@@ -1417,12 +1506,14 @@ class FigmaDataExtractor {
             // Extract the component set and main component
             const componentSetNode = await this.extractNode(componentSet);
             const mainComponentNode = await this.extractNode(mainComponent);
+            // Propagate sizing properties from instance to component set and variants
+            const propagatedData = this.propagateSizingProperties(instance, componentSetNode, variants);
             return {
                 instance,
                 mainComponent: mainComponentNode,
-                componentSet: componentSetNode,
-                variants,
-                activeVariant
+                componentSet: propagatedData.componentSet,
+                variants: propagatedData.variants,
+                activeVariant: propagatedData.activeVariant
             };
         }
         catch (error) {
@@ -1463,12 +1554,14 @@ class FigmaDataExtractor {
             const componentSetNode = await this.extractNode(componentSet);
             const mainComponentNode = await this.extractNode(mainComponent);
             const instanceNodeData = await this.extractNode(instanceNode);
+            // Propagate sizing properties from instance to component set and variants
+            const propagatedData = this.propagateSizingProperties(instanceNodeData, componentSetNode, variants);
             return {
                 instance: instanceNodeData,
                 mainComponent: mainComponentNode,
-                componentSet: componentSetNode,
-                variants,
-                activeVariant
+                componentSet: propagatedData.componentSet,
+                variants: propagatedData.variants,
+                activeVariant: propagatedData.activeVariant
             };
         }
         catch (error) {
@@ -1545,6 +1638,54 @@ class FigmaDataExtractor {
             }
         }
         return chain;
+    }
+    // Propagate sizing properties from instance to component set and variants
+    propagateSizingProperties(instance, componentSet, variants) {
+        console.log('Propagating sizing properties from instance:', instance.id);
+        console.log('Instance sizing - Horizontal:', instance.layoutSizingHorizontal, 'Vertical:', instance.layoutSizingVertical);
+        console.log('Instance dimensions - Width:', instance.width, 'Height:', instance.height);
+        // Create a copy of the component set with propagated sizing properties and dimensions
+        const propagatedComponentSet = Object.assign(Object.assign({}, componentSet), { layoutSizingHorizontal: instance.layoutSizingHorizontal || componentSet.layoutSizingHorizontal, layoutSizingVertical: instance.layoutSizingVertical || componentSet.layoutSizingVertical, 
+            // Propagate actual dimensions from instance
+            width: instance.width, height: instance.height });
+        // Create copies of variants with propagated sizing properties and dimensions
+        const propagatedVariants = variants.map(variant => {
+            const propagatedVariant = Object.assign(Object.assign({}, variant), { layoutSizingHorizontal: instance.layoutSizingHorizontal || variant.layoutSizingHorizontal, layoutSizingVertical: instance.layoutSizingVertical || variant.layoutSizingVertical, 
+                // Propagate actual dimensions from instance
+                width: instance.width, height: instance.height });
+            // Also propagate dimensions to children if they have FILL sizing
+            if (propagatedVariant.children) {
+                propagatedVariant.children = this.propagateChildDimensions(propagatedVariant.children, instance);
+            }
+            return propagatedVariant;
+        });
+        // Find the active variant (assuming it's the first one for now)
+        const activeVariant = propagatedVariants[0] || variants[0];
+        console.log('Propagated sizing and dimensions to component set and', propagatedVariants.length, 'variants');
+        return {
+            componentSet: propagatedComponentSet,
+            variants: propagatedVariants,
+            activeVariant
+        };
+    }
+    // Helper method to propagate dimensions to children with FILL sizing
+    propagateChildDimensions(children, instance) {
+        return children.map(child => {
+            const propagatedChild = Object.assign({}, child);
+            // If child has FILL horizontal sizing, use instance width
+            if (child.layoutSizingHorizontal === 'FILL') {
+                propagatedChild.width = instance.width;
+            }
+            // If child has FILL vertical sizing, use instance height
+            if (child.layoutSizingVertical === 'FILL') {
+                propagatedChild.height = instance.height;
+            }
+            // Recursively propagate to nested children
+            if (propagatedChild.children) {
+                propagatedChild.children = this.propagateChildDimensions(propagatedChild.children, instance);
+            }
+            return propagatedChild;
+        });
     }
 }
 

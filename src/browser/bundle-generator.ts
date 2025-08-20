@@ -146,6 +146,17 @@ export class BundleGenerator {
             changes.push(new AnimationChange('layout', this.getLayoutProperties(source), this.getLayoutProperties(target)));
           }
 
+          // Sizing property changes
+          if (source.layoutSizingHorizontal !== target.layoutSizingHorizontal || source.layoutSizingVertical !== target.layoutSizingVertical) {
+            changes.push(new AnimationChange('sizing', { 
+              horizontal: source.layoutSizingHorizontal, 
+              vertical: source.layoutSizingVertical 
+            }, { 
+              horizontal: target.layoutSizingHorizontal, 
+              vertical: target.layoutSizingVertical 
+            }));
+          }
+
           // Child element changes
           const childChanges = this.detectChildElementChanges(source, target);
           changes.push(...childChanges);
@@ -271,6 +282,39 @@ export class BundleGenerator {
               break;
             case 'borderRadius':
               element.style.borderRadius = change.targetValue + 'px';
+              break;
+            case 'sizing':
+              const { horizontal, vertical } = change.targetValue;
+              
+              // Apply horizontal sizing
+              if (horizontal) {
+                switch (horizontal) {
+                  case 'FILL':
+                    element.style.width = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.width = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Width should already be set, no change needed
+                    break;
+                }
+              }
+              
+              // Apply vertical sizing
+              if (vertical) {
+                switch (vertical) {
+                  case 'FILL':
+                    element.style.height = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.height = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Height should already be set, no change needed
+                    break;
+                }
+              }
               break;
             case 'childPosition':
               // Try to find the child by the change.childId
@@ -400,6 +444,10 @@ export class BundleGenerator {
                 break;
               case 'borderRadius':
                 properties.add('border-radius');
+                break;
+              case 'sizing':
+                properties.add('width');
+                properties.add('height');
                 break;
               case 'layout':
                 properties.add('all');

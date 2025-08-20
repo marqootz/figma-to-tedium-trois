@@ -42,6 +42,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
+  width: 100%;
   background-color: rgba(79, 79, 79, 1);
   border-radius: 1000px;
 }
@@ -64,7 +65,7 @@
   position: absolute;
   left: 0px;
   top: 0px;
-  width: 2619.125px;
+  width: 346px;
   height: 84px;
   display: flex;
   flex-direction: column;
@@ -77,12 +78,13 @@
   position: absolute;
   left: 0px;
   top: 0px;
-  width: 2619.125px;
+  width: 346px;
   height: 84px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
+  width: 100%;
   background-color: rgba(79, 79, 79, 1);
   border-radius: 1000px;
 }
@@ -110,7 +112,7 @@
   position: absolute;
   left: 0px;
   top: 130px;
-  width: 2619.125px;
+  width: 346px;
   height: 84px;
   display: flex;
   flex-direction: column;
@@ -123,12 +125,13 @@
   position: absolute;
   left: 0px;
   top: 0px;
-  width: 2619.125px;
+  width: 346px;
   height: 84px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
+  width: 100%;
   background-color: rgba(79, 79, 79, 1);
   border-radius: 1000px;
 }
@@ -232,6 +235,17 @@
             changes.push(new AnimationChange('layout', this.getLayoutProperties(source), this.getLayoutProperties(target)));
           }
 
+          // Sizing property changes
+          if (source.layoutSizingHorizontal !== target.layoutSizingHorizontal || source.layoutSizingVertical !== target.layoutSizingVertical) {
+            changes.push(new AnimationChange('sizing', { 
+              horizontal: source.layoutSizingHorizontal, 
+              vertical: source.layoutSizingVertical 
+            }, { 
+              horizontal: target.layoutSizingHorizontal, 
+              vertical: target.layoutSizingVertical 
+            }));
+          }
+
           // Child element changes
           const childChanges = this.detectChildElementChanges(source, target);
           changes.push(...childChanges);
@@ -266,15 +280,7 @@
           return changes;
         }
 
-        static createChildMap(node) {
-          const childMap = new Map();
-          if (node.children) {
-            node.children.forEach(child => {
-              childMap.set(child.name, child);
-            });
-          }
-          return childMap;
-        }
+
 
         static createRecursiveChildMap(node, prefix = '') {
           const childMap = new Map();
@@ -362,6 +368,39 @@
               break;
             case 'borderRadius':
               element.style.borderRadius = change.targetValue + 'px';
+              break;
+            case 'sizing':
+              const { horizontal, vertical } = change.targetValue;
+              
+              // Apply horizontal sizing
+              if (horizontal) {
+                switch (horizontal) {
+                  case 'FILL':
+                    element.style.width = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.width = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Width should already be set, no change needed
+                    break;
+                }
+              }
+              
+              // Apply vertical sizing
+              if (vertical) {
+                switch (vertical) {
+                  case 'FILL':
+                    element.style.height = '100%';
+                    break;
+                  case 'HUG':
+                    element.style.height = 'fit-content';
+                    break;
+                  case 'FIXED':
+                    // Height should already be set, no change needed
+                    break;
+                }
+              }
               break;
             case 'childPosition':
               // Try to find the child by the change.childId
@@ -491,6 +530,10 @@
                 break;
               case 'borderRadius':
                 properties.add('border-radius');
+                break;
+              case 'sizing':
+                properties.add('width');
+                properties.add('height');
                 break;
               case 'layout':
                 properties.add('all');
@@ -817,7 +860,7 @@
           window.figmaAnimationSystem.registerElement(
             '5829:3372',
             element_5829_3372,
-            {"id":"5829:3372","name":"glydcar/info-bar/ride-progress","type":"INSTANCE","x":17523,"y":2018,"width":346,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"componentProperties":{"Property 1":{"value":"start","type":"VARIANT","boundVariables":{}}},"variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"I5829:3372;6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"I5829:3372;6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
+            {"id":"5829:3372","name":"glydcar/info-bar/ride-progress","type":"INSTANCE","x":17523,"y":2018,"width":346,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","componentProperties":{"Property 1":{"value":"start","type":"VARIANT","boundVariables":{}}},"variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"I5829:3372;6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FILL","layoutSizingVertical":"FIXED","reactions":[],"children":[{"id":"I5829:3372;6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","reactions":[],"children":[]}]}]}
           );
         } else {
           console.warn('Element not found for node: 5829:3372');
@@ -831,7 +874,7 @@
           window.figmaAnimationSystem.registerElement(
             '6461:693',
             variant_6461_693,
-            {"id":"6461:693","name":"Property 1=start","type":"COMPONENT","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
+            {"id":"6461:693","name":"Property 1=start","type":"COMPONENT","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","variantProperties":{"Property 1":"start"},"reactions":[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.8},"action":{"type":"NODE","destinationId":"5829:3368","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":3.200000047683716,"easing":{"type":"EASE_OUT"}}}}],"children":[{"id":"6461:694","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MIN","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FILL","layoutSizingVertical":"FIXED","reactions":[],"children":[{"id":"6461:695","name":"Frame 1307","type":"FRAME","x":0,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","reactions":[],"children":[]}]}]}
           );
         } else {
           console.warn('Variant element not found: 6461:693');
@@ -842,7 +885,7 @@
           window.figmaAnimationSystem.registerElement(
             '5829:3368',
             variant_5829_3368,
-            {"id":"5829:3368","name":"Property 1=end","type":"COMPONENT","x":0,"y":130,"width":2619.125,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"variantProperties":{"Property 1":"end"},"reactions":[],"children":[{"id":"6457:692","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":2619.125,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MAX","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[{"id":"6457:681","name":"Frame 1307","type":"FRAME","x":2535.125,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"reactions":[],"children":[]}]}]}
+            {"id":"5829:3368","name":"Property 1=end","type":"COMPONENT","x":0,"y":130,"width":346,"height":84,"opacity":1,"fills":[],"strokes":[],"strokeWeight":1,"cornerRadius":0,"layoutMode":"VERTICAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":0,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","variantProperties":{"Property 1":"end"},"reactions":[],"children":[{"id":"6457:692","name":"Frame 1308","type":"FRAME","x":0,"y":0,"width":346,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.3113136291503906,"g":0.3113136291503906,"b":0.3113136291503906}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"HORIZONTAL","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"MAX","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FILL","layoutSizingVertical":"FIXED","reactions":[],"children":[{"id":"6457:681","name":"Frame 1307","type":"FRAME","x":2535.125,"y":0,"width":84,"height":84,"opacity":1,"fills":[{"type":"SOLID","opacity":1,"color":{"r":0.1730685830116272,"g":0.5052500367164612,"b":0.6483436226844788}}],"strokes":[],"strokeWeight":1,"cornerRadius":1000,"layoutMode":"NONE","counterAxisAlignItems":"CENTER","primaryAxisAlignItems":"CENTER","itemSpacing":10,"paddingLeft":0,"paddingRight":0,"paddingTop":0,"paddingBottom":0,"layoutSizingHorizontal":"FIXED","layoutSizingVertical":"FIXED","reactions":[],"children":[]}]}]}
           );
         } else {
           console.warn('Variant element not found: 5829:3368');
