@@ -83,7 +83,18 @@ export class StyleGenerator {
           properties.push(`width: 100%;`);
           break;
         case 'HUG':
-          properties.push(`width: fit-content;`);
+          // Check if this node has absolutely positioned children that would break fit-content
+          if (this.hasAbsolutelyPositionedChildren(node)) {
+            // Use the child's width as the parent's fixed width
+            const childWidth = this.getChildWidthForHugSizing(node);
+            if (childWidth > 0) {
+              properties.push(`width: ${childWidth}px;`);
+            } else {
+              properties.push(`width: fit-content;`);
+            }
+          } else {
+            properties.push(`width: fit-content;`);
+          }
           break;
         case 'FIXED':
           // Width is already set above, no additional CSS needed
@@ -167,5 +178,24 @@ export class StyleGenerator {
     
     // For all other cases, use the original position
     return { x: node.x, y: node.y };
+  }
+
+  private hasAbsolutelyPositionedChildren(node: FigmaNode): boolean {
+    // Check if this node has children that are positioned for animation
+    // A simple heuristic: if the node has HUG sizing and has exactly one child with FIXED sizing,
+    // that child's width should determine the parent's width
+    if (node.layoutSizingHorizontal === 'HUG' && node.children && node.children.length === 1) {
+      const child = node.children[0];
+      return child.layoutSizingHorizontal === 'FIXED';
+    }
+    return false;
+  }
+
+  private getChildWidthForHugSizing(node: FigmaNode): number {
+    if (node.children && node.children.length === 1) {
+      const child = node.children[0];
+      return child.width || 0;
+    }
+    return 0;
   }
 }

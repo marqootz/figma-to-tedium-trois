@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fit-Content Fix Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .test-container {
+      margin-bottom: 40px;
+    }
+    
+    .test-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .test-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    /* PROBLEM: Parent with fit-content, child with absolute positioning */
+    .problem-parent {
+      width: fit-content;
+      height: 144px;
+      background-color: rgba(44, 129, 165, 1);
+      border-radius: 1000px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      border: 2px solid #ff0000;
+    }
+    
+    .problem-child {
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      width: 144px;
+      height: 720px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid #333;
+    }
+    
+    /* SOLUTION: Parent with fixed width based on child */
+    .solution-parent {
+      width: 144px; /* Fixed width based on child */
+      height: 144px;
+      background-color: rgba(44, 129, 165, 1);
+      border-radius: 1000px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      border: 2px solid #00ff00;
+    }
+    
+    .solution-child {
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      width: 144px;
+      height: 720px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid #333;
+    }
+    
+    /* ALTERNATIVE SOLUTION: Child with relative positioning */
+    .alt-parent {
+      width: fit-content;
+      height: 144px;
+      background-color: rgba(44, 129, 165, 1);
+      border-radius: 1000px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      border: 2px solid #0000ff;
+    }
+    
+    .alt-child {
+      position: relative; /* Relative instead of absolute */
+      left: 0px;
+      top: 0px;
+      width: 144px;
+      height: 720px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fit-Content Fix Test</h1>
+  
+  <div class="test-container">
+    <div class="test-title">❌ PROBLEM: Parent with fit-content, child with absolute positioning</div>
+    <div class="test-description">
+      The parent has width: fit-content but the child is absolutely positioned, 
+      so the parent's width becomes 0px because the child is removed from the document flow.
+    </div>
+    <div class="problem-parent">
+      <div class="problem-child">
+        <div style="padding: 10px; color: white;">Child content (144px wide)</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+      Parent width: 0px (broken) | Child width: 144px
+    </div>
+  </div>
+  
+  <div class="test-container">
+    <div class="test-title">✅ SOLUTION 1: Parent with fixed width based on child</div>
+    <div class="test-description">
+      The parent uses a fixed width (144px) based on the child's width instead of fit-content.
+      This is the approach implemented in the style generator fix.
+    </div>
+    <div class="solution-parent">
+      <div class="solution-child">
+        <div style="padding: 10px; color: white;">Child content (144px wide)</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+      Parent width: 144px (fixed) | Child width: 144px
+    </div>
+  </div>
+  
+  <div class="test-container">
+    <div class="test-title">✅ SOLUTION 2: Child with relative positioning</div>
+    <div class="test-description">
+      The child uses relative positioning instead of absolute, so it remains in the document flow
+      and the parent's fit-content width calculation works correctly.
+    </div>
+    <div class="alt-parent">
+      <div class="alt-child">
+        <div style="padding: 10px; color: white;">Child content (144px wide)</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+      Parent width: 144px (fit-content) | Child width: 144px
+    </div>
+  </div>
+  
+  <div style="margin-top: 40px; padding: 20px; background-color: #e8f4fd; border-radius: 8px;">
+    <h3>Summary</h3>
+    <p><strong>Problem:</strong> Frame 1233 has <code>width: fit-content</code> but its child Frame 1232 has <code>position: absolute</code>, causing the parent's width to be 0px.</p>
+    <p><strong>Solution:</strong> When a parent has HUG sizing and its only child has FIXED sizing, use the child's width as the parent's fixed width instead of fit-content.</p>
+    <p><strong>Implementation:</strong> Modified <code>StyleGenerator.generateCSSProperties()</code> to detect this case and apply the appropriate width.</p>
+  </div>
+</body>
+</html>
