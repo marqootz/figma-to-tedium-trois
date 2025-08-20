@@ -180,8 +180,8 @@ export class FigmaDataExtractor {
   }
 
   private extractOverflow(node: SceneNode): 'VISIBLE' | 'HIDDEN' | 'SCROLL' | undefined {
-    if ('overflow' in node && node.overflow && node.overflow !== figma.mixed) {
-      return node.overflow as 'VISIBLE' | 'HIDDEN' | 'SCROLL';
+    if ('clipsContent' in node && typeof node.clipsContent === 'boolean') {
+      return node.clipsContent ? 'HIDDEN' : 'VISIBLE';
     }
     return undefined;
   }
