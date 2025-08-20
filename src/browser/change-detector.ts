@@ -3,11 +3,11 @@ import { AnimationChange, FigmaNodeData } from './types';
 export class ChangeDetector {
   /**
    * Detect changes between two Figma nodes
+   * @param source The source Figma node data (or current visual state)
+   * @param target The target Figma node data
    */
   static detectChanges(source: FigmaNodeData, target: FigmaNodeData): AnimationChange[] {
     const changes: AnimationChange[] = [];
-
-
 
     // Note: We ignore position changes of top-level components since they should all be at (0,0)
     // Only child element position changes are relevant for animations
