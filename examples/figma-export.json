@@ -1,6 +1,6 @@
 {
   "meta": {
-    "exportedAt": "2025-08-20T13:54:27.649Z",
+    "exportedAt": "2025-08-20T14:12:15.200Z",
     "figmaFileKey": "unknown",
     "figmaFileName": "ATL Rider Experience UI",
     "nodeCount": 1,
@@ -397,8 +397,8 @@
         "type": "COMPONENT_SET",
         "x": 18386,
         "y": 1977,
-        "width": 2619.125,
-        "height": 214,
+        "width": 346,
+        "height": 84,
         "opacity": 1,
         "fills": [],
         "strokes": [
@@ -660,7 +660,7 @@
           "type": "COMPONENT",
           "x": 0,
           "y": 0,
-          "width": 2619.125,
+          "width": 346,
           "height": 84,
           "opacity": 1,
           "fills": [],
@@ -707,7 +707,7 @@
               "type": "FRAME",
               "x": 0,
               "y": 0,
-              "width": 2619.125,
+              "width": 346,
               "height": 84,
               "opacity": 1,
               "fills": [
@@ -782,7 +782,7 @@
           "type": "COMPONENT",
           "x": 0,
           "y": 130,
-          "width": 2619.125,
+          "width": 346,
           "height": 84,
           "opacity": 1,
           "fills": [],
@@ -810,7 +810,7 @@
               "type": "FRAME",
               "x": 0,
               "y": 0,
-              "width": 2619.125,
+              "width": 346,
               "height": 84,
               "opacity": 1,
               "fills": [
@@ -886,7 +886,7 @@
         "type": "COMPONENT",
         "x": 0,
         "y": 0,
-        "width": 2619.125,
+        "width": 346,
         "height": 84,
         "opacity": 1,
         "fills": [],
@@ -933,7 +933,7 @@
             "type": "FRAME",
             "x": 0,
             "y": 0,
-            "width": 2619.125,
+            "width": 346,
             "height": 84,
             "opacity": 1,
             "fills": [
