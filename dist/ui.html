@@ -206,18 +206,26 @@
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
+        a.style.display = 'none';
         document.body.appendChild(a);
+        
+        // Use a more aggressive approach - trigger download and wait longer
         a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        
+        // Clean up immediately
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
         
         // Only show individual success message if not suppressed
         if (!suppressMessage) {
           showStatus(`Downloaded ${filename}`, 'success');
         }
         
-        // Resolve after a longer delay to allow the download dialog to appear and be handled
-        setTimeout(resolve, 500);
+        // Wait much longer to ensure the download dialog is handled
+        console.log(`Download triggered for ${filename}, waiting 3 seconds...`);
+        setTimeout(resolve, 3000);
       });
     }
     
@@ -286,9 +294,10 @@
           const task = this.queue.shift();
           try {
             await task();
-            // Wait between downloads to avoid browser blocking
+            // Wait much longer between downloads to ensure file dialog is handled
             if (this.queue.length > 0) {
-              await new Promise(resolve => setTimeout(resolve, 1500));
+              console.log('Waiting 5 seconds before next download...');
+              await new Promise(resolve => setTimeout(resolve, 5000));
             }
           } catch (error) {
             console.error('Download task failed:', error);
@@ -310,29 +319,36 @@
       const jsonFilename = 'figma-export.json';
       const htmlFilename = 'figma-export.html';
       
-      console.log('Queueing both files for download...');
+      console.log('Starting sequential download process...');
+      console.log('IMPORTANT: Please handle each file dialog when it appears!');
       
-      // Queue JSON download
-      downloadQueue.addToQueue(async () => {
-        console.log('Downloading JSON file...');
+      try {
+        // Download JSON first with longer wait
+        console.log('Step 1: Downloading JSON file...');
         await downloadFile(msg.json, jsonFilename, 'application/json', true);
-        console.log('JSON download completed');
-      });
-      
-      // Queue HTML download
-      downloadQueue.addToQueue(async () => {
-        console.log('Downloading HTML file...');
+        console.log('JSON download initiated. Please save the file when prompted.');
+        
+        // Wait for user to handle the dialog
+        console.log('Waiting 8 seconds for JSON dialog to be handled...');
+        await new Promise(resolve => setTimeout(resolve, 8000));
+        
+        // Download HTML second
+        console.log('Step 2: Downloading HTML file...');
         await downloadFile(msg.html, htmlFilename, 'text/html', true);
-        console.log('HTML download completed');
+        console.log('HTML download initiated. Please save the file when prompted.');
         
         // Log final success
         const metadata = msg.metadata || {};
         console.log(
-          'Both files exported successfully! ' + 
+          'Both files export process completed! ' + 
           '(' + metadata.nodeCount + ' nodes, ' + 
           metadata.componentSets + ' component sets)'
         );
-      });
+        console.log('Check your downloads folder for both files.');
+        
+      } catch (error) {
+        console.error('Error during download process:', error);
+      }
     }
     
     function handleFileExported(msg) {
