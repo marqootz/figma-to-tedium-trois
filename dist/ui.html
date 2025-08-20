@@ -209,7 +209,7 @@
         a.style.display = 'none';
         document.body.appendChild(a);
         
-        // Use a more aggressive approach - trigger download and wait longer
+        // Trigger download immediately
         a.click();
         
         // Clean up immediately
@@ -223,9 +223,9 @@
           showStatus(`Downloaded ${filename}`, 'success');
         }
         
-        // Wait much longer to ensure the download dialog is handled
-        console.log(`Download triggered for ${filename}, waiting 3 seconds...`);
-        setTimeout(resolve, 3000);
+        // Reduced wait time for better dialog detection
+        console.log(`Download triggered for ${filename}, waiting 1 second...`);
+        setTimeout(resolve, 1000); // Reduced from 3 seconds to 1 second
       });
     }
     
@@ -285,7 +285,7 @@
         this.isDialogOpen = true;
         this.dialogStartTime = Date.now();
         
-        // Method 1: Focus events
+        // Method 1: Focus events (primary detection)
         const onFocus = () => {
           if (this.isDialogOpen) {
             console.log('Window regained focus - dialog likely closed');
@@ -299,7 +299,7 @@
           }
         };
         
-        // Method 2: Visibility change
+        // Method 2: Visibility change (secondary detection)
         const onVisibilityChange = () => {
           if (this.isDialogOpen && !document.hidden) {
             console.log('Page became visible - dialog likely closed');
@@ -307,7 +307,7 @@
           }
         };
         
-        // Method 3: User interaction detection
+        // Method 3: User interaction detection (tertiary detection)
         const onUserInteraction = () => {
           if (this.isDialogOpen) {
             console.log('User interaction detected - dialog likely closed');
@@ -315,12 +315,21 @@
           }
         };
         
-        // Add event listeners
+        // Method 4: Mouse movement detection (for first dialog)
+        const onMouseMove = () => {
+          if (this.isDialogOpen) {
+            console.log('Mouse movement detected - dialog likely closed');
+            this.handleDialogClosed();
+          }
+        };
+        
+        // Add event listeners with more comprehensive detection
         window.addEventListener('focus', onFocus);
         window.addEventListener('blur', onBlur);
         document.addEventListener('visibilitychange', onVisibilityChange);
         document.addEventListener('click', onUserInteraction);
         document.addEventListener('keydown', onUserInteraction);
+        document.addEventListener('mousemove', onMouseMove);
         
         // Store listeners for cleanup
         this.focusListeners = [
@@ -328,16 +337,17 @@
           () => window.removeEventListener('blur', onBlur),
           () => document.removeEventListener('visibilitychange', onVisibilityChange),
           () => document.removeEventListener('click', onUserInteraction),
-          () => document.removeEventListener('keydown', onUserInteraction)
+          () => document.removeEventListener('keydown', onUserInteraction),
+          () => document.removeEventListener('mousemove', onMouseMove)
         ];
         
-        // Fallback timer (shorter than before)
+        // Shorter fallback timer for first dialog
         this.fallbackTimer = setTimeout(() => {
           if (this.isDialogOpen) {
             console.log('Fallback timer triggered - proceeding with next download');
             this.handleDialogClosed();
           }
-        }, 5000); // 5 seconds instead of 8
+        }, 3000); // Reduced from 5 seconds to 3 seconds
       }
       
       handleDialogClosed() {
