@@ -673,6 +673,24 @@ export class BundleGenerator {
         performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement) {
           console.log('Performing variant switch:', sourceId, '→', targetId);
           
+          // Reset the source element to its original state before hiding it
+          // This ensures it's clean when it becomes a target again
+          if (sourceElement) {
+            console.log('Resetting source element to original state:', sourceId);
+            sourceElement.style.transition = '';
+            sourceElement.style.transform = '';
+            sourceElement.style.opacity = '';
+            
+            // Reset child elements of source variant to original state
+            const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]');
+            sourceChildElements.forEach(child => {
+              child.style.transition = '';
+              child.style.transform = '';
+              child.style.opacity = '';
+            });
+          }
+          
+          // Hide all variants
           variantInstance.variants.forEach(variantId => {
             const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
             if (element) {
@@ -680,6 +698,7 @@ export class BundleGenerator {
             }
           });
 
+          // Show target variant
           if (targetElement) {
             targetElement.style.display = 'block';
             targetElement.style.opacity = '1';

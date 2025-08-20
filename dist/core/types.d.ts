@@ -21,6 +21,7 @@ export interface FigmaNode {
     paddingBottom?: number;
     layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
     layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
+    overflow?: 'VISIBLE' | 'HIDDEN' | 'SCROLL';
     characters?: string;
     fontName?: any;
     fontFamily?: string;
@@ -48,7 +49,7 @@ export interface FigmaReaction {
         transition: {
             type: 'SMART_ANIMATE' | 'DISSOLVE' | 'MOVE_IN' | 'MOVE_OUT';
             easing: {
-                type: 'GENTLE' | 'QUICK' | 'BOUNCY' | 'SLOW' | 'LINEAR';
+                type: 'GENTLE' | 'QUICK' | 'BOUNCY' | 'SLOW' | 'LINEAR' | 'EASE_IN_AND_OUT_BACK' | 'EASE_OUT';
             };
             duration: number;
         };

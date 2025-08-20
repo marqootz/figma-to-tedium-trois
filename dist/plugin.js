@@ -91,8 +91,13 @@ class StyleGenerator {
             properties.push(`position: absolute;`);
             properties.push(`left: ${adjustedPosition.x}px;`);
             properties.push(`top: ${adjustedPosition.y}px;`);
-            properties.push(`width: ${node.width}px;`);
-            properties.push(`height: ${node.height}px;`);
+            // Only set width/height here if not using HUG sizing (which will be set later)
+            if (node.layoutSizingHorizontal !== 'HUG') {
+                properties.push(`width: ${node.width}px;`);
+            }
+            if (node.layoutSizingVertical !== 'HUG') {
+                properties.push(`height: ${node.height}px;`);
+            }
         }
         // Opacity
         if (node.opacity !== undefined && node.opacity !== 1) {
@@ -132,7 +137,20 @@ class StyleGenerator {
                     properties.push(`width: 100%;`);
                     break;
                 case 'HUG':
-                    properties.push(`width: fit-content;`);
+                    // Check if this node has absolutely positioned children that would break fit-content
+                    if (this.hasAbsolutelyPositionedChildren(node)) {
+                        // Use the child's width as the parent's fixed width
+                        const childWidth = this.getChildWidthForHugSizing(node);
+                        if (childWidth > 0) {
+                            properties.push(`width: ${childWidth}px;`);
+                        }
+                        else {
+                            properties.push(`width: fit-content;`);
+                        }
+                    }
+                    else {
+                        properties.push(`width: fit-content;`);
+                    }
                     break;
                 case 'FIXED':
                     // Width is already set above, no additional CSS needed
@@ -162,6 +180,15 @@ class StyleGenerator {
         // Corner radius
         if (node.cornerRadius !== undefined && node.cornerRadius > 0) {
             properties.push(`border-radius: ${node.cornerRadius}px;`);
+        }
+        // Overflow properties
+        if (node.overflow) {
+            const overflowMap = {
+                'VISIBLE': 'visible',
+                'HIDDEN': 'hidden',
+                'SCROLL': 'scroll'
+            };
+            properties.push(`overflow: ${overflowMap[node.overflow]};`);
         }
         // Component-specific styles
         if (node.type === 'COMPONENT_SET') {
@@ -203,6 +230,23 @@ class StyleGenerator {
         }
         // For all other cases, use the original position
         return { x: node.x, y: node.y };
+    }
+    hasAbsolutelyPositionedChildren(node) {
+        // Check if this node has children that are positioned for animation
+        // A simple heuristic: if the node has HUG sizing and has exactly one child with FIXED sizing,
+        // that child's width should determine the parent's width
+        if (node.layoutSizingHorizontal === 'HUG' && node.children && node.children.length === 1) {
+            const child = node.children[0];
+            return child.layoutSizingHorizontal === 'FIXED';
+        }
+        return false;
+    }
+    getChildWidthForHugSizing(node) {
+        if (node.children && node.children.length === 1) {
+            const child = node.children[0];
+            return child.width || 0;
+        }
+        return 0;
     }
 }
 
@@ -872,6 +916,24 @@ class BundleGenerator {
         performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement) {
           console.log('Performing variant switch:', sourceId, '→', targetId);
           
+          // Reset the source element to its original state before hiding it
+          // This ensures it's clean when it becomes a target again
+          if (sourceElement) {
+            console.log('Resetting source element to original state:', sourceId);
+            sourceElement.style.transition = '';
+            sourceElement.style.transform = '';
+            sourceElement.style.opacity = '';
+            
+            // Reset child elements of source variant to original state
+            const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]');
+            sourceChildElements.forEach(child => {
+              child.style.transition = '';
+              child.style.transform = '';
+              child.style.opacity = '';
+            });
+          }
+          
+          // Hide all variants
           variantInstance.variants.forEach(variantId => {
             const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
             if (element) {
@@ -879,6 +941,7 @@ class BundleGenerator {
             }
           });
 
+          // Show target variant
           if (targetElement) {
             targetElement.style.display = 'block';
             targetElement.style.opacity = '1';
@@ -1050,7 +1113,9 @@ class BundleGenerator {
             'QUICK': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
             'BOUNCY': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
             'SLOW': 'cubic-bezier(0.23, 1, 0.32, 1)',
-            'LINEAR': 'linear'
+            'LINEAR': 'linear',
+            'EASE_IN_AND_OUT_BACK': 'cubic-bezier(0.68, -0.6, 0.32, 1.6)',
+            'EASE_OUT': 'cubic-bezier(0, 0, 0.2, 1)'
           };
           return easingMap[figmaEasing] || easingMap['GENTLE'];
         }
@@ -1256,11 +1321,12 @@ ${css}
         let css = '';
         resolvedInstances.forEach(instance => {
             const { variants, activeVariant } = instance;
-            // Generate CSS for each variant
+            // Generate CSS for each variant and its children
             variants.forEach((variant) => {
-                const variantCSS = this.styleGenerator.generateStyles(variant, false);
+                // Generate CSS for all child elements within the variant
+                const variantCSS = this.generateVariantElementCSS(variant);
                 css += '\n\n' + variantCSS;
-                // Add variant-specific visibility rules
+                // Add variant-specific visibility rules for the main variant container
                 const isActive = variant.id === activeVariant.id;
                 css += `\n[data-figma-id="${variant.id}"] {\n`;
                 css += `  display: ${isActive ? 'block' : 'none'};\n`;
@@ -1270,6 +1336,29 @@ ${css}
                 css += `}\n`;
             });
         });
+        return css;
+    }
+    // Generate CSS for all elements within a variant (recursively)
+    generateVariantElementCSS(variant) {
+        let css = '';
+        // Generate CSS for all child elements recursively
+        const generateCSSForNode = (node) => {
+            // Skip the main variant container to avoid duplicates
+            if (node.id === variant.id) {
+                // Only generate CSS for children of the variant container
+                if (node.children) {
+                    node.children.forEach(child => generateCSSForNode(child));
+                }
+                return;
+            }
+            // Generate CSS for this node
+            css += this.styleGenerator.generateStyles(node, false) + '\n\n';
+            // Recursively generate CSS for children
+            if (node.children) {
+                node.children.forEach(child => generateCSSForNode(child));
+            }
+        };
+        generateCSSForNode(variant);
         return css;
     }
     // Generate HTML for all variants in the shadow variant system
@@ -1328,6 +1417,7 @@ class FigmaDataExtractor {
             paddingBottom: this.extractPaddingBottom(node),
             layoutSizingHorizontal: this.extractLayoutSizingHorizontal(node),
             layoutSizingVertical: this.extractLayoutSizingVertical(node),
+            overflow: this.extractOverflow(node),
             characters: this.extractCharacters(node),
             fontName: this.extractFontName(node),
             fontFamily: this.extractFontFamily(node),
@@ -1445,6 +1535,12 @@ class FigmaDataExtractor {
     extractLayoutSizingVertical(node) {
         if ('layoutSizingVertical' in node && node.layoutSizingVertical && node.layoutSizingVertical !== figma.mixed) {
             return node.layoutSizingVertical;
+        }
+        return undefined;
+    }
+    extractOverflow(node) {
+        if ('clipsContent' in node && typeof node.clipsContent === 'boolean') {
+            return node.clipsContent ? 'HIDDEN' : 'VISIBLE';
         }
         return undefined;
     }

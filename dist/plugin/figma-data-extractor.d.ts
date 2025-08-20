@@ -17,6 +17,7 @@ export declare class FigmaDataExtractor {
     private extractPaddingBottom;
     private extractLayoutSizingHorizontal;
     private extractLayoutSizingVertical;
+    private extractOverflow;
     private extractCharacters;
     private extractFontName;
     private extractFontFamily;

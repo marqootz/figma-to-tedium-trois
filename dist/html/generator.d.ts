@@ -8,6 +8,7 @@ export declare class HTMLGenerator {
     private generateBodyHTML;
     private generateJavaScript;
     private generateVariantCSS;
+    private generateVariantElementCSS;
     private generateVariantHTML;
 }
 //# sourceMappingURL=generator.d.ts.map

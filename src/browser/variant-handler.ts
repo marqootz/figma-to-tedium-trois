@@ -205,62 +205,42 @@ export class VariantHandler {
     variantInstance: VariantInstance,
     sourceId: string,
     targetId: string,
-    _sourceElement: HTMLElement,
+    sourceElement: HTMLElement,
     targetElement: HTMLElement
   ): void {
     console.log('🔄 === VARIANT SWITCH START ===');
     console.log('🔄 Performing variant switch:', sourceId, '→', targetId);
     
-    // Hide all variants in the instance and reset their states
-    console.log('🔄 Hiding and resetting all variants:', variantInstance.variants);
+    // Reset the source element to its original state before hiding it
+    // This ensures it's clean when it becomes a target again
+    if (sourceElement) {
+      console.log('🔄 Resetting source element to original state:', sourceId);
+      sourceElement.style.transition = '';
+      sourceElement.style.transform = '';
+      sourceElement.style.opacity = '';
+      
+      // Reset child elements of source variant to original state
+      const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
+      sourceChildElements.forEach(child => {
+        child.style.transition = '';
+        child.style.transform = '';
+        child.style.opacity = '';
+      });
+    }
+    
+    // Hide all variants
     variantInstance.variants.forEach(variantId => {
       const element = document.querySelector(`[data-figma-id="${variantId}"]`) as HTMLElement;
       if (element) {
-        console.log('🔄 Resetting variant:', variantId);
         element.style.display = 'none';
-        // Reset any applied transitions and transforms
-        element.style.transition = '';
-        element.style.transform = '';
-        
-        // Reset child elements as well
-        const childElements = element.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
-        console.log('🔄 Resetting', childElements.length, 'child elements for variant', variantId);
-        childElements.forEach(child => {
-          child.style.transition = '';
-          child.style.transform = '';
-          child.style.width = '';
-          child.style.height = '';
-          child.style.opacity = '';
-        });
       }
     });
 
-    // Show target variant with clean state - this will be the new source for next animation
+    // Show target variant
     if (targetElement) {
-      console.log('🔄 Showing and resetting target variant:', targetId);
       targetElement.style.display = 'block';
       targetElement.style.opacity = '1';
       targetElement.style.transform = '';
-      targetElement.style.transition = '';
-      
-      // Reset child elements of target variant to their natural state
-      // This ensures they're ready to be animated from their initial state in the next cycle
-      const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
-      console.log('🔄 Resetting', childElements.length, 'child elements for target variant', targetId);
-      childElements.forEach(child => {
-        child.style.transition = '';
-        child.style.transform = '';
-        child.style.width = '';
-        child.style.height = '';
-        child.style.opacity = '';
-      });
-      
-      // Log final state of target element
-      console.log('🔄 Target element final state:');
-      this.logElementState('TARGET_FINAL', targetId, targetElement);
-      
-      console.log('🔄 Target variant', targetId, 'is now visible and reset to initial state for next animation cycle');
-      console.log('🔄 === VARIANT SWITCH END ===');
     }
   }
 

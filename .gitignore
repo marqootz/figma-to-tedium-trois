@@ -26,6 +26,9 @@ yarn-error.log*
 dist/
 build/
 
+# Test files
+tests/
+
 # Environment variables
 .env
 .env.local

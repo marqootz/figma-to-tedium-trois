@@ -2,6 +2,8 @@ import { AnimationChange, FigmaNodeData } from './types';
 export declare class ChangeDetector {
     /**
      * Detect changes between two Figma nodes
+     * @param source The source Figma node data (or current visual state)
+     * @param target The target Figma node data
      */
     static detectChanges(source: FigmaNodeData, target: FigmaNodeData): AnimationChange[];
     /**

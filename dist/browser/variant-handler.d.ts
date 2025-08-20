@@ -25,5 +25,9 @@ export declare class VariantHandler {
      * Perform variant switch
      */
     private performVariantSwitch;
+    /**
+     * Log element visual state for debugging
+     */
+    private logElementState;
 }
 //# sourceMappingURL=variant-handler.d.ts.map

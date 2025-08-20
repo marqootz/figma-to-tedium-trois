@@ -4,5 +4,7 @@ export declare class StyleGenerator {
     private generateCSSProperties;
     private generateBackgroundCSS;
     private adjustLayoutDrivenPosition;
+    private hasAbsolutelyPositionedChildren;
+    private getChildWidthForHugSizing;
 }
 //# sourceMappingURL=style-generator.d.ts.map
