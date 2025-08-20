@@ -82,18 +82,51 @@ ${css}
     resolvedInstances.forEach(instance => {
       const { variants, activeVariant } = instance;
       
-      // Only generate variant-specific visibility rules, not full CSS
+      // Generate CSS for each variant and its children
       variants.forEach((variant: FigmaNode) => {
+        // Generate CSS for all child elements within the variant
+        const variantCSS = this.generateVariantElementCSS(variant);
+        css += '\n\n' + variantCSS;
+        
+        // Add variant-specific visibility rules for the main variant container
         const isActive = variant.id === activeVariant.id;
         css += `\n[data-figma-id="${variant.id}"] {\n`;
-        css += `  display: ${isActive ? 'block' : 'none'} !important;\n`;
-        css += `  position: absolute !important;\n`;
-        css += `  left: 0 !important;\n`;
-        css += `  top: 0 !important;\n`;
+        css += `  display: ${isActive ? 'block' : 'none'};\n`;
+        css += `  position: absolute;\n`;
+        css += `  left: 0;\n`;
+        css += `  top: 0;\n`;
         css += `}\n`;
       });
     });
     
+    return css;
+  }
+
+  // Generate CSS for all elements within a variant (recursively)
+  private generateVariantElementCSS(variant: FigmaNode): string {
+    let css = '';
+    
+    // Generate CSS for all child elements recursively
+    const generateCSSForNode = (node: FigmaNode): void => {
+      // Skip the main variant container to avoid duplicates
+      if (node.id === variant.id) {
+        // Only generate CSS for children of the variant container
+        if (node.children) {
+          node.children.forEach(child => generateCSSForNode(child));
+        }
+        return;
+      }
+      
+      // Generate CSS for this node
+      css += this.styleGenerator.generateStyles(node, false) + '\n\n';
+      
+      // Recursively generate CSS for children
+      if (node.children) {
+        node.children.forEach(child => generateCSSForNode(child));
+      }
+    };
+    
+    generateCSSForNode(variant);
     return css;
   }
 
