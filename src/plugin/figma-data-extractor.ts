@@ -41,6 +41,7 @@ export class FigmaDataExtractor {
       paddingBottom: this.extractPaddingBottom(node),
       layoutSizingHorizontal: this.extractLayoutSizingHorizontal(node),
       layoutSizingVertical: this.extractLayoutSizingVertical(node),
+      overflow: this.extractOverflow(node),
       characters: this.extractCharacters(node),
       fontName: this.extractFontName(node),
       fontFamily: this.extractFontFamily(node),
@@ -174,6 +175,13 @@ export class FigmaDataExtractor {
   private extractLayoutSizingVertical(node: SceneNode): 'FIXED' | 'FILL' | 'HUG' | undefined {
     if ('layoutSizingVertical' in node && node.layoutSizingVertical && (node.layoutSizingVertical as any) !== figma.mixed) {
       return node.layoutSizingVertical as 'FIXED' | 'FILL' | 'HUG';
+    }
+    return undefined;
+  }
+
+  private extractOverflow(node: SceneNode): 'VISIBLE' | 'HIDDEN' | 'SCROLL' | undefined {
+    if ('overflow' in node && node.overflow && node.overflow !== figma.mixed) {
+      return node.overflow as 'VISIBLE' | 'HIDDEN' | 'SCROLL';
     }
     return undefined;
   }

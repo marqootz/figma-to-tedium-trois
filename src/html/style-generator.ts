@@ -37,8 +37,14 @@ export class StyleGenerator {
       properties.push(`position: absolute;`);
       properties.push(`left: ${adjustedPosition.x}px;`);
       properties.push(`top: ${adjustedPosition.y}px;`);
-      properties.push(`width: ${node.width}px;`);
-      properties.push(`height: ${node.height}px;`);
+      
+      // Only set width/height here if not using HUG sizing (which will be set later)
+      if (node.layoutSizingHorizontal !== 'HUG') {
+        properties.push(`width: ${node.width}px;`);
+      }
+      if (node.layoutSizingVertical !== 'HUG') {
+        properties.push(`height: ${node.height}px;`);
+      }
     }
 
     // Opacity
@@ -127,6 +133,16 @@ export class StyleGenerator {
     // Corner radius
     if (node.cornerRadius !== undefined && node.cornerRadius > 0) {
       properties.push(`border-radius: ${node.cornerRadius}px;`);
+    }
+
+    // Overflow properties
+    if (node.overflow) {
+      const overflowMap = {
+        'VISIBLE': 'visible',
+        'HIDDEN': 'hidden',
+        'SCROLL': 'scroll'
+      };
+      properties.push(`overflow: ${overflowMap[node.overflow]};`);
     }
 
     // Component-specific styles

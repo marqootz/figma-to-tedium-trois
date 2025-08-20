@@ -22,6 +22,8 @@ export interface FigmaNode {
   // Sizing properties
   layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
   layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
+  // Overflow properties
+  overflow?: 'VISIBLE' | 'HIDDEN' | 'SCROLL';
   // Text properties
   characters?: string;
   fontName?: any;
