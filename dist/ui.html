@@ -155,7 +155,7 @@
       
       switch (msg.type) {
         case 'plugin-ready':
-          showStatus('Plugin ready - select components to export', 'info');
+          console.log('Plugin ready - select components to export');
           break;
           
         case 'json-generated':
@@ -171,7 +171,7 @@
           break;
           
         case 'error':
-          showStatus('Error: ' + msg.message, 'error');
+          console.error('Plugin error:', msg.message);
           break;
           
         default:
@@ -225,7 +225,7 @@
     
     async function handleJSONGenerated(msg) {
       if (!msg.success) {
-        showStatus('JSON export failed: ' + (msg.error || 'Unknown error'), 'error');
+        console.error('JSON export failed:', msg.error || 'Unknown error');
         return;
       }
       
@@ -236,17 +236,16 @@
       await downloadFile(msg.json, filename, 'application/json');
       
       const metadata = msg.metadata || {};
-      showStatus(
+      console.log(
         'JSON exported successfully! ' + 
         metadata.nodeCount + ' nodes, ' + 
-        metadata.componentSets + ' component sets',
-        'success'
+        metadata.componentSets + ' component sets'
       );
     }
     
     async function handleHTMLGenerated(msg) {
       if (!msg.success) {
-        showStatus('HTML export failed: ' + (msg.error || 'Unknown error'), 'error');
+        console.error('HTML export failed:', msg.error || 'Unknown error');
         return;
       }
       
@@ -257,17 +256,16 @@
       await downloadFile(msg.html, filename, 'text/html');
       
       const metadata = msg.metadata || {};
-      showStatus(
+      console.log(
         'HTML exported successfully! ' + 
         metadata.nodeCount + ' nodes, ' + 
-        metadata.componentSets + ' component sets',
-        'success'
+        metadata.componentSets + ' component sets'
       );
     }
     
     async function handleBothGenerated(msg) {
       if (!msg.success) {
-        showStatus('Export failed: ' + (msg.error || 'Unknown error'), 'error');
+        console.error('Export failed:', msg.error || 'Unknown error');
         return;
       }
       
@@ -279,13 +277,12 @@
       await downloadFile(msg.json, jsonFilename, 'application/json', true);
       await downloadFile(msg.html, htmlFilename, 'text/html', true);
       
-      // Success message
+      // Log success for debugging
       const metadata = msg.metadata || {};
-      showStatus(
-        'Both files exported! Check your downloads folder. ' + 
+      console.log(
+        'Both files exported successfully! ' + 
         '(' + metadata.nodeCount + ' nodes, ' + 
-        metadata.componentSets + ' component sets)',
-        'success'
+        metadata.componentSets + ' component sets)'
       );
     }
     
