@@ -246,6 +246,42 @@ export class FigmaAnimationSystem {
   }
 
   /**
+   * Setup click reactions for a node
+   */
+  setupClickReactions(nodeId: string): void {
+    console.log('🔍 Setting up click reactions for node:', nodeId);
+    const node = this.nodeRegistry.get(nodeId);
+    if (!node || !node.reactions) {
+      console.log('🔍 No node or reactions found for:', nodeId);
+      return;
+    }
+
+    const element = this.elementRegistry.get(nodeId);
+    if (!element) {
+      console.warn('Element not found for click setup:', nodeId);
+      return;
+    }
+
+    node.reactions
+      .filter(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
+      .forEach(reaction => {
+        console.log('Setting up click reaction for:', nodeId, '→', reaction.action.destinationId);
+        
+        // Add click event listener
+        element.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          console.log('Click detected on:', nodeId, 'triggering animation to:', reaction.action.destinationId);
+          this.executeAnimation(nodeId, reaction.action.destinationId);
+        });
+        
+        // Add visual feedback for clickable elements
+        element.style.cursor = 'pointer';
+        element.style.userSelect = 'none';
+      });
+  }
+
+  /**
    * Clear all timeout reactions
    */
   clearAllTimeouts(): void {

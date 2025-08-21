@@ -1091,13 +1091,49 @@ export class BundleGenerator {
   }
 
   private static generateInitialClicks(nodes: FigmaNodeData[], resolvedInstances?: any[]): string {
-    const nodesWithClicks = nodes.filter(node => 
-      node.reactions?.some(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')
-    );
+    console.log('🔍 generateInitialClicks called with', nodes.length, 'nodes and', resolvedInstances?.length || 0, 'resolved instances');
+    
+    // Recursively find all nodes with click/press reactions
+    const allNodesWithClicks: FigmaNodeData[] = [];
+    
+    const findNodesWithClicks = (nodeList: FigmaNodeData[]) => {
+      nodeList.forEach(node => {
+        // Check if this node has click/press reactions
+        if (node.reactions?.some(reaction => 
+          reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS'
+        )) {
+          console.log('🔍 Found node with click/press reactions:', node.name, node.id, node.reactions);
+          allNodesWithClicks.push(node);
+        }
+        
+        // Recursively check children
+        if (node.children && node.children.length > 0) {
+          console.log('🔍 Checking children of', node.name, '-', node.children.length, 'children');
+          findNodesWithClicks(node.children);
+        }
+      });
+    };
+    
+    findNodesWithClicks(nodes);
+    
+    // Also check resolved instances for click reactions
+    if (resolvedInstances) {
+      console.log('🔍 Checking resolved instances for click reactions');
+      resolvedInstances.forEach(instance => {
+        if (instance.variants) {
+          console.log('🔍 Checking variants of instance:', instance.instance?.name, '-', instance.variants.length, 'variants');
+          findNodesWithClicks(instance.variants);
+        }
+      });
+    }
 
-    console.log('🔍 Found nodes with click/press reactions:', nodesWithClicks.map(n => ({ id: n.id, name: n.name, reactions: n.reactions })));
+    console.log('🔍 Found nodes with click/press reactions:', allNodesWithClicks.map(n => ({ 
+      id: n.id, 
+      name: n.name, 
+      reactions: n.reactions?.map(r => ({ trigger: r.trigger.type, destination: r.action.destinationId }))
+    })));
 
-    return nodesWithClicks.map(node => {
+    return allNodesWithClicks.map(node => {
       // Check if this is an instance with variants
       const instanceWithVariants = resolvedInstances?.find(instance => 
         instance.instance?.id === node.id

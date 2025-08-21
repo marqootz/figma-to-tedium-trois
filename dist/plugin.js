@@ -1682,9 +1682,45 @@ class BundleGenerator {
         }).join('\n');
     }
     static generateInitialClicks(nodes, resolvedInstances) {
-        const nodesWithClicks = nodes.filter(node => { var _a; return (_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS'); });
-        console.log('🔍 Found nodes with click/press reactions:', nodesWithClicks.map(n => ({ id: n.id, name: n.name, reactions: n.reactions })));
-        return nodesWithClicks.map(node => {
+        console.log('🔍 generateInitialClicks called with', nodes.length, 'nodes and', (resolvedInstances === null || resolvedInstances === void 0 ? void 0 : resolvedInstances.length) || 0, 'resolved instances');
+        // Recursively find all nodes with click/press reactions
+        const allNodesWithClicks = [];
+        const findNodesWithClicks = (nodeList) => {
+            nodeList.forEach(node => {
+                var _a;
+                // Check if this node has click/press reactions
+                if ((_a = node.reactions) === null || _a === void 0 ? void 0 : _a.some(reaction => reaction.trigger.type === 'ON_CLICK' || reaction.trigger.type === 'ON_PRESS')) {
+                    console.log('🔍 Found node with click/press reactions:', node.name, node.id, node.reactions);
+                    allNodesWithClicks.push(node);
+                }
+                // Recursively check children
+                if (node.children && node.children.length > 0) {
+                    console.log('🔍 Checking children of', node.name, '-', node.children.length, 'children');
+                    findNodesWithClicks(node.children);
+                }
+            });
+        };
+        findNodesWithClicks(nodes);
+        // Also check resolved instances for click reactions
+        if (resolvedInstances) {
+            console.log('🔍 Checking resolved instances for click reactions');
+            resolvedInstances.forEach(instance => {
+                var _a;
+                if (instance.variants) {
+                    console.log('🔍 Checking variants of instance:', (_a = instance.instance) === null || _a === void 0 ? void 0 : _a.name, '-', instance.variants.length, 'variants');
+                    findNodesWithClicks(instance.variants);
+                }
+            });
+        }
+        console.log('🔍 Found nodes with click/press reactions:', allNodesWithClicks.map(n => {
+            var _a;
+            return ({
+                id: n.id,
+                name: n.name,
+                reactions: (_a = n.reactions) === null || _a === void 0 ? void 0 : _a.map(r => ({ trigger: r.trigger.type, destination: r.action.destinationId }))
+            });
+        }));
+        return allNodesWithClicks.map(node => {
             // Check if this is an instance with variants
             const instanceWithVariants = resolvedInstances === null || resolvedInstances === void 0 ? void 0 : resolvedInstances.find(instance => { var _a; return ((_a = instance.instance) === null || _a === void 0 ? void 0 : _a.id) === node.id; });
             if (instanceWithVariants) {
