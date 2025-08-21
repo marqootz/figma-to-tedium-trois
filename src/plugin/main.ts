@@ -78,8 +78,7 @@ async function handleExportHTML(): Promise<void> {
     return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
   });
 
-  console.log('Found', componentSets.length, 'component sets with animations');
-  console.log('Animation chains:', animationChains);
+
 
   // Generate HTML
   const generator = new HTMLGenerator();
@@ -290,7 +289,7 @@ async function handleAnalyzeSelection(): Promise<void> {
 }
 
 // Initialize plugin
-console.log('Figma Animation Plugin initialized');
+console.log('🎉 Figma Animation Plugin initialized - LATEST CODE VERSION');
 figma.ui.postMessage({
   type: 'plugin-ready',
   message: 'Plugin loaded successfully',

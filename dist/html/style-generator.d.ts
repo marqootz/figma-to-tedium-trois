@@ -7,5 +7,7 @@ export declare class StyleGenerator {
     private hasAbsolutelyPositionedChildren;
     private getChildWidthForHugSizing;
     private isSVGNode;
+    private generateTextStyles;
+    private generateTextColor;
 }
 //# sourceMappingURL=style-generator.d.ts.map

@@ -62,14 +62,14 @@ export class ElementBuilder {
   }
 
   private generateContent(node: FigmaNode): string {
-    if (node.children) {
+    if (node.children && node.children.length > 0) {
       return node.children.map(child => this.buildElement(child)).join('\n');
     }
 
-    // Handle text content, vectors, etc.
+    // Handle text content
     if (node.type === 'TEXT') {
-      // Extract text content from node
-      return node.name; // Simplified
+      // Use the actual text content from characters property
+      return node.characters || node.name || '';
     }
 
     return '';
@@ -83,7 +83,9 @@ export class ElementBuilder {
       case 'FRAME':
         return 'div';
       case 'TEXT':
-        return 'span';
+        // Use p tag for longer text, span for short labels
+        const textLength = node.characters ? node.characters.length : 0;
+        return textLength > 50 ? 'p' : 'span';
       case 'VECTOR':
       case 'RECTANGLE':
       case 'ELLIPSE':

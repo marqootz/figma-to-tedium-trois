@@ -2,6 +2,7 @@ import { FigmaNode } from '../core/types';
 import { ElementBuilder } from './element-builder';
 import { StyleGenerator } from './style-generator';
 import { AnimationHandler } from './animation-handler';
+import { getEmbeddedFontStyles, analyzeRequiredFonts, generateFontPreloadLinks } from '../utils/font-loader';
 
 export class HTMLGenerator {
   private elementBuilder = new ElementBuilder();
@@ -12,6 +13,17 @@ export class HTMLGenerator {
     const css = this.generateCSS(nodes, resolvedInstances);
     const bodyHTML = this.generateBodyHTML(nodes, resolvedInstances);
     const javascript = this.generateJavaScript(nodes, resolvedInstances);
+    
+    // Analyze required fonts for preloading
+    const allNodes = [...nodes];
+    if (resolvedInstances) {
+      resolvedInstances.forEach(instance => {
+        allNodes.push(...instance.variants);
+      });
+    }
+    const requiredFonts = analyzeRequiredFonts(allNodes);
+    const fontPreloadLinks = generateFontPreloadLinks(requiredFonts);
+    const fontStyles = getEmbeddedFontStyles();
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -19,7 +31,10 @@ export class HTMLGenerator {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Figma Export</title>
-  <style>
+  ${fontPreloadLinks ? `  ${fontPreloadLinks}\n` : ''}  <style>
+    /* Font definitions */
+${fontStyles}
+    
     /* Reset and base styles */
     * {
       margin: 0;
@@ -28,7 +43,7 @@ export class HTMLGenerator {
     }
     
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: "CircularXX TT", system-ui, -apple-system, sans-serif;
       background-color: #f5f5f5;
       overflow: hidden;
       margin: 0;
@@ -60,7 +75,10 @@ ${css}
   }
 
   private generateBodyHTML(nodes: FigmaNode[], resolvedInstances?: any[]): string {
-    let html = nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+    // Add test element to verify latest plugin code is being used
+    const testElement = this.generateTestElement();
+    
+    let html = testElement + '\n' + nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
     
     // Add HTML for all variants if we have resolved instances
     if (resolvedInstances) {
@@ -69,6 +87,33 @@ ${css}
     }
     
     return html;
+  }
+
+  private generateTestElement(): string {
+    const timestamp = new Date().toISOString();
+    const version = '1.0.0';
+    const buildTime = new Date().toLocaleString();
+    
+    return `<!-- PLUGIN TEST ELEMENT - VERIFY LATEST CODE -->
+<div id="plugin-test-element" style="
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  border: 2px solid #fff;
+">
+  <div style="font-weight: bold; margin-bottom: 4px;">✅ Latest Plugin Code</div>
+  <div style="font-size: 10px; opacity: 0.9;">Version: ${version}</div>
+  <div style="font-size: 10px; opacity: 0.9;">Built: ${buildTime}</div>
+  <div style="font-size: 10px; opacity: 0.9;">Exported: ${timestamp}</div>
+</div>`;
   }
 
   private generateJavaScript(nodes: FigmaNode[], resolvedInstances?: any[]): string {

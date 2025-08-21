@@ -6,6 +6,7 @@ export declare class HTMLGenerator {
     generateHTML(nodes: FigmaNode[], resolvedInstances?: any[]): string;
     private generateCSS;
     private generateBodyHTML;
+    private generateTestElement;
     private generateJavaScript;
     private generateVariantCSS;
     private generateVariantElementCSS;

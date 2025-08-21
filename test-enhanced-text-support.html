@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Text Support Test</title>
+  <link rel="preload" href="examples/fonts/CircularXXTT-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="examples/fonts/CircularXXTT-Medium.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="examples/fonts/CircularXXTT-Bold.ttf" as="font" type="font/ttf" crossorigin>
+  <style>
+    /* Custom font declarations - CircularXX TT family with font-weight variations */
+    
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Thin.ttf") format("truetype");
+      font-weight: 100;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Light.ttf") format("truetype");
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Book.ttf") format("truetype");
+      font-weight: 450;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("examples/fonts/CircularXXTT-Black.ttf") format("truetype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: "CircularXX TT", system-ui, -apple-system, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .test-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+
+    .test-title {
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .test-description {
+      color: #666;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .text-examples {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin: 10px 0;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+
+    .implementation-notes {
+      background: #e8f4f8;
+      border: 1px solid #bee5eb;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .before, .after {
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    .before {
+      background: #ffe6e6;
+      border: 1px solid #ffcccc;
+    }
+
+    .after {
+      background: #e6ffe6;
+      border: 1px solid #ccffcc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Enhanced Text Support Test</h1>
+  
+  <div class="test-container">
+    <h2 class="test-title">Font Weight Variations</h2>
+    <p class="test-description">Testing different font weights using CircularXX TT</p>
+    <div class="text-examples">
+      <p data-figma-id="text-1" data-figma-name="Thin Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 100; margin: 10px 0;">
+        Thin (100) - This is sample text
+      </p>
+      <p data-figma-id="text-2" data-figma-name="Light Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 300; margin: 10px 0;">
+        Light (300) - This is sample text
+      </p>
+      <p data-figma-id="text-3" data-figma-name="Regular Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 400; margin: 10px 0;">
+        Regular (400) - This is sample text
+      </p>
+      <p data-figma-id="text-4" data-figma-name="Book Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 450; margin: 10px 0;">
+        Book (450) - This is sample text
+      </p>
+      <p data-figma-id="text-5" data-figma-name="Medium Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 500; margin: 10px 0;">
+        Medium (500) - This is sample text
+      </p>
+      <p data-figma-id="text-6" data-figma-name="Bold Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 700; margin: 10px 0;">
+        Bold (700) - This is sample text
+      </p>
+      <p data-figma-id="text-7" data-figma-name="Black Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 18px; font-weight: 900; margin: 10px 0;">
+        Black (900) - This is sample text
+      </p>
+    </div>
+  </div>
+
+  <div class="test-container">
+    <h2 class="test-title">Font Size Variations</h2>
+    <p class="test-description">Testing different font sizes</p>
+    <div class="text-examples">
+      <p data-figma-id="text-8" data-figma-name="Small Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 12px; font-weight: 400; margin: 10px 0;">
+        12px - Small text for captions and details
+      </p>
+      <p data-figma-id="text-9" data-figma-name="Body Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; margin: 10px 0;">
+        16px - Regular body text for paragraphs
+      </p>
+      <p data-figma-id="text-10" data-figma-name="Large Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 24px; font-weight: 500; margin: 10px 0;">
+        24px - Large text for headings
+      </p>
+      <p data-figma-id="text-11" data-figma-name="XL Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 32px; font-weight: 700; margin: 10px 0;">
+        32px - Extra large for titles
+      </p>
+    </div>
+  </div>
+
+  <div class="test-container">
+    <h2 class="test-title">Text Alignment & Styling</h2>
+    <p class="test-description">Testing text alignment and additional styling properties</p>
+    <div class="text-examples">
+      <p data-figma-id="text-12" data-figma-name="Left Aligned" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; text-align: left; margin: 10px 0;">
+        Left aligned text (default)
+      </p>
+      <p data-figma-id="text-13" data-figma-name="Center Aligned" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; text-align: center; margin: 10px 0;">
+        Center aligned text
+      </p>
+      <p data-figma-id="text-14" data-figma-name="Right Aligned" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; text-align: right; margin: 10px 0;">
+        Right aligned text
+      </p>
+      <p data-figma-id="text-15" data-figma-name="Letter Spaced" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; letter-spacing: 2px; margin: 10px 0;">
+        Letter spaced text (2px)
+      </p>
+      <p data-figma-id="text-16" data-figma-name="Line Height" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; line-height: 150%; margin: 10px 0;">
+        This text has increased line height (150%)<br>which makes it easier to read<br>when spanning multiple lines
+      </p>
+    </div>
+  </div>
+
+  <div class="test-container">
+    <h2 class="test-title">Text Colors</h2>
+    <p class="test-description">Testing text colors from Figma fills</p>
+    <div class="text-examples">
+      <p data-figma-id="text-17" data-figma-name="Black Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; color: rgba(0, 0, 0, 1); margin: 10px 0;">
+        Black text (rgba(0, 0, 0, 1))
+      </p>
+      <p data-figma-id="text-18" data-figma-name="Gray Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; color: rgba(102, 102, 102, 1); margin: 10px 0;">
+        Gray text (rgba(102, 102, 102, 1))
+      </p>
+      <p data-figma-id="text-19" data-figma-name="Blue Text" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; color: rgba(0, 123, 255, 1); margin: 10px 0;">
+        Blue text (rgba(0, 123, 255, 1))
+      </p>
+      <p data-figma-id="text-20" data-figma-name="Semi Transparent" data-figma-type="TEXT" style="font-family: 'CircularXX TT', sans-serif; font-size: 16px; font-weight: 400; color: rgba(0, 0, 0, 0.5); margin: 10px 0;">
+        Semi-transparent text (rgba(0, 0, 0, 0.5))
+      </p>
+    </div>
+  </div>
+
+  <div class="test-container">
+    <h2 class="test-title">Implementation Comparison</h2>
+    <div class="comparison">
+      <div class="before">
+        <h3>❌ Before (Basic Implementation)</h3>
+        <p>• Used <code>&lt;span&gt;</code> tags</p>
+        <p>• Used <code>node.name</code> for content</p>
+        <p>• Generic system fonts only</p>
+        <p>• Basic flexbox centering</p>
+        <p>• No font weight/size support</p>
+        <p>• No text alignment</p>
+        <p>• No color from fills</p>
+      </div>
+      <div class="after">
+        <h3>✅ After (Enhanced Implementation)</h3>
+        <p>• Uses <code>&lt;p&gt;</code> tags</p>
+        <p>• Uses <code>node.characters</code> for actual text</p>
+        <p>• Custom CircularXX TT fonts loaded</p>
+        <p>• Font weight conversion from Figma styles</p>
+        <p>• Font size in pixels</p>
+        <p>• Text alignment (left/center/right)</p>
+        <p>• Letter spacing and line height</p>
+        <p>• Text color from fills with opacity</p>
+        <p>• Line break support (<code>\n</code> → <code>&lt;br&gt;</code>)</p>
+        <p>• Font preloading for performance</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="implementation-notes">
+    <h3>📝 Implementation Notes</h3>
+    <ul>
+      <li><strong>Font Loading:</strong> Custom CircularXX TT fonts are loaded with @font-face declarations</li>
+      <li><strong>Font Weight Mapping:</strong> Figma font styles (Bold, Medium, etc.) are converted to CSS font-weight values</li>
+      <li><strong>Text Properties:</strong> fontSize, fontWeight, textAlign, letterSpacing, lineHeight are all supported</li>
+      <li><strong>Color Support:</strong> Text color is extracted from Figma fills with proper RGBA values</li>
+      <li><strong>Performance:</strong> Font preload links are generated for faster loading</li>
+      <li><strong>Semantic HTML:</strong> Uses proper <code>&lt;p&gt;</code> tags instead of <code>&lt;span&gt;</code></li>
+      <li><strong>Line Breaks:</strong> Figma line breaks (\n) are converted to HTML <code>&lt;br&gt;</code> tags</li>
+    </ul>
+  </div>
+
+  <script>
+    console.log('Enhanced Text Support Test Loaded');
+    console.log('Testing text elements:', document.querySelectorAll('p[data-figma-type="TEXT"]').length, 'found');
+    
+    // Test that fonts are loading properly
+    document.fonts.ready.then(() => {
+      console.log('All fonts loaded successfully');
+      
+      // Check if CircularXX TT is available
+      const testElement = document.createElement('span');
+      testElement.style.fontFamily = '"CircularXX TT"';
+      testElement.textContent = 'Test';
+      document.body.appendChild(testElement);
+      
+      const computedStyle = window.getComputedStyle(testElement);
+      console.log('Font family used:', computedStyle.fontFamily);
+      
+      document.body.removeChild(testElement);
+    });
+    
+    // Log all text elements with their properties
+    const textElements = document.querySelectorAll('p[data-figma-type="TEXT"]');
+    textElements.forEach((element, index) => {
+      const style = window.getComputedStyle(element);
+      console.log(`Text element ${index + 1}:`, {
+        id: element.getAttribute('data-figma-id'),
+        name: element.getAttribute('data-figma-name'),
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight,
+        textAlign: style.textAlign,
+        color: style.color,
+        letterSpacing: style.letterSpacing,
+        lineHeight: style.lineHeight
+      });
+    });
+  </script>
+</body>
+</html>
+

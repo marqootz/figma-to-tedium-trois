@@ -1,1 +1,0 @@
-{"version":3,"file":"animation-handler.d.ts","sourceRoot":"","sources":["../../src/html/animation-handler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,eAAe,CAAC;AAG1C,qBAAa,gBAAgB;IAC3B,qBAAqB,CAAC,KAAK,EAAE,SAAS,EAAE,EAAE,iBAAiB,CAAC,EAAE,GAAG,EAAE,GAAG,MAAM;CAQ7E"}

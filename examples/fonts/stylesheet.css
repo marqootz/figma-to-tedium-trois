@@ -1,0 +1,433 @@
+/*
+ *
+ * INSTRUCTIONS
+ *
+ * Copy the Legal Disclaimer and the @font-faces statements to your regular CSS file.
+ * The font file(s) should be placed relative to the regular CSS file.
+ *
+ */
+
+/*
+ * Legal Disclaimer for App licence
+ *
+ * Licence to use fonts in native, web, or hybrid apps on mobile or stationary devices, for example personal computers, smart phones, entertainment systems, game consoles, medical instruments, etc.
+ *
+ * Should the license download limit be exceeded the license holder will be required to contact Lineto.com for an upgrade.
+ * 
+ * It is strictly prohibited to rename the font and to download or use these fonts in any other media. 
+ * 
+ * These Web fonts are licensed exclusively for the use on the following App(s):
+ *
+ * Glydways (Total Downloads: <10k)
+ *
+ */
+
+/* complete */
+
+@font-face {
+  font-family: "CircularXXWeb-Thin";
+  src: url("CircularXXWeb-Thin.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Thin";
+  src: url("CircularXXWeb-Thin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ThinItalic";
+  src: url("CircularXXWeb-ThinItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ThinItalic";
+  src: url("CircularXXWeb-ThinItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Light";
+  src: url("CircularXXWeb-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Light";
+  src: url("CircularXXWeb-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-LightItalic";
+  src: url("CircularXXWeb-LightItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-LightItalic";
+  src: url("CircularXXWeb-LightItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Regular";
+  src: url("CircularXXWeb-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Regular";
+  src: url("CircularXXWeb-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Italic";
+  src: url("CircularXXWeb-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Italic";
+  src: url("CircularXXWeb-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Book";
+  src: url("CircularXXWeb-Book.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Book";
+  src: url("CircularXXWeb-Book.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BookItalic";
+  src: url("CircularXXWeb-BookItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BookItalic";
+  src: url("CircularXXWeb-BookItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Medium";
+  src: url("CircularXXWeb-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Medium";
+  src: url("CircularXXWeb-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-MediumItalic";
+  src: url("CircularXXWeb-MediumItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-MediumItalic";
+  src: url("CircularXXWeb-MediumItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Bold";
+  src: url("CircularXXWeb-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Bold";
+  src: url("CircularXXWeb-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BoldItalic";
+  src: url("CircularXXWeb-BoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BoldItalic";
+  src: url("CircularXXWeb-BoldItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Black";
+  src: url("CircularXXWeb-Black.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-Black";
+  src: url("CircularXXWeb-Black.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BlackItalic";
+  src: url("CircularXXWeb-BlackItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-BlackItalic";
+  src: url("CircularXXWeb-BlackItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ExtraBlack";
+  src: url("CircularXXWeb-ExtraBlack.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ExtraBlack";
+  src: url("CircularXXWeb-ExtraBlack.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ExtraBlackItalic";
+  src: url("CircularXXWeb-ExtraBlackItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXWeb-ExtraBlackItalic";
+  src: url("CircularXXWeb-ExtraBlackItalic.woff2") format("woff2");
+}
+
+
+/* TrueType fonts - exact Figma fonts */
+
+@font-face {
+  font-family: "CircularXXTT-Thin";
+  src: url("CircularXXTT-Thin.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-ThinItalic";
+  src: url("CircularXXTT-ThinItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Light";
+  src: url("CircularXXTT-Light.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-LightItalic";
+  src: url("CircularXXTT-LightItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Regular";
+  src: url("CircularXXTT-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Italic";
+  src: url("CircularXXTT-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Book";
+  src: url("CircularXXTT-Book.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-BookItalic";
+  src: url("CircularXXTT-BookItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Medium";
+  src: url("CircularXXTT-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-MediumItalic";
+  src: url("CircularXXTT-MediumItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Bold";
+  src: url("CircularXXTT-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-BoldItalic";
+  src: url("CircularXXTT-BoldItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-Black";
+  src: url("CircularXXTT-Black.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-BlackItalic";
+  src: url("CircularXXTT-BlackItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-ExtraBlack";
+  src: url("CircularXXTT-ExtraBlack.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "CircularXXTT-ExtraBlackItalic";
+  src: url("CircularXXTT-ExtraBlackItalic.ttf") format("truetype");
+}
+
+
+/* subset */
+
+@font-face {
+  font-family: "CircularXXSub-Thin";
+  src: url("CircularXXSub-Thin.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Thin";
+  src: url("CircularXXSub-Thin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ThinItalic";
+  src: url("CircularXXSub-ThinItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ThinItalic";
+  src: url("CircularXXSub-ThinItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Light";
+  src: url("CircularXXSub-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Light";
+  src: url("CircularXXSub-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-LightItalic";
+  src: url("CircularXXSub-LightItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-LightItalic";
+  src: url("CircularXXSub-LightItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Regular";
+  src: url("CircularXXSub-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Regular";
+  src: url("CircularXXSub-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Italic";
+  src: url("CircularXXSub-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Italic";
+  src: url("CircularXXSub-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Book";
+  src: url("CircularXXSub-Book.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Book";
+  src: url("CircularXXSub-Book.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BookItalic";
+  src: url("CircularXXSub-BookItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BookItalic";
+  src: url("CircularXXSub-BookItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Medium";
+  src: url("CircularXXSub-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Medium";
+  src: url("CircularXXSub-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-MediumItalic";
+  src: url("CircularXXSub-MediumItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-MediumItalic";
+  src: url("CircularXXSub-MediumItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Bold";
+  src: url("CircularXXSub-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Bold";
+  src: url("CircularXXSub-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BoldItalic";
+  src: url("CircularXXSub-BoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BoldItalic";
+  src: url("CircularXXSub-BoldItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Black";
+  src: url("CircularXXSub-Black.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-Black";
+  src: url("CircularXXSub-Black.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BlackItalic";
+  src: url("CircularXXSub-BlackItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-BlackItalic";
+  src: url("CircularXXSub-BlackItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ExtraBlack";
+  src: url("CircularXXSub-ExtraBlack.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ExtraBlack";
+  src: url("CircularXXSub-ExtraBlack.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ExtraBlackItalic";
+  src: url("CircularXXSub-ExtraBlackItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "CircularXXSub-ExtraBlackItalic";
+  src: url("CircularXXSub-ExtraBlackItalic.woff2") format("woff2");
+}
+
+

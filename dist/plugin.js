@@ -267,13 +267,13 @@ class ElementBuilder {
         return ' ' + attrs.join(' ');
     }
     generateContent(node) {
-        if (node.children) {
+        if (node.children && node.children.length > 0) {
             return node.children.map(child => this.buildElement(child)).join('\n');
         }
-        // Handle text content, vectors, etc.
+        // Handle text content
         if (node.type === 'TEXT') {
-            // Extract text content from node
-            return node.name; // Simplified
+            // Use the actual text content from characters property
+            return node.characters || node.name || '';
         }
         return '';
     }
@@ -285,7 +285,9 @@ class ElementBuilder {
             case 'FRAME':
                 return 'div';
             case 'TEXT':
-                return 'span';
+                // Use p tag for longer text, span for short labels
+                const textLength = node.characters ? node.characters.length : 0;
+                return textLength > 50 ? 'p' : 'span';
             case 'VECTOR':
             case 'RECTANGLE':
             case 'ELLIPSE':
@@ -408,8 +410,8 @@ class StyleGenerator {
                     break;
             }
         }
-        // Background fills (exclude SVG nodes - they handle fills internally)
-        if (node.fills && node.fills.length > 0 && !this.isSVGNode(node)) {
+        // Background fills (exclude SVG nodes and TEXT nodes - they handle fills internally)
+        if (node.fills && node.fills.length > 0 && !this.isSVGNode(node) && node.type !== 'TEXT') {
             const backgroundCSS = this.generateBackgroundCSS(node.fills);
             if (backgroundCSS) {
                 properties.push(backgroundCSS);
@@ -439,10 +441,8 @@ class StyleGenerator {
         }
         // Text-specific styles
         if (node.type === 'TEXT') {
-            properties.push(`font-family: system-ui, -apple-system, sans-serif;`);
-            properties.push(`display: flex;`);
-            properties.push(`align-items: center;`);
-            properties.push(`justify-content: center;`);
+            const textStyles = this.generateTextStyles(node);
+            properties.push(...textStyles);
         }
         return properties.map(prop => `  ${prop}`).join('\n');
     }
@@ -488,6 +488,126 @@ class StyleGenerator {
     }
     isSVGNode(node) {
         return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
+    }
+    generateTextStyles(node) {
+        const textStyles = [];
+        // Font size
+        if (node.fontSize) {
+            textStyles.push(`font-size: ${node.fontSize}px;`);
+        }
+        // Font family - use fontName like the reference project
+        if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
+            const figmaFamily = String(node.fontName.family);
+            // Use exact Figma font names with fallback
+            textStyles.push(`font-family: "${figmaFamily}", sans-serif;`);
+        }
+        else if (node.fontFamily) {
+            textStyles.push(`font-family: "${node.fontFamily}", sans-serif;`);
+        }
+        else {
+            // Default to CircularXX TT for consistency with reference project
+            textStyles.push(`font-family: "CircularXX TT", sans-serif;`);
+        }
+        // Font weight - convert Figma font style to CSS font weight
+        if (node.fontName && typeof node.fontName === 'object' && node.fontName.style) {
+            const figmaStyle = String(node.fontName.style);
+            let cssWeight = '400'; // Default
+            if (figmaStyle.includes('Bold'))
+                cssWeight = '700';
+            else if (figmaStyle.includes('Medium'))
+                cssWeight = '500';
+            else if (figmaStyle.includes('Light'))
+                cssWeight = '300';
+            else if (figmaStyle.includes('Thin'))
+                cssWeight = '100';
+            else if (figmaStyle.includes('Black'))
+                cssWeight = '900';
+            else if (figmaStyle.includes('Book'))
+                cssWeight = '450';
+            textStyles.push(`font-weight: ${cssWeight};`);
+        }
+        else if (node.fontWeight) {
+            textStyles.push(`font-weight: ${node.fontWeight};`);
+        }
+        // Text alignment
+        if (node.textAlignHorizontal) {
+            textStyles.push(`text-align: ${node.textAlignHorizontal.toLowerCase()};`);
+        }
+        // Letter spacing
+        if (node.letterSpacing) {
+            if (typeof node.letterSpacing === 'object' && node.letterSpacing.value) {
+                const unit = node.letterSpacing.unit === 'PERCENT' ? '%' : 'px';
+                textStyles.push(`letter-spacing: ${node.letterSpacing.value}${unit};`);
+            }
+            else if (typeof node.letterSpacing === 'number') {
+                textStyles.push(`letter-spacing: ${node.letterSpacing}px;`);
+            }
+        }
+        // Line height
+        if (node.lineHeight) {
+            if (typeof node.lineHeight === 'object' && node.lineHeight.value) {
+                if (node.lineHeight.unit === 'AUTO' || node.lineHeight.unit === 'auto') {
+                    textStyles.push(`line-height: normal;`);
+                }
+                else {
+                    // Figma line height is percentage
+                    textStyles.push(`line-height: ${node.lineHeight.value}%;`);
+                }
+            }
+            else if (typeof node.lineHeight === 'number') {
+                textStyles.push(`line-height: ${node.lineHeight}%;`);
+            }
+            else if (typeof node.lineHeight === 'string' && node.lineHeight.toLowerCase() === 'auto') {
+                textStyles.push(`line-height: normal;`);
+            }
+        }
+        // Text color from fills
+        if (node.fills && node.fills.length > 0) {
+            const textColor = this.generateTextColor(node.fills);
+            if (textColor) {
+                textStyles.push(textColor);
+            }
+        }
+        // Default text styling for better rendering
+        textStyles.push(`margin: 0;`); // Remove default p tag margins
+        textStyles.push(`padding: 0;`); // Remove default p tag padding
+        textStyles.push(`background: none;`); // Ensure no background color on text elements
+        // Ensure text elements have proper dimensions and visibility
+        if (node.width && node.height) {
+            textStyles.push(`width: ${node.width}px;`);
+            textStyles.push(`height: ${node.height}px;`);
+            textStyles.push(`overflow: hidden;`); // Prevent text overflow
+        }
+        // Ensure text is visible even without explicit color
+        if (!textStyles.some(style => style.startsWith('color:'))) {
+            textStyles.push(`color: rgba(0, 0, 0, 1);`); // Default black text
+        }
+        // Ensure text has proper line height for visibility
+        if (!textStyles.some(style => style.startsWith('line-height:'))) {
+            textStyles.push(`line-height: 1.2;`); // Default line height
+        }
+        // Ensure text has minimum font size for visibility
+        if (!textStyles.some(style => style.startsWith('font-size:'))) {
+            textStyles.push(`font-size: 16px;`); // Default font size
+        }
+        // Ensure text has minimum font weight for visibility
+        if (!textStyles.some(style => style.startsWith('font-weight:'))) {
+            textStyles.push(`font-weight: 400;`); // Default font weight
+        }
+        // Ensure text has font family for visibility
+        if (!textStyles.some(style => style.startsWith('font-family:'))) {
+            textStyles.push(`font-family: "CircularXX TT", sans-serif;`); // Default font family
+        }
+        return textStyles;
+    }
+    generateTextColor(fills) {
+        const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
+        if (solidFill === null || solidFill === void 0 ? void 0 : solidFill.color) {
+            const { r, g, b } = solidFill.color;
+            const alpha = solidFill.opacity || 1;
+            return `color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
+        }
+        return null;
     }
 }
 
@@ -1619,7 +1739,178 @@ class AnimationHandler {
     }
 }
 
+;// ./src/utils/font-loader.ts
+// Font loading functions for Figma plugin environment
+async function loadFonts(node) {
+    if (node.type === 'TEXT' && node.fontName) {
+        try {
+            await figma.loadFontAsync(node.fontName);
+        }
+        catch (error) {
+            console.warn(`Failed to load font for node ${node.name}:`, error);
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            await loadFonts(child);
+        }
+    }
+}
+// Font CSS generation for web output
+function getEmbeddedFontStyles() {
+    return `
+    /* Custom font declarations - CircularXX TT family with font-weight variations */
+    
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Thin.ttf") format("truetype");
+      font-weight: 100;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ThinItalic.ttf") format("truetype");
+      font-weight: 100;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Light.ttf") format("truetype");
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-LightItalic.ttf") format("truetype");
+      font-weight: 300;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Italic.ttf") format("truetype");
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Book.ttf") format("truetype");
+      font-weight: 450;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BookItalic.ttf") format("truetype");
+      font-weight: 450;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-MediumItalic.ttf") format("truetype");
+      font-weight: 500;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BoldItalic.ttf") format("truetype");
+      font-weight: 700;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Black.ttf") format("truetype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BlackItalic.ttf") format("truetype");
+      font-weight: 900;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ExtraBlack.ttf") format("truetype");
+      font-weight: 950;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ExtraBlackItalic.ttf") format("truetype");
+      font-weight: 950;
+      font-style: italic;
+      font-display: swap;
+    }
+  `;
+}
+// Analyze text nodes to determine what fonts are needed
+function analyzeRequiredFonts(nodes) {
+    const requiredFonts = new Set();
+    function analyzeNode(node) {
+        if (node.type === 'TEXT') {
+            if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
+                requiredFonts.add(node.fontName.family);
+            }
+            else if (node.fontFamily) {
+                requiredFonts.add(node.fontFamily);
+            }
+        }
+        if (node.children) {
+            node.children.forEach(analyzeNode);
+        }
+    }
+    nodes.forEach(analyzeNode);
+    return requiredFonts;
+}
+// Generate font preload links for better performance
+function generateFontPreloadLinks(fontFamilies) {
+    const preloadLinks = [];
+    fontFamilies.forEach(family => {
+        if (family === 'CircularXX TT') {
+            // Add preload links for commonly used weights
+            // Note: crossorigin is removed for local file access
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Regular.ttf" as="font" type="font/ttf">`);
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Medium.ttf" as="font" type="font/ttf">`);
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Bold.ttf" as="font" type="font/ttf">`);
+        }
+    });
+    return preloadLinks.join('\n  ');
+}
+
 ;// ./src/html/generator.ts
+
 
 
 
@@ -1633,13 +1924,26 @@ class HTMLGenerator {
         const css = this.generateCSS(nodes, resolvedInstances);
         const bodyHTML = this.generateBodyHTML(nodes, resolvedInstances);
         const javascript = this.generateJavaScript(nodes, resolvedInstances);
+        // Analyze required fonts for preloading
+        const allNodes = [...nodes];
+        if (resolvedInstances) {
+            resolvedInstances.forEach(instance => {
+                allNodes.push(...instance.variants);
+            });
+        }
+        const requiredFonts = analyzeRequiredFonts(allNodes);
+        const fontPreloadLinks = generateFontPreloadLinks(requiredFonts);
+        const fontStyles = getEmbeddedFontStyles();
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Figma Export</title>
-  <style>
+  ${fontPreloadLinks ? `  ${fontPreloadLinks}\n` : ''}  <style>
+    /* Font definitions */
+${fontStyles}
+    
     /* Reset and base styles */
     * {
       margin: 0;
@@ -1648,7 +1952,7 @@ class HTMLGenerator {
     }
     
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: "CircularXX TT", system-ui, -apple-system, sans-serif;
       background-color: #f5f5f5;
       overflow: hidden;
       margin: 0;
@@ -1676,13 +1980,40 @@ ${css}
         return css;
     }
     generateBodyHTML(nodes, resolvedInstances) {
-        let html = nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
+        // Add test element to verify latest plugin code is being used
+        const testElement = this.generateTestElement();
+        let html = testElement + '\n' + nodes.map(node => this.elementBuilder.buildElement(node)).join('\n');
         // Add HTML for all variants if we have resolved instances
         if (resolvedInstances) {
             const variantHTML = this.generateVariantHTML(resolvedInstances);
             html += '\n' + variantHTML;
         }
         return html;
+    }
+    generateTestElement() {
+        const timestamp = new Date().toISOString();
+        const version = '1.0.0';
+        const buildTime = new Date().toLocaleString();
+        return `<!-- PLUGIN TEST ELEMENT - VERIFY LATEST CODE -->
+<div id="plugin-test-element" style="
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  border: 2px solid #fff;
+">
+  <div style="font-weight: bold; margin-bottom: 4px;">✅ Latest Plugin Code</div>
+  <div style="font-size: 10px; opacity: 0.9;">Version: ${version}</div>
+  <div style="font-size: 10px; opacity: 0.9;">Built: ${buildTime}</div>
+  <div style="font-size: 10px; opacity: 0.9;">Exported: ${timestamp}</div>
+</div>`;
     }
     generateJavaScript(nodes, resolvedInstances) {
         return this.animationHandler.generateAnimationCode(nodes, resolvedInstances);
@@ -1755,16 +2086,13 @@ ${css}
 class FigmaDataExtractor {
     async extractNodes(selection) {
         const nodes = [];
-        console.log('Extracting data from', selection.length, 'selected nodes');
         for (const node of selection) {
             const extractedNode = await this.extractNode(node);
             nodes.push(extractedNode);
         }
-        console.log('Extracted', nodes.length, 'nodes with animation data');
         return nodes;
     }
     async extractNode(node) {
-        console.log('Checking node:', node.id, node.type, node.mainComponentId);
         const baseNode = {
             id: node.id,
             name: node.name,
@@ -1920,6 +2248,10 @@ class FigmaDataExtractor {
     extractCharacters(node) {
         if ('characters' in node && node.characters) {
             return node.characters;
+        }
+        // Only log when we expect characters but don't find them
+        if (node.type === 'TEXT') {
+            console.log('⚠️ TEXT node missing characters:', node.name);
         }
         return undefined;
     }
@@ -2388,8 +2720,6 @@ async function handleExportHTML() {
         const firstVariant = instance.variants[0];
         return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     });
-    console.log('Found', componentSets.length, 'component sets with animations');
-    console.log('Animation chains:', animationChains);
     // Generate HTML
     const generator = new HTMLGenerator();
     const html = generator.generateHTML(nodes, resolvedInstances);
@@ -2568,7 +2898,7 @@ async function handleAnalyzeSelection() {
     console.log('Selection analysis:', analysis);
 }
 // Initialize plugin
-console.log('Figma Animation Plugin initialized');
+console.log('🎉 Figma Animation Plugin initialized - LATEST CODE VERSION');
 figma.ui.postMessage({
     type: 'plugin-ready',
     message: 'Plugin loaded successfully',

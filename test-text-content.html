@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Content Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-case {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .text-element {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin: 10px 0;
+      background: #f9f9f9;
+      min-height: 20px;
+    }
+    .debug-info {
+      font-family: monospace;
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Text Content Generation Test</h1>
+  
+  <div class="test-case">
+    <h2>Test Case 1: Text with characters property</h2>
+    <div class="text-element" data-figma-id="test-1" data-figma-name="Sample Text" data-figma-type="TEXT">
+      This is sample text content
+    </div>
+    <div class="debug-info">
+      Expected: "This is sample text content"<br>
+      Actual: Content should be visible above
+    </div>
+  </div>
+
+  <div class="test-case">
+    <h2>Test Case 2: Text with only name (no characters)</h2>
+    <div class="text-element" data-figma-id="test-2" data-figma-name="Air" data-figma-type="TEXT">
+      Air
+    </div>
+    <div class="debug-info">
+      Expected: "Air" (from node.name)<br>
+      Actual: Content should be visible above
+    </div>
+  </div>
+
+  <div class="test-case">
+    <h2>Test Case 3: Text with line breaks</h2>
+    <div class="text-element" data-figma-id="test-3" data-figma-name="Multi-line Text" data-figma-type="TEXT">
+      Line 1<br>Line 2<br>Line 3
+    </div>
+    <div class="debug-info">
+      Expected: "Line 1<br>Line 2<br>Line 3"<br>
+      Actual: Content should be visible above with line breaks
+    </div>
+  </div>
+
+  <div class="test-case">
+    <h2>Test Case 4: Empty text node</h2>
+    <div class="text-element" data-figma-id="test-4" data-figma-name="" data-figma-type="TEXT">
+      Text
+    </div>
+    <div class="debug-info">
+      Expected: "Text" (fallback)<br>
+      Actual: Content should be visible above
+    </div>
+  </div>
+
+  <script>
+    console.log('Text Content Test Loaded');
+    
+    // Analyze all text elements
+    const textElements = document.querySelectorAll('[data-figma-type="TEXT"]');
+    
+    textElements.forEach((element, index) => {
+      const id = element.getAttribute('data-figma-id');
+      const name = element.getAttribute('data-figma-name');
+      const content = element.textContent;
+      const innerHTML = element.innerHTML;
+      
+      console.log(`Text element ${index + 1}:`, {
+        id,
+        name,
+        textContent: content,
+        innerHTML: innerHTML,
+        hasContent: content && content.trim().length > 0,
+        contentLength: content ? content.length : 0
+      });
+      
+      // Add visual indicator if content is missing
+      if (!content || content.trim().length === 0) {
+        element.style.border = '2px solid red';
+        element.style.backgroundColor = '#ffe6e6';
+        element.innerHTML = '<em style="color: red;">NO CONTENT</em>';
+      } else {
+        element.style.border = '2px solid green';
+        element.style.backgroundColor = '#e6ffe6';
+      }
+    });
+  </script>
+</body>
+</html>
+

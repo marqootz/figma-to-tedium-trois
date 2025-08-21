@@ -122,8 +122,8 @@ export class StyleGenerator {
       }
     }
 
-    // Background fills (exclude SVG nodes - they handle fills internally)
-    if (node.fills && node.fills.length > 0 && !this.isSVGNode(node)) {
+    // Background fills (exclude SVG nodes and TEXT nodes - they handle fills internally)
+    if (node.fills && node.fills.length > 0 && !this.isSVGNode(node) && node.type !== 'TEXT') {
       const backgroundCSS = this.generateBackgroundCSS(node.fills);
       if (backgroundCSS) {
         properties.push(backgroundCSS);
@@ -158,10 +158,8 @@ export class StyleGenerator {
 
     // Text-specific styles
     if (node.type === 'TEXT') {
-      properties.push(`font-family: system-ui, -apple-system, sans-serif;`);
-      properties.push(`display: flex;`);
-      properties.push(`align-items: center;`);
-      properties.push(`justify-content: center;`);
+      const textStyles = this.generateTextStyles(node);
+      properties.push(...textStyles);
     }
 
     return properties.map(prop => `  ${prop}`).join('\n');
@@ -217,5 +215,133 @@ export class StyleGenerator {
 
   private isSVGNode(node: FigmaNode): boolean {
     return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
+  }
+
+  private generateTextStyles(node: FigmaNode): string[] {
+    const textStyles: string[] = [];
+
+    // Font size
+    if (node.fontSize) {
+      textStyles.push(`font-size: ${node.fontSize}px;`);
+    }
+
+    // Font family - use fontName like the reference project
+    if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
+      const figmaFamily = String(node.fontName.family);
+      // Use exact Figma font names with fallback
+      textStyles.push(`font-family: "${figmaFamily}", sans-serif;`);
+    } else if (node.fontFamily) {
+      textStyles.push(`font-family: "${node.fontFamily}", sans-serif;`);
+    } else {
+      // Default to CircularXX TT for consistency with reference project
+      textStyles.push(`font-family: "CircularXX TT", sans-serif;`);
+    }
+
+    // Font weight - convert Figma font style to CSS font weight
+    if (node.fontName && typeof node.fontName === 'object' && node.fontName.style) {
+      const figmaStyle = String(node.fontName.style);
+      let cssWeight = '400'; // Default
+      
+      if (figmaStyle.includes('Bold')) cssWeight = '700';
+      else if (figmaStyle.includes('Medium')) cssWeight = '500';
+      else if (figmaStyle.includes('Light')) cssWeight = '300';
+      else if (figmaStyle.includes('Thin')) cssWeight = '100';
+      else if (figmaStyle.includes('Black')) cssWeight = '900';
+      else if (figmaStyle.includes('Book')) cssWeight = '450';
+      
+      textStyles.push(`font-weight: ${cssWeight};`);
+    } else if (node.fontWeight) {
+      textStyles.push(`font-weight: ${node.fontWeight};`);
+    }
+
+    // Text alignment
+    if (node.textAlignHorizontal) {
+      textStyles.push(`text-align: ${node.textAlignHorizontal.toLowerCase()};`);
+    }
+
+    // Letter spacing
+    if (node.letterSpacing) {
+      if (typeof node.letterSpacing === 'object' && node.letterSpacing.value) {
+        const unit = node.letterSpacing.unit === 'PERCENT' ? '%' : 'px';
+        textStyles.push(`letter-spacing: ${node.letterSpacing.value}${unit};`);
+      } else if (typeof node.letterSpacing === 'number') {
+        textStyles.push(`letter-spacing: ${node.letterSpacing}px;`);
+      }
+    }
+
+    // Line height
+    if (node.lineHeight) {
+      if (typeof node.lineHeight === 'object' && node.lineHeight.value) {
+        if (node.lineHeight.unit === 'AUTO' || node.lineHeight.unit === 'auto') {
+          textStyles.push(`line-height: normal;`);
+        } else {
+          // Figma line height is percentage
+          textStyles.push(`line-height: ${node.lineHeight.value}%;`);
+        }
+      } else if (typeof node.lineHeight === 'number') {
+        textStyles.push(`line-height: ${node.lineHeight}%;`);
+      } else if (typeof node.lineHeight === 'string' && node.lineHeight.toLowerCase() === 'auto') {
+        textStyles.push(`line-height: normal;`);
+      }
+    }
+
+    // Text color from fills
+    if (node.fills && node.fills.length > 0) {
+      const textColor = this.generateTextColor(node.fills);
+      if (textColor) {
+        textStyles.push(textColor);
+      }
+    }
+
+    // Default text styling for better rendering
+    textStyles.push(`margin: 0;`); // Remove default p tag margins
+    textStyles.push(`padding: 0;`); // Remove default p tag padding
+    textStyles.push(`background: none;`); // Ensure no background color on text elements
+    
+    // Ensure text elements have proper dimensions and visibility
+    if (node.width && node.height) {
+      textStyles.push(`width: ${node.width}px;`);
+      textStyles.push(`height: ${node.height}px;`);
+      textStyles.push(`overflow: hidden;`); // Prevent text overflow
+    }
+    
+    // Ensure text is visible even without explicit color
+    if (!textStyles.some(style => style.startsWith('color:'))) {
+      textStyles.push(`color: rgba(0, 0, 0, 1);`); // Default black text
+    }
+    
+    // Ensure text has proper line height for visibility
+    if (!textStyles.some(style => style.startsWith('line-height:'))) {
+      textStyles.push(`line-height: 1.2;`); // Default line height
+    }
+    
+    // Ensure text has minimum font size for visibility
+    if (!textStyles.some(style => style.startsWith('font-size:'))) {
+      textStyles.push(`font-size: 16px;`); // Default font size
+    }
+    
+    // Ensure text has minimum font weight for visibility
+    if (!textStyles.some(style => style.startsWith('font-weight:'))) {
+      textStyles.push(`font-weight: 400;`); // Default font weight
+    }
+    
+    // Ensure text has font family for visibility
+    if (!textStyles.some(style => style.startsWith('font-family:'))) {
+      textStyles.push(`font-family: "CircularXX TT", sans-serif;`); // Default font family
+    }
+    
+    return textStyles;
+  }
+
+  private generateTextColor(fills: FigmaFill[]): string | null {
+    const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
+    
+    if (solidFill?.color) {
+      const { r, g, b } = solidFill.color;
+      const alpha = solidFill.opacity || 1;
+      return `color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
+    }
+
+    return null;
   }
 }

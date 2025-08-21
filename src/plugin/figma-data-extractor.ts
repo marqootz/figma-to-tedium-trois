@@ -4,19 +4,15 @@ export class FigmaDataExtractor {
   async extractNodes(selection: readonly SceneNode[]): Promise<FigmaNode[]> {
     const nodes: FigmaNode[] = [];
     
-    console.log('Extracting data from', selection.length, 'selected nodes');
-    
     for (const node of selection) {
       const extractedNode = await this.extractNode(node);
       nodes.push(extractedNode);
     }
     
-    console.log('Extracted', nodes.length, 'nodes with animation data');
     return nodes;
   }
 
   private async extractNode(node: SceneNode): Promise<FigmaNode> {
-    console.log('Checking node:', node.id, node.type, (node as any).mainComponentId);
     
     const baseNode: FigmaNode = {
       id: node.id,
@@ -191,6 +187,10 @@ export class FigmaDataExtractor {
   private extractCharacters(node: SceneNode): string | undefined {
     if ('characters' in node && node.characters) {
       return node.characters;
+    }
+    // Only log when we expect characters but don't find them
+    if (node.type === 'TEXT') {
+      console.log('⚠️ TEXT node missing characters:', node.name);
     }
     return undefined;
   }
