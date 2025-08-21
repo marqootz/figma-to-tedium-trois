@@ -1232,8 +1232,8 @@
 ">
   <div style="font-weight: bold; margin-bottom: 4px;">✅ Latest Plugin Code</div>
   <div style="font-size: 10px; opacity: 0.9;">Version: 1.0.0</div>
-  <div style="font-size: 10px; opacity: 0.9;">Built: 08/21/2025, 07:44:58 AM</div>
-  <div style="font-size: 10px; opacity: 0.9;">Exported: 2025-08-21T14:44:58.416Z</div>
+  <div style="font-size: 10px; opacity: 0.9;">Built: 08/21/2025, 07:55:32 AM</div>
+  <div style="font-size: 10px; opacity: 0.9;">Exported: 2025-08-21T14:55:32.220Z</div>
 </div>
 <div data-figma-id="5533:3028" data-figma-name="glydcar/control-panel/button-air" data-figma-type="INSTANCE" data-layout-mode="HORIZONTAL"><div data-figma-id="I5533:3028;6411:5920" data-figma-name="Frame 1299" data-figma-type="FRAME" data-layout-mode="VERTICAL"><div data-figma-id="I5533:3028;6411:5921" data-figma-name="Frame 1300" data-figma-type="FRAME" data-layout-mode="VERTICAL" data-reactions='[{"trigger":{"type":"ON_CLICK"},"action":{"type":"NODE","destinationId":"5362:3481","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":0.6000000238418579,"easing":{"type":"EASE_OUT"}}}}]'><svg width="31.650623321533203" height="13.045567512512207" viewBox="0 0 31.650623321533203 13.045567512512207" xmlns="http://www.w3.org/2000/svg" data-figma-id="I5533:3028;6411:5922" data-figma-name="chevron-up" data-figma-type="VECTOR">
     <g id="chevron-up">
@@ -2305,9 +2305,6 @@
         // Setup initial timeout reactions
         
         
-        // Setup initial click reactions
-        
-        
         // Setup variant animation system
         
       // Setup variant animation for glydcar/control-panel/button-air
@@ -2354,6 +2351,20 @@
           
           delete window._tempVariantInstances;
         }
+        
+        // Setup click reactions AFTER variant visibility is initialized
+        
+      // Setup click reactions for Frame 1300
+      window.figmaAnimationSystem.setupClickReactions('I5533:3028;6411:5921');
+
+      // Setup click reactions for Frame 1301
+      window.figmaAnimationSystem.setupClickReactions('I5533:3028;6411:5924');
+
+      // Setup click reactions for Frame 1300
+      window.figmaAnimationSystem.setupClickReactions('6411:5921');
+
+      // Setup click reactions for Frame 1301
+      window.figmaAnimationSystem.setupClickReactions('6411:5924');
         
         console.log('Animation system initialized with 1 nodes and 1 resolved instances');
       });

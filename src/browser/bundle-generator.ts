@@ -41,9 +41,6 @@ export class BundleGenerator {
         // Setup initial timeout reactions
         ${this.generateInitialTimeouts(nodes, resolvedInstances)}
         
-        // Setup initial click reactions
-        ${this.generateInitialClicks(nodes, resolvedInstances)}
-        
         // Setup variant animation system
         ${resolvedInstances ? this.generateVariantAnimationSetup(resolvedInstances) : ''}
         
@@ -76,6 +73,9 @@ export class BundleGenerator {
           
           delete window._tempVariantInstances;
         }
+        
+        // Setup click reactions AFTER variant visibility is initialized
+        ${this.generateInitialClicks(nodes, resolvedInstances)}
         
         console.log('Animation system initialized with ${nodes.length} nodes${resolvedInstances ? ' and ' + resolvedInstances.length + ' resolved instances' : ''}');
       });
@@ -1021,9 +1021,11 @@ export class BundleGenerator {
   }
 
   private static generateNodeRegistrations(nodes: FigmaNodeData[]): string {
-    return nodes.map(node => {
+    let registrations = '';
+    
+    const registerNodeRecursively = (node: FigmaNodeData) => {
       const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
-      return `
+      registrations += `
         const element_${sanitizedId} = document.querySelector('[data-figma-id="${node.id}"]');
         if (element_${sanitizedId}) {
           window.figmaAnimationSystem.registerElement(
@@ -1035,29 +1037,73 @@ export class BundleGenerator {
           console.warn('Element not found for node: ${node.id}');
         }
       `;
-    }).join('\n');
+      
+      // Recursively register children that have reactions
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          // Register child if it has reactions
+          if (child.reactions && child.reactions.length > 0) {
+            registerNodeRecursively(child);
+          }
+          // Also register all children recursively to ensure we catch nested reactions
+          if (child.children && child.children.length > 0) {
+            child.children.forEach(grandchild => {
+              if (grandchild.reactions && grandchild.reactions.length > 0) {
+                registerNodeRecursively(grandchild);
+              }
+            });
+          }
+        });
+      }
+    };
+    
+    nodes.forEach(node => {
+      registerNodeRecursively(node);
+    });
+    
+    return registrations;
   }
 
   private static generateVariantRegistrations(resolvedInstances: any[]): string {
     let registrations = '';
     
     resolvedInstances.forEach(instance => {
-      const { variants } = instance;
-      
-      variants.forEach((variant: FigmaNodeData) => {
-        const sanitizedId = variant.id.replace(/[^a-zA-Z0-9]/g, '_');
-        registrations += `
-        const variant_${sanitizedId} = document.querySelector('[data-figma-id="${variant.id}"]');
+      instance.variants.forEach((variant: FigmaNodeData) => {
+        const registerVariantRecursively = (node: FigmaNodeData) => {
+          const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
+          registrations += `
+        const variant_${sanitizedId} = document.querySelector('[data-figma-id="${node.id}"]');
         if (variant_${sanitizedId}) {
           window.figmaAnimationSystem.registerElement(
-            '${variant.id}',
+            '${node.id}',
             variant_${sanitizedId},
-            ${JSON.stringify(variant)}
+            ${JSON.stringify(node)}
           );
         } else {
-          console.warn('Variant element not found: ${variant.id}');
+          console.warn('Variant element not found: ${node.id}');
         }
       `;
+          
+          // Recursively register children that have reactions
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(child => {
+              // Register child if it has reactions
+              if (child.reactions && child.reactions.length > 0) {
+                registerVariantRecursively(child);
+              }
+              // Also register all children recursively to ensure we catch nested reactions
+              if (child.children && child.children.length > 0) {
+                child.children.forEach(grandchild => {
+                  if (grandchild.reactions && grandchild.reactions.length > 0) {
+                    registerVariantRecursively(grandchild);
+                  }
+                });
+              }
+            });
+          }
+        };
+        
+        registerVariantRecursively(variant);
       });
     });
     
