@@ -125,7 +125,16 @@ ${css}
     let css = '';
     
     resolvedInstances.forEach(instance => {
-      const { variants, activeVariant } = instance;
+      const { instance: instanceNode, variants, activeVariant } = instance;
+      
+      // Generate CSS for the variant container (acts as the instance sizing context)
+      css += `\n/* Variant container for ${instanceNode.name} */\n`;
+      css += `.variant-container[data-instance-id="${instanceNode.id}"] {\n`;
+      css += `  position: relative;\n`;
+      css += `  width: ${instanceNode.width}px;\n`;
+      css += `  height: ${instanceNode.height}px;\n`;
+      css += `  overflow: visible;\n`;
+      css += `}\n`;
       
       // Generate CSS for each variant and its children
       variants.forEach((variant: FigmaNode) => {
@@ -152,27 +161,41 @@ ${css}
     let css = '';
     
     // Generate CSS for all child elements recursively
-    const generateCSSForNode = (node: FigmaNode): void => {
-      // Skip the main variant container to avoid duplicates
-      if (node.id === variant.id) {
-        // Only generate CSS for children of the variant container
-        if (node.children) {
-          node.children.forEach(child => generateCSSForNode(child));
-        }
-        return;
-      }
-      
-      // Generate CSS for this node
-      css += this.styleGenerator.generateStyles(node, false) + '\n\n';
+    const generateCSSForNode = (node: FigmaNode, parent?: FigmaNode): void => {
+      // Generate scoped CSS for this node within the variant context
+      const scopedCSS = this.generateScopedVariantCSS(node, variant, false, parent);
+      css += scopedCSS + '\n\n';
       
       // Recursively generate CSS for children
       if (node.children) {
-        node.children.forEach(child => generateCSSForNode(child));
+        node.children.forEach(child => generateCSSForNode(child, node));
       }
     };
     
     generateCSSForNode(variant);
     return css;
+  }
+
+  // Generate scoped CSS for an element within a specific variant
+  private generateScopedVariantCSS(node: FigmaNode, variant: FigmaNode, isRoot: boolean = false, parent?: FigmaNode): string {
+    // For the component itself, use direct selector
+    // For child elements, use scoped selector to avoid conflicts
+    let selector: string;
+    
+    if (node.id === variant.id) {
+      // Component itself - use direct selector
+      selector = `[data-figma-id="${node.id}"]`;
+    } else {
+      // Child element - use scoped selector to avoid conflicts with other variants
+      const variantSelector = `[data-figma-id="${variant.id}"]`;
+      const nodeSelector = `[data-figma-id="${node.id}"]`;
+      selector = `${variantSelector} ${nodeSelector}`;
+    }
+    
+    // Generate properties using the style generator
+    const properties = this.styleGenerator.generateCSSProperties(node, isRoot, parent);
+    
+    return `${selector} {\n${properties}\n}`;
   }
 
   // Generate HTML for all variants in the shadow variant system

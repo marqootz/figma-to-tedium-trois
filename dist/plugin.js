@@ -298,22 +298,197 @@ class ElementBuilder {
     }
 }
 
+;// ./src/utils/position-calculator.ts
+class PositionCalculator {
+    /**
+     * Calculate adjusted position for a node based on its layout context
+     */
+    static calculateAdjustedPosition(node, parent) {
+        // If no parent, return original position
+        if (!parent) {
+            return {
+                x: node.x,
+                y: node.y,
+                reason: 'no_parent'
+            };
+        }
+        // Check if this is a layout-driven position that needs adjustment
+        const layoutAdjustment = this.calculateLayoutDrivenPosition(node, parent);
+        if (layoutAdjustment) {
+            return layoutAdjustment;
+        }
+        // Check if this is a relative positioning case
+        const relativeAdjustment = this.calculateRelativePosition(node, parent);
+        if (relativeAdjustment) {
+            return relativeAdjustment;
+        }
+        // Default: return original position
+        return {
+            x: node.x,
+            y: node.y,
+            reason: 'original_position'
+        };
+    }
+    /**
+     * Calculate position adjustments for layout-driven positioning
+     */
+    static calculateLayoutDrivenPosition(node, parent) {
+        // Check if parent has layout properties that affect child positioning
+        if (!this.hasLayoutProperties(parent)) {
+            return null;
+        }
+        // Check if this is a case where the node position seems inconsistent with layout
+        const isLayoutInconsistent = this.isPositionLayoutInconsistent(node, parent);
+        if (!isLayoutInconsistent) {
+            return null;
+        }
+        // Calculate adjusted position based on parent's layout properties
+        const adjustedPosition = this.adjustPositionForLayout(node, parent);
+        return {
+            x: adjustedPosition.x,
+            y: adjustedPosition.y,
+            reason: 'layout_driven_adjustment'
+        };
+    }
+    /**
+     * Calculate relative positioning adjustments
+     */
+    static calculateRelativePosition(node, parent) {
+        // Check if this node should be positioned relative to parent bounds
+        if (this.shouldUseRelativePositioning(node, parent)) {
+            const relativePosition = this.calculateRelativeToParent(node, parent);
+            return {
+                x: relativePosition.x,
+                y: relativePosition.y,
+                reason: 'relative_positioning'
+            };
+        }
+        return null;
+    }
+    /**
+     * Check if a node has layout properties
+     */
+    static hasLayoutProperties(node) {
+        return node.layoutMode !== 'NONE' ||
+            node.primaryAxisAlignItems !== undefined ||
+            node.counterAxisAlignItems !== undefined ||
+            node.layoutSizingHorizontal !== undefined ||
+            node.layoutSizingVertical !== undefined;
+    }
+    /**
+     * Check if node position is inconsistent with parent layout
+     */
+    static isPositionLayoutInconsistent(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        // Check if node is positioned outside parent bounds
+        if (node.x < 0 || node.y < 0 ||
+            node.x + nodeWidth > parentWidth ||
+            node.y + nodeHeight > parentHeight) {
+            return true;
+        }
+        // Check if node position seems arbitrary (very large values)
+        if (node.x > 1000 || node.y > 1000) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Adjust position based on parent's layout properties
+     */
+    static adjustPositionForLayout(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        let adjustedX = node.x;
+        let adjustedY = node.y;
+        // Adjust based on primary axis alignment
+        if (parent.primaryAxisAlignItems) {
+            switch (parent.primaryAxisAlignItems) {
+                case 'MIN':
+                    adjustedX = 0;
+                    break;
+                case 'CENTER':
+                    adjustedX = (parentWidth - nodeWidth) / 2;
+                    break;
+                case 'MAX':
+                    adjustedX = parentWidth - nodeWidth;
+                    break;
+                default:
+                    // Keep original position for unknown alignment types
+                    break;
+            }
+        }
+        // Adjust based on counter axis alignment
+        if (parent.counterAxisAlignItems) {
+            switch (parent.counterAxisAlignItems) {
+                case 'MIN':
+                    adjustedY = 0;
+                    break;
+                case 'CENTER':
+                    adjustedY = (parentHeight - nodeHeight) / 2;
+                    break;
+                case 'MAX':
+                    adjustedY = parentHeight - nodeHeight;
+                    break;
+            }
+        }
+        return { x: adjustedX, y: adjustedY };
+    }
+    /**
+     * Check if node should use relative positioning
+     */
+    static shouldUseRelativePositioning(node, parent) {
+        // Check if parent has HUG sizing and node has FIXED sizing
+        if (parent.layoutSizingHorizontal === 'HUG' &&
+            node.layoutSizingHorizontal === 'FIXED') {
+            return true;
+        }
+        // Check if parent has HUG sizing and node has FIXED sizing
+        if (parent.layoutSizingVertical === 'HUG' &&
+            node.layoutSizingVertical === 'FIXED') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Calculate position relative to parent
+     */
+    static calculateRelativeToParent(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        // For HUG sizing, position the node at the center of the parent
+        let adjustedX = (parentWidth - nodeWidth) / 2;
+        let adjustedY = (parentHeight - nodeHeight) / 2;
+        // Ensure the node doesn't go outside parent bounds
+        adjustedX = Math.max(0, Math.min(adjustedX, parentWidth - nodeWidth));
+        adjustedY = Math.max(0, Math.min(adjustedY, parentHeight - nodeHeight));
+        return { x: adjustedX, y: adjustedY };
+    }
+}
+
 ;// ./src/html/style-generator.ts
+
 class StyleGenerator {
-    generateStyles(node, isRoot = false) {
+    generateStyles(node, isRoot = false, parent) {
         const selector = `[data-figma-id="${node.id}"]`;
-        const properties = this.generateCSSProperties(node, isRoot);
+        const properties = this.generateCSSProperties(node, isRoot, parent);
         let css = `${selector} {\n${properties}\n}`;
         // Generate styles for children
         if (node.children) {
             const childStyles = node.children
-                .map(child => this.generateStyles(child, false))
+                .map(child => this.generateStyles(child, false, node))
                 .join('\n\n');
             css += '\n\n' + childStyles;
         }
         return css;
     }
-    generateCSSProperties(node, isRoot = false) {
+    generateCSSProperties(node, isRoot = false, parent) {
         const properties = [];
         // Position and dimensions - normalize coordinates for browser viewport
         if (isRoot) {
@@ -327,15 +502,15 @@ class StyleGenerator {
         else {
             // Child elements use relative positioning within their parent
             // Check if this is a layout-driven position that needs adjustment
-            const adjustedPosition = this.adjustLayoutDrivenPosition(node);
+            const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
             properties.push(`position: absolute;`);
             properties.push(`left: ${adjustedPosition.x}px;`);
             properties.push(`top: ${adjustedPosition.y}px;`);
-            // Only set width/height here if not using HUG sizing (which will be set later)
-            if (node.layoutSizingHorizontal !== 'HUG') {
+            // Only set width/height here if not using special sizing (FILL/HUG will be set later)
+            if (!node.layoutSizingHorizontal || node.layoutSizingHorizontal === 'FIXED') {
                 properties.push(`width: ${node.width}px;`);
             }
-            if (node.layoutSizingVertical !== 'HUG') {
+            if (!node.layoutSizingVertical || node.layoutSizingVertical === 'FIXED') {
                 properties.push(`height: ${node.height}px;`);
             }
         }
@@ -371,43 +546,54 @@ class StyleGenerator {
             }
         }
         // Sizing properties (FILL/HUG/FIXED)
-        if (node.layoutSizingHorizontal) {
-            switch (node.layoutSizingHorizontal) {
-                case 'FILL':
-                    properties.push(`width: 100%;`);
-                    break;
-                case 'HUG':
-                    // Check if this node has absolutely positioned children that would break fit-content
-                    if (this.hasAbsolutelyPositionedChildren(node)) {
-                        // Use the child's width as the parent's fixed width
-                        const childWidth = this.getChildWidthForHugSizing(node);
-                        if (childWidth > 0) {
-                            properties.push(`width: ${childWidth}px;`);
+        // For components, always use explicit dimensions regardless of sizing properties
+        if (node.type === 'COMPONENT') {
+            // Components need explicit width and height to match their Figma dimensions
+            if (node.width && node.height) {
+                properties.push(`width: ${node.width}px;`);
+                properties.push(`height: ${node.height}px;`);
+            }
+        }
+        else {
+            // Regular sizing logic for non-component nodes
+            if (node.layoutSizingHorizontal) {
+                switch (node.layoutSizingHorizontal) {
+                    case 'FILL':
+                        properties.push(`width: 100%;`);
+                        break;
+                    case 'HUG':
+                        // Check if this node has absolutely positioned children that would break fit-content
+                        if (this.hasAbsolutelyPositionedChildren(node)) {
+                            // Use the child's width as the parent's fixed width
+                            const childWidth = this.getChildWidthForHugSizing(node);
+                            if (childWidth > 0) {
+                                properties.push(`width: ${childWidth}px;`);
+                            }
+                            else {
+                                properties.push(`width: fit-content;`);
+                            }
                         }
                         else {
                             properties.push(`width: fit-content;`);
                         }
-                    }
-                    else {
-                        properties.push(`width: fit-content;`);
-                    }
-                    break;
-                case 'FIXED':
-                    // Width is already set above, no additional CSS needed
-                    break;
+                        break;
+                    case 'FIXED':
+                        // Width is already set above, no additional CSS needed
+                        break;
+                }
             }
-        }
-        if (node.layoutSizingVertical) {
-            switch (node.layoutSizingVertical) {
-                case 'FILL':
-                    properties.push(`height: 100%;`);
-                    break;
-                case 'HUG':
-                    properties.push(`height: fit-content;`);
-                    break;
-                case 'FIXED':
-                    // Height is already set above, no additional CSS needed
-                    break;
+            if (node.layoutSizingVertical) {
+                switch (node.layoutSizingVertical) {
+                    case 'FILL':
+                        properties.push(`height: 100%;`);
+                        break;
+                    case 'HUG':
+                        properties.push(`height: fit-content;`);
+                        break;
+                    case 'FIXED':
+                        // Height is already set above, no additional CSS needed
+                        break;
+                }
             }
         }
         // Background fills (exclude SVG nodes and TEXT nodes - they handle fills internally)
@@ -456,18 +642,10 @@ class StyleGenerator {
         // TODO: Handle gradients
         return null;
     }
-    adjustLayoutDrivenPosition(node) {
-        // Check if this is Frame 1307 in a layout-driven case
-        if (node.name === 'Frame 1307' && node.x === 2535.125) {
-            // This is the known layout-driven case where Frame 1307 should be right-aligned
-            // The parent width should be 346px (from the instance sizing)
-            const parentWidth = 346;
-            const childWidth = node.width || 84;
-            const adjustedX = parentWidth - childWidth; // 346 - 84 = 262
-            return { x: adjustedX, y: node.y };
-        }
-        // For all other cases, use the original position
-        return { x: node.x, y: node.y };
+    adjustLayoutDrivenPosition(node, parent) {
+        // Use the PositionCalculator for generic position adjustments
+        const adjustment = PositionCalculator.calculateAdjustedPosition(node, parent);
+        return { x: adjustment.x, y: adjustment.y };
     }
     hasAbsolutelyPositionedChildren(node) {
         // Check if this node has children that are positioned for animation
@@ -809,69 +987,144 @@ class BundleGenerator {
         static detectLayoutDrivenPositionChange(source, target, sourceChild, targetChild, childPath) {
           console.log('🔍 Checking layout-driven change for:', sourceChild.name);
           
-          // For now, let's use a simpler approach - check if this is a known layout-driven case
-          // Frame 1307 moving from x:0 to x:2535.125 is a clear layout-driven case
-          if (sourceChild.name === 'Frame 1307' && 
-              sourceChild.x === 0 && targetChild.x === 2535.125) {
-            
-            console.log('🔍 Detected Frame 1307 layout-driven case');
-            
-            // Find the parent Frame 1308 in both source and target
-            const sourceParent = this.findFrame1308(source);
-            const targetParent = this.findFrame1308(target);
-            
-            if (sourceParent && targetParent) {
-              console.log('🔍 Found Frame 1308 parents');
-              console.log('🔍 Source parent layout:', sourceParent.primaryAxisAlignItems);
-              console.log('🔍 Target parent layout:', targetParent.primaryAxisAlignItems);
-              
-              // Check if layout alignment changed
-              if (sourceParent.primaryAxisAlignItems !== targetParent.primaryAxisAlignItems) {
-                console.log('🔍 Layout alignment changed from', sourceParent.primaryAxisAlignItems, 'to', targetParent.primaryAxisAlignItems);
-                
-                // Calculate relative position
-                const sourceParentWidth = sourceParent.width || 0;
-                const targetParentWidth = targetParent.width || 0;
-                
-                console.log('🔍 Parent widths - Source:', sourceParentWidth, 'Target:', targetParentWidth);
-                
-                // The target child position is still the original position (2535.125)
-                // We need to calculate what it should be based on the new parent size
-                // For right alignment, it should be: parent width - child width
-                const childWidth = targetChild.width || 84;
-                const actualTargetX = targetParentWidth - childWidth; // 346 - 84 = 262
-                
-                console.log('🔍 Child width:', childWidth);
-                console.log('🔍 Original target position:', targetChild.x);
-                console.log('🔍 Calculated target position:', actualTargetX);
-                console.log('🔍 Layout alignment changed from MIN to MAX - using right alignment');
-                
-                return new AnimationChange('childPosition', 
-                  { x: sourceChild.x, y: sourceChild.y }, 
-                  { x: actualTargetX, y: targetChild.y }, 
-                  null, 
-                  this.getChildPath(sourceChild), 
-                  sourceChild.id
-                );
-              }
-            }
+          // Use generic layout detection instead of hardcoded element references
+          const layoutChange = this.detectGenericLayoutChange(source, target, sourceChild, targetChild);
+          
+          if (layoutChange) {
+            console.log('🔍 Detected layout-driven change:', layoutChange.type);
+            return layoutChange;
           }
           
           console.log('🔍 No layout-driven change detected');
           return null;
         }
 
-        static findFrame1308(node) {
-          if (node.children) {
-            for (const child of node.children) {
-              if (child.name === 'Frame 1308') {
-                return child;
-              }
-              const found = this.findFrame1308(child);
-              if (found) return found;
+        static detectGenericLayoutChange(source, target, sourceChild, targetChild) {
+          // Check for alignment changes in parent containers
+          const sourceParent = this.findParentWithLayoutProperties(source, sourceChild);
+          const targetParent = this.findParentWithLayoutProperties(target, targetChild);
+          
+          if (sourceParent && targetParent) {
+            // Check if alignment changed
+            if (sourceParent.primaryAxisAlignItems !== targetParent.primaryAxisAlignItems) {
+              console.log('🔍 Layout alignment changed from', sourceParent.primaryAxisAlignItems, 'to', targetParent.primaryAxisAlignItems);
+              
+              const adjustedPosition = this.calculateAdjustedPosition(
+                targetChild, 
+                targetParent, 
+                sourceParent.primaryAxisAlignItems,
+                targetParent.primaryAxisAlignItems
+              );
+              
+              return new AnimationChange('childPosition', 
+                { x: sourceChild.x, y: sourceChild.y }, 
+                adjustedPosition, 
+                null, 
+                this.getChildPath(sourceChild), 
+                sourceChild.id
+              );
+            }
+            
+            // Check if parent size changed affecting child positioning
+            if (sourceParent.width !== targetParent.width || sourceParent.height !== targetParent.height) {
+              console.log('🔍 Parent size changed, recalculating child position');
+              
+              const adjustedPosition = this.recalculateChildPosition(
+                sourceChild,
+                targetChild,
+                sourceParent,
+                targetParent
+              );
+              
+              return new AnimationChange('childPosition', 
+                { x: sourceChild.x, y: sourceChild.y }, 
+                adjustedPosition, 
+                null, 
+                this.getChildPath(sourceChild), 
+                sourceChild.id
+              );
             }
           }
+          
           return null;
+        }
+
+        static findParentWithLayoutProperties(node, child) {
+          return this.findParentRecursive(node, child, (parent) => 
+            this.hasLayoutProperties(parent)
+          );
+        }
+
+        static hasLayoutProperties(node) {
+          return node.layoutMode !== 'NONE' || 
+                 node.primaryAxisAlignItems !== undefined ||
+                 node.counterAxisAlignItems !== undefined ||
+                 node.layoutSizingHorizontal !== undefined ||
+                 node.layoutSizingVertical !== undefined;
+        }
+
+        static findParentRecursive(node, targetChild, condition) {
+          if (!node.children) return null;
+          
+          for (const child of node.children) {
+            if (child.id === targetChild.id) {
+              return condition(node) ? node : null;
+            }
+            
+            const found = this.findParentRecursive(child, targetChild, condition);
+            if (found) return found;
+          }
+          
+          return null;
+        }
+
+        static calculateAdjustedPosition(child, parent, sourceAlignment, targetAlignment) {
+          const parentWidth = parent.width || 0;
+          const parentHeight = parent.height || 0;
+          const childWidth = child.width || 0;
+          const childHeight = child.height || 0;
+          
+          let adjustedX = child.x;
+          let adjustedY = child.y;
+          
+          // Handle horizontal alignment changes
+          if (sourceAlignment !== targetAlignment) {
+            switch (targetAlignment) {
+              case 'MIN':
+                adjustedX = 0;
+                break;
+              case 'CENTER':
+                adjustedX = (parentWidth - childWidth) / 2;
+                break;
+              case 'MAX':
+                adjustedX = parentWidth - childWidth;
+                break;
+              case 'SPACE_BETWEEN':
+                // For space between, we need to know the number of children
+                // This is a simplified implementation
+                adjustedX = 0;
+                break;
+            }
+          }
+          
+          return { x: adjustedX, y: adjustedY };
+        }
+
+        static recalculateChildPosition(sourceChild, targetChild, sourceParent, targetParent) {
+          const sourceParentWidth = sourceParent.width || 0;
+          const targetParentWidth = targetParent.width || 0;
+          const sourceParentHeight = sourceParent.height || 0;
+          const targetParentHeight = targetParent.height || 0;
+          
+          // Calculate relative position within parent
+          const relativeX = sourceChild.x / sourceParentWidth;
+          const relativeY = sourceChild.y / sourceParentHeight;
+          
+          // Apply relative position to new parent size
+          const adjustedX = relativeX * targetParentWidth;
+          const adjustedY = relativeY * targetParentHeight;
+          
+          return { x: adjustedX, y: adjustedY };
         }
 
         static findParentWithLayoutChange(node, child) {
@@ -2022,7 +2275,15 @@ ${css}
     generateVariantCSS(resolvedInstances) {
         let css = '';
         resolvedInstances.forEach(instance => {
-            const { variants, activeVariant } = instance;
+            const { instance: instanceNode, variants, activeVariant } = instance;
+            // Generate CSS for the variant container (acts as the instance sizing context)
+            css += `\n/* Variant container for ${instanceNode.name} */\n`;
+            css += `.variant-container[data-instance-id="${instanceNode.id}"] {\n`;
+            css += `  position: relative;\n`;
+            css += `  width: ${instanceNode.width}px;\n`;
+            css += `  height: ${instanceNode.height}px;\n`;
+            css += `  overflow: visible;\n`;
+            css += `}\n`;
             // Generate CSS for each variant and its children
             variants.forEach((variant) => {
                 // Generate CSS for all child elements within the variant
@@ -2044,24 +2305,36 @@ ${css}
     generateVariantElementCSS(variant) {
         let css = '';
         // Generate CSS for all child elements recursively
-        const generateCSSForNode = (node) => {
-            // Skip the main variant container to avoid duplicates
-            if (node.id === variant.id) {
-                // Only generate CSS for children of the variant container
-                if (node.children) {
-                    node.children.forEach(child => generateCSSForNode(child));
-                }
-                return;
-            }
-            // Generate CSS for this node
-            css += this.styleGenerator.generateStyles(node, false) + '\n\n';
+        const generateCSSForNode = (node, parent) => {
+            // Generate scoped CSS for this node within the variant context
+            const scopedCSS = this.generateScopedVariantCSS(node, variant, false, parent);
+            css += scopedCSS + '\n\n';
             // Recursively generate CSS for children
             if (node.children) {
-                node.children.forEach(child => generateCSSForNode(child));
+                node.children.forEach(child => generateCSSForNode(child, node));
             }
         };
         generateCSSForNode(variant);
         return css;
+    }
+    // Generate scoped CSS for an element within a specific variant
+    generateScopedVariantCSS(node, variant, isRoot = false, parent) {
+        // For the component itself, use direct selector
+        // For child elements, use scoped selector to avoid conflicts
+        let selector;
+        if (node.id === variant.id) {
+            // Component itself - use direct selector
+            selector = `[data-figma-id="${node.id}"]`;
+        }
+        else {
+            // Child element - use scoped selector to avoid conflicts with other variants
+            const variantSelector = `[data-figma-id="${variant.id}"]`;
+            const nodeSelector = `[data-figma-id="${node.id}"]`;
+            selector = `${variantSelector} ${nodeSelector}`;
+        }
+        // Generate properties using the style generator
+        const properties = this.styleGenerator.generateCSSProperties(node, isRoot, parent);
+        return `${selector} {\n${properties}\n}`;
     }
     // Generate HTML for all variants in the shadow variant system
     generateVariantHTML(resolvedInstances) {

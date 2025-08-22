@@ -1,16 +1,17 @@
 import { FigmaNode, FigmaFill } from '../core/types';
+import { PositionCalculator } from '../utils/position-calculator';
 
 export class StyleGenerator {
-  generateStyles(node: FigmaNode, isRoot: boolean = false): string {
+  generateStyles(node: FigmaNode, isRoot: boolean = false, parent?: FigmaNode): string {
     const selector = `[data-figma-id="${node.id}"]`;
-    const properties = this.generateCSSProperties(node, isRoot);
+    const properties = this.generateCSSProperties(node, isRoot, parent);
     
     let css = `${selector} {\n${properties}\n}`;
     
     // Generate styles for children
     if (node.children) {
       const childStyles = node.children
-        .map(child => this.generateStyles(child, false))
+        .map(child => this.generateStyles(child, false, node))
         .join('\n\n');
       css += '\n\n' + childStyles;
     }
@@ -18,7 +19,7 @@ export class StyleGenerator {
     return css;
   }
 
-  private generateCSSProperties(node: FigmaNode, isRoot: boolean = false): string {
+  generateCSSProperties(node: FigmaNode, isRoot: boolean = false, parent?: FigmaNode): string {
     const properties: string[] = [];
 
     // Position and dimensions - normalize coordinates for browser viewport
@@ -32,17 +33,17 @@ export class StyleGenerator {
     } else {
       // Child elements use relative positioning within their parent
       // Check if this is a layout-driven position that needs adjustment
-      const adjustedPosition = this.adjustLayoutDrivenPosition(node);
+      const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
       
       properties.push(`position: absolute;`);
       properties.push(`left: ${adjustedPosition.x}px;`);
       properties.push(`top: ${adjustedPosition.y}px;`);
       
-      // Only set width/height here if not using HUG sizing (which will be set later)
-      if (node.layoutSizingHorizontal !== 'HUG') {
+      // Only set width/height here if not using special sizing (FILL/HUG will be set later)
+      if (!node.layoutSizingHorizontal || node.layoutSizingHorizontal === 'FIXED') {
         properties.push(`width: ${node.width}px;`);
       }
-      if (node.layoutSizingVertical !== 'HUG') {
+      if (!node.layoutSizingVertical || node.layoutSizingVertical === 'FIXED') {
         properties.push(`height: ${node.height}px;`);
       }
     }
@@ -83,42 +84,52 @@ export class StyleGenerator {
     }
 
     // Sizing properties (FILL/HUG/FIXED)
-    if (node.layoutSizingHorizontal) {
-      switch (node.layoutSizingHorizontal) {
-        case 'FILL':
-          properties.push(`width: 100%;`);
-          break;
-        case 'HUG':
-          // Check if this node has absolutely positioned children that would break fit-content
-          if (this.hasAbsolutelyPositionedChildren(node)) {
-            // Use the child's width as the parent's fixed width
-            const childWidth = this.getChildWidthForHugSizing(node);
-            if (childWidth > 0) {
-              properties.push(`width: ${childWidth}px;`);
+    // For components, always use explicit dimensions regardless of sizing properties
+    if (node.type === 'COMPONENT') {
+      // Components need explicit width and height to match their Figma dimensions
+      if (node.width && node.height) {
+        properties.push(`width: ${node.width}px;`);
+        properties.push(`height: ${node.height}px;`);
+      }
+    } else {
+      // Regular sizing logic for non-component nodes
+      if (node.layoutSizingHorizontal) {
+        switch (node.layoutSizingHorizontal) {
+          case 'FILL':
+            properties.push(`width: 100%;`);
+            break;
+          case 'HUG':
+            // Check if this node has absolutely positioned children that would break fit-content
+            if (this.hasAbsolutelyPositionedChildren(node)) {
+              // Use the child's width as the parent's fixed width
+              const childWidth = this.getChildWidthForHugSizing(node);
+              if (childWidth > 0) {
+                properties.push(`width: ${childWidth}px;`);
+              } else {
+                properties.push(`width: fit-content;`);
+              }
             } else {
               properties.push(`width: fit-content;`);
             }
-          } else {
-            properties.push(`width: fit-content;`);
-          }
-          break;
-        case 'FIXED':
-          // Width is already set above, no additional CSS needed
-          break;
+            break;
+          case 'FIXED':
+            // Width is already set above, no additional CSS needed
+            break;
+        }
       }
-    }
 
-    if (node.layoutSizingVertical) {
-      switch (node.layoutSizingVertical) {
-        case 'FILL':
-          properties.push(`height: 100%;`);
-          break;
-        case 'HUG':
-          properties.push(`height: fit-content;`);
-          break;
-        case 'FIXED':
-          // Height is already set above, no additional CSS needed
-          break;
+      if (node.layoutSizingVertical) {
+        switch (node.layoutSizingVertical) {
+          case 'FILL':
+            properties.push(`height: 100%;`);
+            break;
+          case 'HUG':
+            properties.push(`height: fit-content;`);
+            break;
+          case 'FIXED':
+            // Height is already set above, no additional CSS needed
+            break;
+        }
       }
     }
 
@@ -178,20 +189,10 @@ export class StyleGenerator {
     return null;
   }
 
-  private adjustLayoutDrivenPosition(node: FigmaNode): { x: number; y: number } {
-    // Check if this is Frame 1307 in a layout-driven case
-    if (node.name === 'Frame 1307' && node.x === 2535.125) {
-      // This is the known layout-driven case where Frame 1307 should be right-aligned
-      // The parent width should be 346px (from the instance sizing)
-      const parentWidth = 346;
-      const childWidth = node.width || 84;
-      const adjustedX = parentWidth - childWidth; // 346 - 84 = 262
-      
-      return { x: adjustedX, y: node.y };
-    }
-    
-    // For all other cases, use the original position
-    return { x: node.x, y: node.y };
+  private adjustLayoutDrivenPosition(node: FigmaNode, parent?: FigmaNode): { x: number; y: number } {
+    // Use the PositionCalculator for generic position adjustments
+    const adjustment = PositionCalculator.calculateAdjustedPosition(node, parent);
+    return { x: adjustment.x, y: adjustment.y };
   }
 
   private hasAbsolutelyPositionedChildren(node: FigmaNode): boolean {

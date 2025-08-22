@@ -2,6 +2,19 @@
 
 A comprehensive Figma plugin that exports Figma animations (especially countdown sequences) to working HTML with CSS transitions and JavaScript.
 
+## 🆕 Recent Updates
+
+### Hardcoded References Fix (Latest)
+The codebase has been refactored to remove all hardcoded element references and replace them with a generic, reusable layout detection system. See [HARDCODED_REFERENCES_FIX.md](./HARDCODED_REFERENCES_FIX.md) for detailed documentation.
+
+**Key Improvements:**
+- ✅ Removed hardcoded Frame 1307/1308 logic
+- ✅ Implemented generic LayoutDetector system
+- ✅ Added PositionCalculator utility
+- ✅ Improved logging with configurable levels
+- ✅ Added centralized configuration management
+- ✅ Works with any Figma design, not just specific hardcoded elements
+
 ## 🎯 Key Features
 
 - **Direct JSON Processing**: Reads Figma animation data directly from the API

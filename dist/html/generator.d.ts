@@ -10,6 +10,7 @@ export declare class HTMLGenerator {
     private generateJavaScript;
     private generateVariantCSS;
     private generateVariantElementCSS;
+    private generateScopedVariantCSS;
     private generateVariantHTML;
 }
 //# sourceMappingURL=generator.d.ts.map

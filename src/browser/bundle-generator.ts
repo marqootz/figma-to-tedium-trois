@@ -203,69 +203,144 @@ export class BundleGenerator {
         static detectLayoutDrivenPositionChange(source, target, sourceChild, targetChild, childPath) {
           console.log('🔍 Checking layout-driven change for:', sourceChild.name);
           
-          // For now, let's use a simpler approach - check if this is a known layout-driven case
-          // Frame 1307 moving from x:0 to x:2535.125 is a clear layout-driven case
-          if (sourceChild.name === 'Frame 1307' && 
-              sourceChild.x === 0 && targetChild.x === 2535.125) {
-            
-            console.log('🔍 Detected Frame 1307 layout-driven case');
-            
-            // Find the parent Frame 1308 in both source and target
-            const sourceParent = this.findFrame1308(source);
-            const targetParent = this.findFrame1308(target);
-            
-            if (sourceParent && targetParent) {
-              console.log('🔍 Found Frame 1308 parents');
-              console.log('🔍 Source parent layout:', sourceParent.primaryAxisAlignItems);
-              console.log('🔍 Target parent layout:', targetParent.primaryAxisAlignItems);
-              
-              // Check if layout alignment changed
-              if (sourceParent.primaryAxisAlignItems !== targetParent.primaryAxisAlignItems) {
-                console.log('🔍 Layout alignment changed from', sourceParent.primaryAxisAlignItems, 'to', targetParent.primaryAxisAlignItems);
-                
-                // Calculate relative position
-                const sourceParentWidth = sourceParent.width || 0;
-                const targetParentWidth = targetParent.width || 0;
-                
-                console.log('🔍 Parent widths - Source:', sourceParentWidth, 'Target:', targetParentWidth);
-                
-                // The target child position is still the original position (2535.125)
-                // We need to calculate what it should be based on the new parent size
-                // For right alignment, it should be: parent width - child width
-                const childWidth = targetChild.width || 84;
-                const actualTargetX = targetParentWidth - childWidth; // 346 - 84 = 262
-                
-                console.log('🔍 Child width:', childWidth);
-                console.log('🔍 Original target position:', targetChild.x);
-                console.log('🔍 Calculated target position:', actualTargetX);
-                console.log('🔍 Layout alignment changed from MIN to MAX - using right alignment');
-                
-                return new AnimationChange('childPosition', 
-                  { x: sourceChild.x, y: sourceChild.y }, 
-                  { x: actualTargetX, y: targetChild.y }, 
-                  null, 
-                  this.getChildPath(sourceChild), 
-                  sourceChild.id
-                );
-              }
-            }
+          // Use generic layout detection instead of hardcoded element references
+          const layoutChange = this.detectGenericLayoutChange(source, target, sourceChild, targetChild);
+          
+          if (layoutChange) {
+            console.log('🔍 Detected layout-driven change:', layoutChange.type);
+            return layoutChange;
           }
           
           console.log('🔍 No layout-driven change detected');
           return null;
         }
 
-        static findFrame1308(node) {
-          if (node.children) {
-            for (const child of node.children) {
-              if (child.name === 'Frame 1308') {
-                return child;
-              }
-              const found = this.findFrame1308(child);
-              if (found) return found;
+        static detectGenericLayoutChange(source, target, sourceChild, targetChild) {
+          // Check for alignment changes in parent containers
+          const sourceParent = this.findParentWithLayoutProperties(source, sourceChild);
+          const targetParent = this.findParentWithLayoutProperties(target, targetChild);
+          
+          if (sourceParent && targetParent) {
+            // Check if alignment changed
+            if (sourceParent.primaryAxisAlignItems !== targetParent.primaryAxisAlignItems) {
+              console.log('🔍 Layout alignment changed from', sourceParent.primaryAxisAlignItems, 'to', targetParent.primaryAxisAlignItems);
+              
+              const adjustedPosition = this.calculateAdjustedPosition(
+                targetChild, 
+                targetParent, 
+                sourceParent.primaryAxisAlignItems,
+                targetParent.primaryAxisAlignItems
+              );
+              
+              return new AnimationChange('childPosition', 
+                { x: sourceChild.x, y: sourceChild.y }, 
+                adjustedPosition, 
+                null, 
+                this.getChildPath(sourceChild), 
+                sourceChild.id
+              );
+            }
+            
+            // Check if parent size changed affecting child positioning
+            if (sourceParent.width !== targetParent.width || sourceParent.height !== targetParent.height) {
+              console.log('🔍 Parent size changed, recalculating child position');
+              
+              const adjustedPosition = this.recalculateChildPosition(
+                sourceChild,
+                targetChild,
+                sourceParent,
+                targetParent
+              );
+              
+              return new AnimationChange('childPosition', 
+                { x: sourceChild.x, y: sourceChild.y }, 
+                adjustedPosition, 
+                null, 
+                this.getChildPath(sourceChild), 
+                sourceChild.id
+              );
             }
           }
+          
           return null;
+        }
+
+        static findParentWithLayoutProperties(node, child) {
+          return this.findParentRecursive(node, child, (parent) => 
+            this.hasLayoutProperties(parent)
+          );
+        }
+
+        static hasLayoutProperties(node) {
+          return node.layoutMode !== 'NONE' || 
+                 node.primaryAxisAlignItems !== undefined ||
+                 node.counterAxisAlignItems !== undefined ||
+                 node.layoutSizingHorizontal !== undefined ||
+                 node.layoutSizingVertical !== undefined;
+        }
+
+        static findParentRecursive(node, targetChild, condition) {
+          if (!node.children) return null;
+          
+          for (const child of node.children) {
+            if (child.id === targetChild.id) {
+              return condition(node) ? node : null;
+            }
+            
+            const found = this.findParentRecursive(child, targetChild, condition);
+            if (found) return found;
+          }
+          
+          return null;
+        }
+
+        static calculateAdjustedPosition(child, parent, sourceAlignment, targetAlignment) {
+          const parentWidth = parent.width || 0;
+          const parentHeight = parent.height || 0;
+          const childWidth = child.width || 0;
+          const childHeight = child.height || 0;
+          
+          let adjustedX = child.x;
+          let adjustedY = child.y;
+          
+          // Handle horizontal alignment changes
+          if (sourceAlignment !== targetAlignment) {
+            switch (targetAlignment) {
+              case 'MIN':
+                adjustedX = 0;
+                break;
+              case 'CENTER':
+                adjustedX = (parentWidth - childWidth) / 2;
+                break;
+              case 'MAX':
+                adjustedX = parentWidth - childWidth;
+                break;
+              case 'SPACE_BETWEEN':
+                // For space between, we need to know the number of children
+                // This is a simplified implementation
+                adjustedX = 0;
+                break;
+            }
+          }
+          
+          return { x: adjustedX, y: adjustedY };
+        }
+
+        static recalculateChildPosition(sourceChild, targetChild, sourceParent, targetParent) {
+          const sourceParentWidth = sourceParent.width || 0;
+          const targetParentWidth = targetParent.width || 0;
+          const sourceParentHeight = sourceParent.height || 0;
+          const targetParentHeight = targetParent.height || 0;
+          
+          // Calculate relative position within parent
+          const relativeX = sourceChild.x / sourceParentWidth;
+          const relativeY = sourceChild.y / sourceParentHeight;
+          
+          // Apply relative position to new parent size
+          const adjustedX = relativeX * targetParentWidth;
+          const adjustedY = relativeY * targetParentHeight;
+          
+          return { x: adjustedX, y: adjustedY };
         }
 
         static findParentWithLayoutChange(node, child) {

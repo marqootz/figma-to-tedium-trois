@@ -1,69 +1,103 @@
 export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3
+  ERROR = 0,
+  WARN = 1,
+  INFO = 2,
+  DEBUG = 3
+}
+
+export interface LogConfig {
+  level: LogLevel;
+  enableConsole: boolean;
+  enableDebugMode: boolean;
 }
 
 export class Logger {
-  private static instance: Logger;
-  private logLevel: LogLevel = LogLevel.INFO;
+  private static config: LogConfig = {
+    level: LogLevel.INFO,
+    enableConsole: true,
+    enableDebugMode: false
+  };
 
-  private constructor() {}
-
-  static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
-    }
-    return Logger.instance;
+  static configure(config: Partial<LogConfig>): void {
+    this.config = { ...this.config, ...config };
   }
 
-  setLogLevel(level: LogLevel): void {
-    this.logLevel = level;
+  static setLogLevel(level: LogLevel): void {
+    this.config.level = level;
   }
 
-  debug(message: string, ...args: any[]): void {
-    if (this.logLevel <= LogLevel.DEBUG) {
-      console.debug(`[DEBUG] ${message}`, ...args);
-    }
+  static enableDebugMode(enabled: boolean = true): void {
+    this.config.enableDebugMode = enabled;
+    this.config.level = enabled ? LogLevel.DEBUG : LogLevel.INFO;
   }
 
-  info(message: string, ...args: any[]): void {
-    if (this.logLevel <= LogLevel.INFO) {
-      console.info(`[INFO] ${message}`, ...args);
-    }
-  }
-
-  warn(message: string, ...args: any[]): void {
-    if (this.logLevel <= LogLevel.WARN) {
-      console.warn(`[WARN] ${message}`, ...args);
-    }
-  }
-
-  error(message: string, ...args: any[]): void {
-    if (this.logLevel <= LogLevel.ERROR) {
+  static error(message: string, ...args: any[]): void {
+    if (this.config.level >= LogLevel.ERROR && this.config.enableConsole) {
       console.error(`[ERROR] ${message}`, ...args);
     }
   }
 
-  group(label: string): void {
-    console.group(label);
+  static warn(message: string, ...args: any[]): void {
+    if (this.config.level >= LogLevel.WARN && this.config.enableConsole) {
+      console.warn(`[WARN] ${message}`, ...args);
+    }
   }
 
-  groupEnd(): void {
-    console.groupEnd();
+  static info(message: string, ...args: any[]): void {
+    if (this.config.level >= LogLevel.INFO && this.config.enableConsole) {
+      console.log(`[INFO] ${message}`, ...args);
+    }
   }
 
-  time(label: string): void {
-    console.time(label);
+  static debug(message: string, ...args: any[]): void {
+    if (this.config.level >= LogLevel.DEBUG && this.config.enableConsole && this.config.enableDebugMode) {
+      console.log(`[DEBUG] ${message}`, ...args);
+    }
   }
 
-  timeEnd(label: string): void {
-    console.timeEnd(label);
+  // Specialized logging methods for different components
+  static layout(message: string, ...args: any[]): void {
+    this.debug(`[LAYOUT] ${message}`, ...args);
+  }
+
+  static animation(message: string, ...args: any[]): void {
+    this.debug(`[ANIMATION] ${message}`, ...args);
+  }
+
+  static variant(message: string, ...args: any[]): void {
+    this.debug(`[VARIANT] ${message}`, ...args);
+  }
+
+  static dom(message: string, ...args: any[]): void {
+    this.debug(`[DOM] ${message}`, ...args);
+  }
+
+  // Performance logging
+  static time(label: string): void {
+    if (this.config.enableDebugMode) {
+      console.time(`[PERF] ${label}`);
+    }
+  }
+
+  static timeEnd(label: string): void {
+    if (this.config.enableDebugMode) {
+      console.timeEnd(`[PERF] ${label}`);
+    }
+  }
+
+  // Group logging for better organization
+  static group(label: string): void {
+    if (this.config.enableDebugMode) {
+      console.group(`[GROUP] ${label}`);
+    }
+  }
+
+  static groupEnd(): void {
+    if (this.config.enableDebugMode) {
+      console.groupEnd();
+    }
   }
 }
 
-// Export singleton instance
-export const logger = Logger.getInstance();
 
 
