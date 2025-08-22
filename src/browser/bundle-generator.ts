@@ -559,11 +559,15 @@ export class BundleGenerator {
             case 'childFill':
               const fillChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
               if (fillChildElement) {
-                const fill = change.targetValue[0];
-                if (fill && fill.color) {
-                  const { r, g, b } = fill.color;
-                  const alpha = fill.opacity || 1;
-                  return { type: 'fill', value: \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`, target: fillChildElement };
+                // For SVG elements, we need to target the path element inside
+                const pathElement = fillChildElement.querySelector('path');
+                if (pathElement) {
+                  const fill = change.targetValue[0];
+                  if (fill && fill.color) {
+                    const { r, g, b } = fill.color;
+                    const alpha = fill.opacity || 1;
+                    return { type: 'fill', value: \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`, target: pathElement };
+                  }
                 }
               }
               return null;
@@ -589,7 +593,7 @@ export class BundleGenerator {
               styleChange.target.style.backgroundColor = styleChange.value;
               break;
             case 'fill':
-              console.log('🎨 Applying fill color to SVG element:', styleChange.target.getAttribute('data-figma-id'), 'value:', styleChange.value);
+              console.log('🎨 Applying fill color to path element:', styleChange.target.tagName, 'value:', styleChange.value);
               styleChange.target.style.fill = styleChange.value;
               break;
             case 'borderRadius':
