@@ -1,798 +1,17 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
 
-;// ./src/utils/svg-converter.ts
-function colorToRGBA(color, opacity = 1) {
-    const r = Math.round(color.r * 255);
-    const g = Math.round(color.g * 255);
-    const b = Math.round(color.b * 255);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}
-function base64Decode(str) {
-    if (typeof atob !== 'undefined') {
-        return atob(str);
-    }
-    // Fallback for environments without atob (Figma plugin environment)
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    let result = '';
-    let i = 0;
-    // Remove any padding
-    str = str.replace(/=+$/, '');
-    while (i < str.length) {
-        const e1 = chars.indexOf(str.charAt(i++));
-        const e2 = chars.indexOf(str.charAt(i++));
-        const e3 = chars.indexOf(str.charAt(i++));
-        const e4 = chars.indexOf(str.charAt(i++));
-        const c1 = (e1 << 2) | (e2 >> 4);
-        const c2 = ((e2 & 15) << 4) | (e3 >> 2);
-        const c3 = ((e3 & 3) << 6) | e4;
-        result += String.fromCharCode(c1);
-        if (e3 !== 64)
-            result += String.fromCharCode(c2);
-        if (e4 !== 64)
-            result += String.fromCharCode(c3);
-    }
-    return result;
-}
-function getVectorStyles(node) {
-    const styles = {
-        fills: [],
-        strokes: [],
-        strokeWeight: node.strokeWeight || 0,
-        gradients: []
-    };
-    // Process fills
-    if (node.fills && Array.isArray(node.fills)) {
-        styles.fills = node.fills.map((fill, fillIndex) => {
-            var _a;
-            if (fill.type === 'SOLID' && fill.color) {
-                const opacity = (_a = fill.opacity) !== null && _a !== void 0 ? _a : 1;
-                return colorToRGBA(fill.color, opacity);
-            }
-            else if (fill.type === 'GRADIENT_LINEAR' || fill.type === 'GRADIENT_RADIAL') {
-                const gradientId = `gradient-${node.id}-${fillIndex}`;
-                styles.gradients.push({
-                    id: gradientId,
-                    type: fill.type,
-                    fill: fill
-                });
-                return `url(#${gradientId})`;
-            }
-            return 'none';
-        });
-    }
-    // Process strokes
-    if (node.strokes && Array.isArray(node.strokes)) {
-        styles.strokes = node.strokes.map((stroke) => {
-            var _a;
-            if (stroke.type === 'SOLID' && stroke.color) {
-                const opacity = (_a = stroke.opacity) !== null && _a !== void 0 ? _a : 1;
-                return colorToRGBA(stroke.color, opacity);
-            }
-            return 'none';
-        });
-    }
-    return styles;
-}
-function createSVGGradientDefinitions(gradients) {
-    if (gradients.length === 0)
-        return '';
-    const defs = gradients.map(gradient => {
-        var _a, _b;
-        const { id, type, fill } = gradient;
-        if (type === 'GRADIENT_LINEAR') {
-            const stops = ((_a = fill.gradientStops) === null || _a === void 0 ? void 0 : _a.map((stop) => {
-                const color = colorToRGBA(stop.color, stop.opacity);
-                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
-            }).join('')) || '';
-            return `<linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%">${stops}</linearGradient>`;
-        }
-        else if (type === 'GRADIENT_RADIAL') {
-            const stops = ((_b = fill.gradientStops) === null || _b === void 0 ? void 0 : _b.map((stop) => {
-                const color = colorToRGBA(stop.color, stop.opacity);
-                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
-            }).join('')) || '';
-            return `<radialGradient id="${id}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>`;
-        }
-        return '';
-    }).join('');
-    return defs ? `<defs>${defs}</defs>` : '';
-}
-function convertVectorToSVG(node) {
-    var _a, _b;
-    console.log('Converting vector to SVG:', {
-        nodeId: node.id,
-        nodeName: node.name,
-        hasVectorPaths: !!node.vectorPaths,
-        vectorPathsLength: ((_a = node.vectorPaths) === null || _a === void 0 ? void 0 : _a.length) || 0,
-        hasFills: !!node.fills,
-        fillsLength: ((_b = node.fills) === null || _b === void 0 ? void 0 : _b.length) || 0
-    });
-    const width = node.width || 0;
-    const height = node.height || 0;
-    if (!width || !height) {
-        console.warn('No valid dimensions found for vector node:', {
-            nodeId: node.id,
-            nodeName: node.name,
-            width: node.width,
-            height: node.height
-        });
-        return '';
-    }
-    const styles = getVectorStyles(node);
-    // Check for blur effects and add filter definitions
-    let blurFilterRef = '';
-    if (node.effects && Array.isArray(node.effects)) {
-        const blur = node.effects.find((effect) => effect.type === 'LAYER_BLUR' || effect.type === 'BACKGROUND_BLUR');
-        if (blur) {
-            const filterId = `blur-${node.id}`;
-            blurFilterRef = ` filter="url(#${filterId})"`;
-        }
-    }
-    if (!node.vectorPaths || !Array.isArray(node.vectorPaths)) {
-        console.warn('No vector paths found for vector:', {
-            nodeId: node.id,
-            nodeName: node.name,
-            vectorPaths: node.vectorPaths
-        });
-        return '';
-    }
-    const paths = node.vectorPaths.map((path, index) => {
-        var _a, _b;
-        console.log('Processing vector path:', {
-            pathIndex: index,
-            pathData: path.data,
-            pathDataLength: ((_a = path.data) === null || _a === void 0 ? void 0 : _a.length) || 0
-        });
-        const fill = styles.fills.length === 1 ? styles.fills[0] : (styles.fills[index] || 'none');
-        const stroke = styles.strokes.length === 1 ? styles.strokes[0] : (styles.strokes[index] || 'none');
-        const strokeWidth = styles.strokeWeight || 0;
-        // Decode path data from base64
-        let decodedPathData = path.data;
-        try {
-            if (/^[A-Za-z0-9+/=]+$/.test(path.data)) {
-                decodedPathData = base64Decode(path.data);
-                console.log('Decoded base64 path data:', {
-                    originalLength: ((_b = path.data) === null || _b === void 0 ? void 0 : _b.length) || 0,
-                    decodedLength: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.length) || 0,
-                    firstChars: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.substring(0, 50)) || 'empty'
-                });
-            }
-            if (!decodedPathData || decodedPathData.trim() === '') {
-                console.warn('Empty decoded path data for path index:', index);
-                return '';
-            }
-            const validCommands = ['M', 'L', 'H', 'V', 'C', 'S', 'Q', 'T', 'A', 'Z'];
-            const firstChar = decodedPathData.trim().charAt(0).toUpperCase();
-            if (!validCommands.includes(firstChar)) {
-                console.warn('Invalid SVG path command:', firstChar);
-                return '';
-            }
-        }
-        catch (error) {
-            console.warn('Error decoding path data:', error);
-            decodedPathData = path.data;
-        }
-        return `<path d="${decodedPathData}" 
-            fill="${fill}" 
-            stroke="${stroke}" 
-            stroke-width="${String(strokeWidth)}"
-            fill-rule="nonzero"${blurFilterRef} />`;
-    }).join('\n    ');
-    if (!paths) {
-        console.warn('No path data found for vector');
-        return '';
-    }
-    // Create gradient definitions if any gradients exist
-    const gradientDefs = createSVGGradientDefinitions(styles.gradients);
-    // Wrap paths in a group element
-    const wrappedPaths = `<g id="${node.name.replace(/\s+/g, '_')}">\n    ${paths}\n</g>`;
-    return gradientDefs + '\n    ' + wrappedPaths;
-}
-function convertRectangleToSVG(node) {
-    let fillColor = 'none';
-    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
-        const fill = node.fills[0];
-        if (fill.type === 'SOLID' && fill.color) {
-            fillColor = colorToRGBA(fill.color, fill.opacity);
-        }
-    }
-    const rx = node.cornerRadius && typeof node.cornerRadius === 'number' ? node.cornerRadius : 0;
-    return `<rect width="${node.width}" height="${node.height}" fill="${fillColor}" rx="${rx}"/>`;
-}
-function convertEllipseToSVG(node) {
-    let fillColor = 'none';
-    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
-        const fill = node.fills[0];
-        if (fill.type === 'SOLID' && fill.color) {
-            fillColor = colorToRGBA(fill.color, fill.opacity);
-        }
-    }
-    const cx = node.width / 2;
-    const cy = node.height / 2;
-    const rx = node.width / 2;
-    const ry = node.height / 2;
-    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fillColor}"/>`;
-}
+/***/ "./src/browser/bundle-generator.ts":
+/*!*****************************************!*\
+  !*** ./src/browser/bundle-generator.ts ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-;// ./src/html/element-builder.ts
-
-class ElementBuilder {
-    buildElement(node) {
-        // Handle SVG nodes differently
-        if (node.type === 'VECTOR') {
-            const svg = convertVectorToSVG(node);
-            const width = node.width || 0;
-            const height = node.height || 0;
-            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
-        }
-        if (node.type === 'RECTANGLE') {
-            const svg = convertRectangleToSVG(node);
-            const width = node.width || 0;
-            const height = node.height || 0;
-            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
-        }
-        if (node.type === 'ELLIPSE') {
-            const svg = convertEllipseToSVG(node);
-            const width = node.width || 0;
-            const height = node.height || 0;
-            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
-        }
-        const attributes = this.generateAttributes(node);
-        const content = this.generateContent(node);
-        const tag = this.getHTMLTag(node);
-        return `<${tag}${attributes}>${content}</${tag}>`;
-    }
-    generateAttributes(node) {
-        const attrs = [
-            `data-figma-id="${node.id}"`,
-            `data-figma-name="${node.name}"`,
-            `data-figma-type="${node.type}"`
-        ];
-        // Add component set and variant markers
-        if (node.type === 'COMPONENT_SET') {
-            attrs.push('data-component-set="true"');
-        }
-        if (node.type === 'COMPONENT') {
-            attrs.push('data-variant="true"');
-        }
-        // Add layout attributes
-        if (node.layoutMode) {
-            attrs.push(`data-layout-mode="${node.layoutMode}"`);
-        }
-        // Add reaction attributes
-        if (node.reactions && node.reactions.length > 0) {
-            attrs.push(`data-reactions='${JSON.stringify(node.reactions)}'`);
-        }
-        return ' ' + attrs.join(' ');
-    }
-    generateContent(node) {
-        if (node.children && node.children.length > 0) {
-            return node.children.map(child => this.buildElement(child)).join('\n');
-        }
-        // Handle text content
-        if (node.type === 'TEXT') {
-            // Use the actual text content from characters property
-            return node.characters || node.name || '';
-        }
-        return '';
-    }
-    getHTMLTag(node) {
-        switch (node.type) {
-            case 'COMPONENT_SET':
-            case 'COMPONENT':
-            case 'INSTANCE':
-            case 'FRAME':
-                return 'div';
-            case 'TEXT':
-                // Use p tag for longer text, span for short labels
-                const textLength = node.characters ? node.characters.length : 0;
-                return textLength > 50 ? 'p' : 'span';
-            case 'VECTOR':
-            case 'RECTANGLE':
-            case 'ELLIPSE':
-                return 'svg';
-            default:
-                return 'div';
-        }
-    }
-}
-
-;// ./src/utils/position-calculator.ts
-class PositionCalculator {
-    /**
-     * Calculate adjusted position for a node based on its layout context
-     */
-    static calculateAdjustedPosition(node, parent) {
-        // If no parent, return original position
-        if (!parent) {
-            return {
-                x: node.x,
-                y: node.y,
-                reason: 'no_parent'
-            };
-        }
-        // Check if this is a layout-driven position that needs adjustment
-        const layoutAdjustment = this.calculateLayoutDrivenPosition(node, parent);
-        if (layoutAdjustment) {
-            return layoutAdjustment;
-        }
-        // Check if this is a relative positioning case
-        const relativeAdjustment = this.calculateRelativePosition(node, parent);
-        if (relativeAdjustment) {
-            return relativeAdjustment;
-        }
-        // Default: return original position
-        return {
-            x: node.x,
-            y: node.y,
-            reason: 'original_position'
-        };
-    }
-    /**
-     * Calculate position adjustments for layout-driven positioning
-     */
-    static calculateLayoutDrivenPosition(node, parent) {
-        // Check if parent has layout properties that affect child positioning
-        if (!this.hasLayoutProperties(parent)) {
-            return null;
-        }
-        // Check if this is a case where the node position seems inconsistent with layout
-        const isLayoutInconsistent = this.isPositionLayoutInconsistent(node, parent);
-        if (!isLayoutInconsistent) {
-            return null;
-        }
-        // Calculate adjusted position based on parent's layout properties
-        const adjustedPosition = this.adjustPositionForLayout(node, parent);
-        return {
-            x: adjustedPosition.x,
-            y: adjustedPosition.y,
-            reason: 'layout_driven_adjustment'
-        };
-    }
-    /**
-     * Calculate relative positioning adjustments
-     */
-    static calculateRelativePosition(node, parent) {
-        // Check if this node should be positioned relative to parent bounds
-        if (this.shouldUseRelativePositioning(node, parent)) {
-            const relativePosition = this.calculateRelativeToParent(node, parent);
-            return {
-                x: relativePosition.x,
-                y: relativePosition.y,
-                reason: 'relative_positioning'
-            };
-        }
-        return null;
-    }
-    /**
-     * Check if a node has layout properties
-     */
-    static hasLayoutProperties(node) {
-        return node.layoutMode !== 'NONE' ||
-            node.primaryAxisAlignItems !== undefined ||
-            node.counterAxisAlignItems !== undefined ||
-            node.layoutSizingHorizontal !== undefined ||
-            node.layoutSizingVertical !== undefined;
-    }
-    /**
-     * Check if node position is inconsistent with parent layout
-     */
-    static isPositionLayoutInconsistent(node, parent) {
-        const parentWidth = parent.width || 0;
-        const parentHeight = parent.height || 0;
-        const nodeWidth = node.width || 0;
-        const nodeHeight = node.height || 0;
-        // Check if node is positioned outside parent bounds
-        if (node.x < 0 || node.y < 0 ||
-            node.x + nodeWidth > parentWidth ||
-            node.y + nodeHeight > parentHeight) {
-            return true;
-        }
-        // Check if node position seems arbitrary (very large values)
-        // Note: Removed hardcoded 1000px threshold as modern designs can legitimately exceed this
-        // Instead, check for extremely large values that would indicate data corruption
-        const POSITION_THRESHOLD = 50000; // Much more reasonable threshold for detecting corrupt data
-        if (node.x > POSITION_THRESHOLD || node.y > POSITION_THRESHOLD) {
-            return true;
-        }
-        return false;
-    }
-    /**
-     * Adjust position based on parent's layout properties
-     */
-    static adjustPositionForLayout(node, parent) {
-        const parentWidth = parent.width || 0;
-        const parentHeight = parent.height || 0;
-        const nodeWidth = node.width || 0;
-        const nodeHeight = node.height || 0;
-        let adjustedX = node.x;
-        let adjustedY = node.y;
-        // Adjust based on primary axis alignment
-        if (parent.primaryAxisAlignItems) {
-            switch (parent.primaryAxisAlignItems) {
-                case 'MIN':
-                    adjustedX = 0;
-                    break;
-                case 'CENTER':
-                    adjustedX = (parentWidth - nodeWidth) / 2;
-                    break;
-                case 'MAX':
-                    adjustedX = parentWidth - nodeWidth;
-                    break;
-                default:
-                    // Keep original position for unknown alignment types
-                    break;
-            }
-        }
-        // Adjust based on counter axis alignment
-        if (parent.counterAxisAlignItems) {
-            switch (parent.counterAxisAlignItems) {
-                case 'MIN':
-                    adjustedY = 0;
-                    break;
-                case 'CENTER':
-                    adjustedY = (parentHeight - nodeHeight) / 2;
-                    break;
-                case 'MAX':
-                    adjustedY = parentHeight - nodeHeight;
-                    break;
-            }
-        }
-        return { x: adjustedX, y: adjustedY };
-    }
-    /**
-     * Check if node should use relative positioning
-     */
-    static shouldUseRelativePositioning(node, parent) {
-        // Check if parent has HUG sizing and node has FIXED sizing
-        if (parent.layoutSizingHorizontal === 'HUG' &&
-            node.layoutSizingHorizontal === 'FIXED') {
-            return true;
-        }
-        // Check if parent has HUG sizing and node has FIXED sizing
-        if (parent.layoutSizingVertical === 'HUG' &&
-            node.layoutSizingVertical === 'FIXED') {
-            return true;
-        }
-        return false;
-    }
-    /**
-     * Calculate position relative to parent
-     */
-    static calculateRelativeToParent(node, parent) {
-        const parentWidth = parent.width || 0;
-        const parentHeight = parent.height || 0;
-        const nodeWidth = node.width || 0;
-        const nodeHeight = node.height || 0;
-        // For HUG sizing, position the node at the center of the parent
-        let adjustedX = (parentWidth - nodeWidth) / 2;
-        let adjustedY = (parentHeight - nodeHeight) / 2;
-        // Ensure the node doesn't go outside parent bounds
-        adjustedX = Math.max(0, Math.min(adjustedX, parentWidth - nodeWidth));
-        adjustedY = Math.max(0, Math.min(adjustedY, parentHeight - nodeHeight));
-        return { x: adjustedX, y: adjustedY };
-    }
-}
-
-;// ./src/html/style-generator.ts
-
-class StyleGenerator {
-    generateStyles(node, isRoot = false, parent) {
-        const selector = `[data-figma-id="${node.id}"]`;
-        const properties = this.generateCSSProperties(node, isRoot, parent);
-        let css = `${selector} {\n${properties}\n}`;
-        // Generate styles for children
-        if (node.children) {
-            const childStyles = node.children
-                .map(child => this.generateStyles(child, false, node))
-                .join('\n\n');
-            css += '\n\n' + childStyles;
-        }
-        return css;
-    }
-    generateCSSProperties(node, isRoot = false, parent) {
-        const properties = [];
-        // Position and dimensions - normalize coordinates for browser viewport
-        if (isRoot) {
-            // Root elements should be positioned at 0,0
-            properties.push(`position: absolute;`);
-            properties.push(`left: 0px;`);
-            properties.push(`top: 0px;`);
-            properties.push(`width: ${node.width}px;`);
-            properties.push(`height: ${node.height}px;`);
-        }
-        else {
-            // Child elements use relative positioning within their parent
-            // Check if this is a layout-driven position that needs adjustment
-            const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
-            properties.push(`position: absolute;`);
-            properties.push(`left: ${adjustedPosition.x}px;`);
-            properties.push(`top: ${adjustedPosition.y}px;`);
-            // Only set width/height here if not using special sizing (FILL/HUG will be set later)
-            if (!node.layoutSizingHorizontal || node.layoutSizingHorizontal === 'FIXED') {
-                properties.push(`width: ${node.width}px;`);
-            }
-            if (!node.layoutSizingVertical || node.layoutSizingVertical === 'FIXED') {
-                properties.push(`height: ${node.height}px;`);
-            }
-        }
-        // Opacity
-        if (node.opacity !== undefined && node.opacity !== 1) {
-            properties.push(`opacity: ${node.opacity};`);
-        }
-        // Layout mode (for flexbox)
-        if (node.layoutMode && node.layoutMode !== 'NONE') {
-            properties.push(`display: flex;`);
-            if (node.layoutMode === 'HORIZONTAL') {
-                properties.push(`flex-direction: row;`);
-            }
-            else if (node.layoutMode === 'VERTICAL') {
-                properties.push(`flex-direction: column;`);
-            }
-            // Alignment
-            if (node.counterAxisAlignItems) {
-                const alignMap = {
-                    'MIN': 'flex-start',
-                    'CENTER': 'center',
-                    'MAX': 'flex-end'
-                };
-                properties.push(`align-items: ${alignMap[node.counterAxisAlignItems]};`);
-            }
-            if (node.primaryAxisAlignItems) {
-                const justifyMap = {
-                    'MIN': 'flex-start',
-                    'CENTER': 'center',
-                    'MAX': 'flex-end'
-                };
-                properties.push(`justify-content: ${justifyMap[node.primaryAxisAlignItems]};`);
-            }
-        }
-        // Sizing properties (FILL/HUG/FIXED)
-        // For components, always use explicit dimensions regardless of sizing properties
-        if (node.type === 'COMPONENT') {
-            // Components need explicit width and height to match their Figma dimensions
-            if (node.width && node.height) {
-                properties.push(`width: ${node.width}px;`);
-                properties.push(`height: ${node.height}px;`);
-            }
-        }
-        else {
-            // Regular sizing logic for non-component nodes
-            if (node.layoutSizingHorizontal) {
-                switch (node.layoutSizingHorizontal) {
-                    case 'FILL':
-                        properties.push(`width: 100%;`);
-                        break;
-                    case 'HUG':
-                        // Check if this node has absolutely positioned children that would break fit-content
-                        if (this.hasAbsolutelyPositionedChildren(node)) {
-                            // Use the child's width as the parent's fixed width
-                            const childWidth = this.getChildWidthForHugSizing(node);
-                            if (childWidth > 0) {
-                                properties.push(`width: ${childWidth}px;`);
-                            }
-                            else {
-                                properties.push(`width: fit-content;`);
-                            }
-                        }
-                        else {
-                            properties.push(`width: fit-content;`);
-                        }
-                        break;
-                    case 'FIXED':
-                        // Width is already set above, no additional CSS needed
-                        break;
-                }
-            }
-            if (node.layoutSizingVertical) {
-                switch (node.layoutSizingVertical) {
-                    case 'FILL':
-                        properties.push(`height: 100%;`);
-                        break;
-                    case 'HUG':
-                        properties.push(`height: fit-content;`);
-                        break;
-                    case 'FIXED':
-                        // Height is already set above, no additional CSS needed
-                        break;
-                }
-            }
-        }
-        // Background fills (exclude SVG nodes and TEXT nodes - they handle fills internally)
-        if (node.fills && node.fills.length > 0 && !this.isSVGNode(node) && node.type !== 'TEXT') {
-            const backgroundCSS = this.generateBackgroundCSS(node.fills);
-            if (backgroundCSS) {
-                properties.push(backgroundCSS);
-            }
-        }
-        // Corner radius
-        if (node.cornerRadius !== undefined && node.cornerRadius > 0) {
-            properties.push(`border-radius: ${node.cornerRadius}px;`);
-        }
-        // Overflow properties
-        if (node.overflow) {
-            const overflowMap = {
-                'VISIBLE': 'visible',
-                'HIDDEN': 'hidden',
-                'SCROLL': 'scroll'
-            };
-            properties.push(`overflow: ${overflowMap[node.overflow]};`);
-        }
-        // Component-specific styles
-        if (node.type === 'COMPONENT_SET') {
-            properties.push(`position: relative;`);
-        }
-        if (node.type === 'COMPONENT') {
-            // Show the first variant by default, hide others
-            // This will be overridden by the animation system
-            properties.push(`display: block;`);
-        }
-        // Text-specific styles
-        if (node.type === 'TEXT') {
-            const textStyles = this.generateTextStyles(node);
-            properties.push(...textStyles);
-        }
-        return properties.map(prop => `  ${prop}`).join('\n');
-    }
-    generateBackgroundCSS(fills) {
-        const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
-        if (solidFill === null || solidFill === void 0 ? void 0 : solidFill.color) {
-            const { r, g, b } = solidFill.color;
-            const alpha = solidFill.opacity || 1;
-            return `background-color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
-        }
-        // TODO: Handle gradients
-        return null;
-    }
-    adjustLayoutDrivenPosition(node, parent) {
-        // Use the PositionCalculator for generic position adjustments
-        const adjustment = PositionCalculator.calculateAdjustedPosition(node, parent);
-        return { x: adjustment.x, y: adjustment.y };
-    }
-    hasAbsolutelyPositionedChildren(node) {
-        // Check if this node has children that are positioned for animation
-        // A simple heuristic: if the node has HUG sizing and has exactly one child with FIXED sizing,
-        // that child's width should determine the parent's width
-        if (node.layoutSizingHorizontal === 'HUG' && node.children && node.children.length === 1) {
-            const child = node.children[0];
-            return child.layoutSizingHorizontal === 'FIXED';
-        }
-        return false;
-    }
-    getChildWidthForHugSizing(node) {
-        if (node.children && node.children.length === 1) {
-            const child = node.children[0];
-            return child.width || 0;
-        }
-        return 0;
-    }
-    isSVGNode(node) {
-        return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
-    }
-    generateTextStyles(node) {
-        const textStyles = [];
-        // Font size
-        if (node.fontSize) {
-            textStyles.push(`font-size: ${node.fontSize}px;`);
-        }
-        // Font family - use fontName like the reference project
-        if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
-            const figmaFamily = String(node.fontName.family);
-            // Use exact Figma font names with fallback
-            textStyles.push(`font-family: "${figmaFamily}", sans-serif;`);
-        }
-        else if (node.fontFamily) {
-            textStyles.push(`font-family: "${node.fontFamily}", sans-serif;`);
-        }
-        else {
-            // Default to CircularXX TT for consistency with reference project
-            textStyles.push(`font-family: "CircularXX TT", sans-serif;`);
-        }
-        // Font weight - convert Figma font style to CSS font weight
-        if (node.fontName && typeof node.fontName === 'object' && node.fontName.style) {
-            const figmaStyle = String(node.fontName.style);
-            let cssWeight = '400'; // Default
-            if (figmaStyle.includes('Bold'))
-                cssWeight = '700';
-            else if (figmaStyle.includes('Medium'))
-                cssWeight = '500';
-            else if (figmaStyle.includes('Light'))
-                cssWeight = '300';
-            else if (figmaStyle.includes('Thin'))
-                cssWeight = '100';
-            else if (figmaStyle.includes('Black'))
-                cssWeight = '900';
-            else if (figmaStyle.includes('Book'))
-                cssWeight = '450';
-            textStyles.push(`font-weight: ${cssWeight};`);
-        }
-        else if (node.fontWeight) {
-            textStyles.push(`font-weight: ${node.fontWeight};`);
-        }
-        // Text alignment
-        if (node.textAlignHorizontal) {
-            textStyles.push(`text-align: ${node.textAlignHorizontal.toLowerCase()};`);
-        }
-        // Letter spacing
-        if (node.letterSpacing) {
-            if (typeof node.letterSpacing === 'object' && node.letterSpacing.value) {
-                const unit = node.letterSpacing.unit === 'PERCENT' ? '%' : 'px';
-                textStyles.push(`letter-spacing: ${node.letterSpacing.value}${unit};`);
-            }
-            else if (typeof node.letterSpacing === 'number') {
-                textStyles.push(`letter-spacing: ${node.letterSpacing}px;`);
-            }
-        }
-        // Line height
-        if (node.lineHeight) {
-            if (typeof node.lineHeight === 'object' && node.lineHeight.value) {
-                if (node.lineHeight.unit === 'AUTO' || node.lineHeight.unit === 'auto') {
-                    textStyles.push(`line-height: normal;`);
-                }
-                else {
-                    // Figma line height is percentage
-                    textStyles.push(`line-height: ${node.lineHeight.value}%;`);
-                }
-            }
-            else if (typeof node.lineHeight === 'number') {
-                textStyles.push(`line-height: ${node.lineHeight}%;`);
-            }
-            else if (typeof node.lineHeight === 'string' && node.lineHeight.toLowerCase() === 'auto') {
-                textStyles.push(`line-height: normal;`);
-            }
-        }
-        // Text color from fills
-        if (node.fills && node.fills.length > 0) {
-            const textColor = this.generateTextColor(node.fills);
-            if (textColor) {
-                textStyles.push(textColor);
-            }
-        }
-        // Default text styling for better rendering
-        textStyles.push(`margin: 0;`); // Remove default p tag margins
-        textStyles.push(`padding: 0;`); // Remove default p tag padding
-        textStyles.push(`background: none;`); // Ensure no background color on text elements
-        // Ensure text elements have proper dimensions and visibility
-        if (node.width && node.height) {
-            textStyles.push(`width: ${node.width}px;`);
-            textStyles.push(`height: ${node.height}px;`);
-            textStyles.push(`overflow: hidden;`); // Prevent text overflow
-        }
-        // Ensure text is visible even without explicit color
-        if (!textStyles.some(style => style.startsWith('color:'))) {
-            textStyles.push(`color: rgba(0, 0, 0, 1);`); // Default black text
-        }
-        // Ensure text has proper line height for visibility
-        if (!textStyles.some(style => style.startsWith('line-height:'))) {
-            textStyles.push(`line-height: 1.2;`); // Default line height
-        }
-        // Ensure text has minimum font size for visibility
-        if (!textStyles.some(style => style.startsWith('font-size:'))) {
-            textStyles.push(`font-size: 16px;`); // Default font size
-        }
-        // Ensure text has minimum font weight for visibility
-        if (!textStyles.some(style => style.startsWith('font-weight:'))) {
-            textStyles.push(`font-weight: 400;`); // Default font weight
-        }
-        // Ensure text has font family for visibility
-        if (!textStyles.some(style => style.startsWith('font-family:'))) {
-            textStyles.push(`font-family: "CircularXX TT", sans-serif;`); // Default font family
-        }
-        return textStyles;
-    }
-    generateTextColor(fills) {
-        const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
-        if (solidFill === null || solidFill === void 0 ? void 0 : solidFill.color) {
-            const { r, g, b } = solidFill.color;
-            const alpha = solidFill.opacity || 1;
-            return `color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
-        }
-        return null;
-    }
-}
-
-;// ./src/browser/bundle-generator.ts
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BundleGenerator: () => (/* binding */ BundleGenerator)
+/* harmony export */ });
 class BundleGenerator {
     /**
      * Generate the complete browser bundle as a string
@@ -2322,199 +1541,154 @@ class BundleGenerator {
     }
 }
 
-;// ./src/html/animation-handler.ts
+
+/***/ }),
+
+/***/ "./src/html/animation-handler.ts":
+/*!***************************************!*\
+  !*** ./src/html/animation-handler.ts ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   AnimationHandler: () => (/* binding */ AnimationHandler)
+/* harmony export */ });
+/* harmony import */ var _browser_bundle_generator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../browser/bundle-generator */ "./src/browser/bundle-generator.ts");
 
 class AnimationHandler {
     generateAnimationCode(nodes, resolvedInstances) {
         return `
       // Initialize Figma Animation System
-      ${BundleGenerator.generateBundle()}
+      ${_browser_bundle_generator__WEBPACK_IMPORTED_MODULE_0__.BundleGenerator.generateBundle()}
       
-      ${BundleGenerator.generateInitializationCode(nodes, resolvedInstances)}
+      ${_browser_bundle_generator__WEBPACK_IMPORTED_MODULE_0__.BundleGenerator.generateInitializationCode(nodes, resolvedInstances)}
     `;
     }
 }
 
-;// ./src/utils/font-loader.ts
-// Font loading functions for Figma plugin environment
-async function loadFonts(node) {
-    if (node.type === 'TEXT' && node.fontName) {
-        try {
-            await figma.loadFontAsync(node.fontName);
+
+/***/ }),
+
+/***/ "./src/html/element-builder.ts":
+/*!*************************************!*\
+  !*** ./src/html/element-builder.ts ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ElementBuilder: () => (/* binding */ ElementBuilder)
+/* harmony export */ });
+/* harmony import */ var _utils_svg_converter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/svg-converter */ "./src/utils/svg-converter.ts");
+
+class ElementBuilder {
+    buildElement(node) {
+        // Handle SVG nodes differently
+        if (node.type === 'VECTOR') {
+            const svg = (0,_utils_svg_converter__WEBPACK_IMPORTED_MODULE_0__.convertVectorToSVG)(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
         }
-        catch (error) {
-            console.warn(`Failed to load font for node ${node.name}:`, error);
+        if (node.type === 'RECTANGLE') {
+            const svg = (0,_utils_svg_converter__WEBPACK_IMPORTED_MODULE_0__.convertRectangleToSVG)(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
         }
-    }
-    if (node.children) {
-        for (const child of node.children) {
-            await loadFonts(child);
+        if (node.type === 'ELLIPSE') {
+            const svg = (0,_utils_svg_converter__WEBPACK_IMPORTED_MODULE_0__.convertEllipseToSVG)(node);
+            const width = node.width || 0;
+            const height = node.height || 0;
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" data-figma-id="${node.id}" data-figma-name="${node.name}" data-figma-type="${node.type}">${svg}</svg>`;
         }
+        const attributes = this.generateAttributes(node);
+        const content = this.generateContent(node);
+        const tag = this.getHTMLTag(node);
+        return `<${tag}${attributes}>${content}</${tag}>`;
     }
-}
-// Font CSS generation for web output
-function getEmbeddedFontStyles() {
-    return `
-    /* Custom font declarations - CircularXX TT family with font-weight variations */
-    
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Thin.ttf") format("truetype");
-      font-weight: 100;
-      font-style: normal;
-      font-display: swap;
+    generateAttributes(node) {
+        const attrs = [
+            `data-figma-id="${node.id}"`,
+            `data-figma-name="${node.name}"`,
+            `data-figma-type="${node.type}"`
+        ];
+        // Add component set and variant markers
+        if (node.type === 'COMPONENT_SET') {
+            attrs.push('data-component-set="true"');
+        }
+        if (node.type === 'COMPONENT') {
+            attrs.push('data-variant="true"');
+        }
+        // Add layout attributes
+        if (node.layoutMode) {
+            attrs.push(`data-layout-mode="${node.layoutMode}"`);
+        }
+        // Add reaction attributes
+        if (node.reactions && node.reactions.length > 0) {
+            attrs.push(`data-reactions='${JSON.stringify(node.reactions)}'`);
+        }
+        return ' ' + attrs.join(' ');
     }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-ThinItalic.ttf") format("truetype");
-      font-weight: 100;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Light.ttf") format("truetype");
-      font-weight: 300;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-LightItalic.ttf") format("truetype");
-      font-weight: 300;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Regular.ttf") format("truetype");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Italic.ttf") format("truetype");
-      font-weight: 400;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Book.ttf") format("truetype");
-      font-weight: 450;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-BookItalic.ttf") format("truetype");
-      font-weight: 450;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Medium.ttf") format("truetype");
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-MediumItalic.ttf") format("truetype");
-      font-weight: 500;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Bold.ttf") format("truetype");
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-BoldItalic.ttf") format("truetype");
-      font-weight: 700;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-Black.ttf") format("truetype");
-      font-weight: 900;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-BlackItalic.ttf") format("truetype");
-      font-weight: 900;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-ExtraBlack.ttf") format("truetype");
-      font-weight: 950;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "CircularXX TT";
-      src: url("fonts/CircularXXTT-ExtraBlackItalic.ttf") format("truetype");
-      font-weight: 950;
-      font-style: italic;
-      font-display: swap;
-    }
-  `;
-}
-// Analyze text nodes to determine what fonts are needed
-function analyzeRequiredFonts(nodes) {
-    const requiredFonts = new Set();
-    function analyzeNode(node) {
+    generateContent(node) {
+        if (node.children && node.children.length > 0) {
+            return node.children.map(child => this.buildElement(child)).join('\n');
+        }
+        // Handle text content
         if (node.type === 'TEXT') {
-            if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
-                requiredFonts.add(node.fontName.family);
-            }
-            else if (node.fontFamily) {
-                requiredFonts.add(node.fontFamily);
-            }
+            // Use the actual text content from characters property
+            return node.characters || node.name || '';
         }
-        if (node.children) {
-            node.children.forEach(analyzeNode);
+        return '';
+    }
+    getHTMLTag(node) {
+        switch (node.type) {
+            case 'COMPONENT_SET':
+            case 'COMPONENT':
+            case 'INSTANCE':
+            case 'FRAME':
+                return 'div';
+            case 'TEXT':
+                // Use p tag for longer text, span for short labels
+                const textLength = node.characters ? node.characters.length : 0;
+                return textLength > 50 ? 'p' : 'span';
+            case 'VECTOR':
+            case 'RECTANGLE':
+            case 'ELLIPSE':
+                return 'svg';
+            default:
+                return 'div';
         }
     }
-    nodes.forEach(analyzeNode);
-    return requiredFonts;
-}
-// Generate font preload links for better performance
-function generateFontPreloadLinks(fontFamilies) {
-    const preloadLinks = [];
-    fontFamilies.forEach(family => {
-        if (family === 'CircularXX TT') {
-            // Add preload links for commonly used weights
-            // Note: crossorigin is removed for local file access
-            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Regular.ttf" as="font" type="font/ttf">`);
-            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Medium.ttf" as="font" type="font/ttf">`);
-            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Bold.ttf" as="font" type="font/ttf">`);
-        }
-    });
-    return preloadLinks.join('\n  ');
 }
 
-;// ./src/html/generator.ts
+
+/***/ }),
+
+/***/ "./src/html/generator.ts":
+/*!*******************************!*\
+  !*** ./src/html/generator.ts ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   HTMLGenerator: () => (/* binding */ HTMLGenerator)
+/* harmony export */ });
+/* harmony import */ var _element_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./element-builder */ "./src/html/element-builder.ts");
+/* harmony import */ var _style_generator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./style-generator */ "./src/html/style-generator.ts");
+/* harmony import */ var _animation_handler__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./animation-handler */ "./src/html/animation-handler.ts");
+/* harmony import */ var _utils_font_loader__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils/font-loader */ "./src/utils/font-loader.ts");
 
 
 
 
 class HTMLGenerator {
     constructor() {
-        this.elementBuilder = new ElementBuilder();
-        this.styleGenerator = new StyleGenerator();
-        this.animationHandler = new AnimationHandler();
+        this.elementBuilder = new _element_builder__WEBPACK_IMPORTED_MODULE_0__.ElementBuilder();
+        this.styleGenerator = new _style_generator__WEBPACK_IMPORTED_MODULE_1__.StyleGenerator();
+        this.animationHandler = new _animation_handler__WEBPACK_IMPORTED_MODULE_2__.AnimationHandler();
     }
     generateHTML(nodes, resolvedInstances) {
         const css = this.generateCSS(nodes, resolvedInstances);
@@ -2527,9 +1701,9 @@ class HTMLGenerator {
                 allNodes.push(...instance.variants);
             });
         }
-        const requiredFonts = analyzeRequiredFonts(allNodes);
-        const fontPreloadLinks = generateFontPreloadLinks(requiredFonts);
-        const fontStyles = getEmbeddedFontStyles();
+        const requiredFonts = (0,_utils_font_loader__WEBPACK_IMPORTED_MODULE_3__.analyzeRequiredFonts)(allNodes);
+        const fontPreloadLinks = (0,_utils_font_loader__WEBPACK_IMPORTED_MODULE_3__.generateFontPreloadLinks)(requiredFonts);
+        const fontStyles = (0,_utils_font_loader__WEBPACK_IMPORTED_MODULE_3__.getEmbeddedFontStyles)();
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2698,7 +1872,349 @@ ${css}
     }
 }
 
-;// ./src/plugin/figma-data-extractor.ts
+
+/***/ }),
+
+/***/ "./src/html/style-generator.ts":
+/*!*************************************!*\
+  !*** ./src/html/style-generator.ts ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   StyleGenerator: () => (/* binding */ StyleGenerator)
+/* harmony export */ });
+/* harmony import */ var _utils_position_calculator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/position-calculator */ "./src/utils/position-calculator.ts");
+
+class StyleGenerator {
+    generateStyles(node, isRoot = false, parent) {
+        const selector = `[data-figma-id="${node.id}"]`;
+        const properties = this.generateCSSProperties(node, isRoot, parent);
+        let css = `${selector} {\n${properties}\n}`;
+        // Generate styles for children
+        if (node.children) {
+            const childStyles = node.children
+                .map(child => this.generateStyles(child, false, node))
+                .join('\n\n');
+            css += '\n\n' + childStyles;
+        }
+        return css;
+    }
+    generateCSSProperties(node, isRoot = false, parent) {
+        const properties = [];
+        // Position and dimensions - normalize coordinates for browser viewport
+        if (isRoot) {
+            // Root elements should be positioned at 0,0
+            properties.push(`position: absolute;`);
+            properties.push(`left: 0px;`);
+            properties.push(`top: 0px;`);
+            properties.push(`width: ${node.width}px;`);
+            properties.push(`height: ${node.height}px;`);
+        }
+        else {
+            // Child elements use relative positioning within their parent
+            // Check if this is a layout-driven position that needs adjustment
+            const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
+            properties.push(`position: absolute;`);
+            properties.push(`left: ${adjustedPosition.x}px;`);
+            properties.push(`top: ${adjustedPosition.y}px;`);
+            // Only set width/height here if not using special sizing (FILL/HUG will be set later)
+            if (!node.layoutSizingHorizontal || node.layoutSizingHorizontal === 'FIXED') {
+                properties.push(`width: ${node.width}px;`);
+            }
+            if (!node.layoutSizingVertical || node.layoutSizingVertical === 'FIXED') {
+                properties.push(`height: ${node.height}px;`);
+            }
+        }
+        // Opacity
+        if (node.opacity !== undefined && node.opacity !== 1) {
+            properties.push(`opacity: ${node.opacity};`);
+        }
+        // Layout mode (for flexbox)
+        if (node.layoutMode && node.layoutMode !== 'NONE') {
+            properties.push(`display: flex;`);
+            if (node.layoutMode === 'HORIZONTAL') {
+                properties.push(`flex-direction: row;`);
+            }
+            else if (node.layoutMode === 'VERTICAL') {
+                properties.push(`flex-direction: column;`);
+            }
+            // Alignment
+            if (node.counterAxisAlignItems) {
+                const alignMap = {
+                    'MIN': 'flex-start',
+                    'CENTER': 'center',
+                    'MAX': 'flex-end'
+                };
+                properties.push(`align-items: ${alignMap[node.counterAxisAlignItems]};`);
+            }
+            if (node.primaryAxisAlignItems) {
+                const justifyMap = {
+                    'MIN': 'flex-start',
+                    'CENTER': 'center',
+                    'MAX': 'flex-end'
+                };
+                properties.push(`justify-content: ${justifyMap[node.primaryAxisAlignItems]};`);
+            }
+        }
+        // Sizing properties (FILL/HUG/FIXED)
+        // For components, always use explicit dimensions regardless of sizing properties
+        if (node.type === 'COMPONENT') {
+            // Components need explicit width and height to match their Figma dimensions
+            if (node.width && node.height) {
+                properties.push(`width: ${node.width}px;`);
+                properties.push(`height: ${node.height}px;`);
+            }
+        }
+        else {
+            // Regular sizing logic for non-component nodes
+            if (node.layoutSizingHorizontal) {
+                switch (node.layoutSizingHorizontal) {
+                    case 'FILL':
+                        properties.push(`width: 100%;`);
+                        break;
+                    case 'HUG':
+                        // Check if this node has absolutely positioned children that would break fit-content
+                        if (this.hasAbsolutelyPositionedChildren(node)) {
+                            // Use the child's width as the parent's fixed width
+                            const childWidth = this.getChildWidthForHugSizing(node);
+                            if (childWidth > 0) {
+                                properties.push(`width: ${childWidth}px;`);
+                            }
+                            else {
+                                properties.push(`width: fit-content;`);
+                            }
+                        }
+                        else {
+                            properties.push(`width: fit-content;`);
+                        }
+                        break;
+                    case 'FIXED':
+                        // Width is already set above, no additional CSS needed
+                        break;
+                }
+            }
+            if (node.layoutSizingVertical) {
+                switch (node.layoutSizingVertical) {
+                    case 'FILL':
+                        properties.push(`height: 100%;`);
+                        break;
+                    case 'HUG':
+                        properties.push(`height: fit-content;`);
+                        break;
+                    case 'FIXED':
+                        // Height is already set above, no additional CSS needed
+                        break;
+                }
+            }
+        }
+        // Background fills (exclude SVG nodes and TEXT nodes - they handle fills internally)
+        if (node.fills && node.fills.length > 0 && !this.isSVGNode(node) && node.type !== 'TEXT') {
+            const backgroundCSS = this.generateBackgroundCSS(node.fills);
+            if (backgroundCSS) {
+                properties.push(backgroundCSS);
+            }
+        }
+        // Corner radius
+        if (node.cornerRadius !== undefined && node.cornerRadius > 0) {
+            properties.push(`border-radius: ${node.cornerRadius}px;`);
+        }
+        // Overflow properties
+        if (node.overflow) {
+            const overflowMap = {
+                'VISIBLE': 'visible',
+                'HIDDEN': 'hidden',
+                'SCROLL': 'scroll'
+            };
+            properties.push(`overflow: ${overflowMap[node.overflow]};`);
+        }
+        // Component-specific styles
+        if (node.type === 'COMPONENT_SET') {
+            properties.push(`position: relative;`);
+        }
+        if (node.type === 'COMPONENT') {
+            // Show the first variant by default, hide others
+            // This will be overridden by the animation system
+            properties.push(`display: block;`);
+        }
+        // Text-specific styles
+        if (node.type === 'TEXT') {
+            const textStyles = this.generateTextStyles(node);
+            properties.push(...textStyles);
+        }
+        return properties.map(prop => `  ${prop}`).join('\n');
+    }
+    generateBackgroundCSS(fills) {
+        const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
+        if (solidFill === null || solidFill === void 0 ? void 0 : solidFill.color) {
+            const { r, g, b } = solidFill.color;
+            const alpha = solidFill.opacity || 1;
+            return `background-color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
+        }
+        // TODO: Handle gradients
+        return null;
+    }
+    adjustLayoutDrivenPosition(node, parent) {
+        // Use the PositionCalculator for generic position adjustments
+        const adjustment = _utils_position_calculator__WEBPACK_IMPORTED_MODULE_0__.PositionCalculator.calculateAdjustedPosition(node, parent);
+        return { x: adjustment.x, y: adjustment.y };
+    }
+    hasAbsolutelyPositionedChildren(node) {
+        // Check if this node has children that are positioned for animation
+        // A simple heuristic: if the node has HUG sizing and has exactly one child with FIXED sizing,
+        // that child's width should determine the parent's width
+        if (node.layoutSizingHorizontal === 'HUG' && node.children && node.children.length === 1) {
+            const child = node.children[0];
+            return child.layoutSizingHorizontal === 'FIXED';
+        }
+        return false;
+    }
+    getChildWidthForHugSizing(node) {
+        if (node.children && node.children.length === 1) {
+            const child = node.children[0];
+            return child.width || 0;
+        }
+        return 0;
+    }
+    isSVGNode(node) {
+        return node.type === 'VECTOR' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE';
+    }
+    generateTextStyles(node) {
+        const textStyles = [];
+        // Font size
+        if (node.fontSize) {
+            textStyles.push(`font-size: ${node.fontSize}px;`);
+        }
+        // Font family - use fontName like the reference project
+        if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
+            const figmaFamily = String(node.fontName.family);
+            // Use exact Figma font names with fallback
+            textStyles.push(`font-family: "${figmaFamily}", sans-serif;`);
+        }
+        else if (node.fontFamily) {
+            textStyles.push(`font-family: "${node.fontFamily}", sans-serif;`);
+        }
+        else {
+            // Default to CircularXX TT for consistency with reference project
+            textStyles.push(`font-family: "CircularXX TT", sans-serif;`);
+        }
+        // Font weight - convert Figma font style to CSS font weight
+        if (node.fontName && typeof node.fontName === 'object' && node.fontName.style) {
+            const figmaStyle = String(node.fontName.style);
+            let cssWeight = '400'; // Default
+            if (figmaStyle.includes('Bold'))
+                cssWeight = '700';
+            else if (figmaStyle.includes('Medium'))
+                cssWeight = '500';
+            else if (figmaStyle.includes('Light'))
+                cssWeight = '300';
+            else if (figmaStyle.includes('Thin'))
+                cssWeight = '100';
+            else if (figmaStyle.includes('Black'))
+                cssWeight = '900';
+            else if (figmaStyle.includes('Book'))
+                cssWeight = '450';
+            textStyles.push(`font-weight: ${cssWeight};`);
+        }
+        else if (node.fontWeight) {
+            textStyles.push(`font-weight: ${node.fontWeight};`);
+        }
+        // Text alignment
+        if (node.textAlignHorizontal) {
+            textStyles.push(`text-align: ${node.textAlignHorizontal.toLowerCase()};`);
+        }
+        // Letter spacing
+        if (node.letterSpacing) {
+            if (typeof node.letterSpacing === 'object' && node.letterSpacing.value) {
+                const unit = node.letterSpacing.unit === 'PERCENT' ? '%' : 'px';
+                textStyles.push(`letter-spacing: ${node.letterSpacing.value}${unit};`);
+            }
+            else if (typeof node.letterSpacing === 'number') {
+                textStyles.push(`letter-spacing: ${node.letterSpacing}px;`);
+            }
+        }
+        // Line height
+        if (node.lineHeight) {
+            if (typeof node.lineHeight === 'object' && node.lineHeight.value) {
+                if (node.lineHeight.unit === 'AUTO' || node.lineHeight.unit === 'auto') {
+                    textStyles.push(`line-height: normal;`);
+                }
+                else {
+                    // Figma line height is percentage
+                    textStyles.push(`line-height: ${node.lineHeight.value}%;`);
+                }
+            }
+            else if (typeof node.lineHeight === 'number') {
+                textStyles.push(`line-height: ${node.lineHeight}%;`);
+            }
+            else if (typeof node.lineHeight === 'string' && node.lineHeight.toLowerCase() === 'auto') {
+                textStyles.push(`line-height: normal;`);
+            }
+        }
+        // Text color from fills
+        if (node.fills && node.fills.length > 0) {
+            const textColor = this.generateTextColor(node.fills);
+            if (textColor) {
+                textStyles.push(textColor);
+            }
+        }
+        // Default text styling for better rendering
+        textStyles.push(`margin: 0;`); // Remove default p tag margins
+        textStyles.push(`padding: 0;`); // Remove default p tag padding
+        textStyles.push(`background: none;`); // Ensure no background color on text elements
+        // Ensure text elements have proper dimensions and visibility
+        if (node.width && node.height) {
+            textStyles.push(`width: ${node.width}px;`);
+            textStyles.push(`height: ${node.height}px;`);
+            textStyles.push(`overflow: hidden;`); // Prevent text overflow
+        }
+        // Ensure text is visible even without explicit color
+        if (!textStyles.some(style => style.startsWith('color:'))) {
+            textStyles.push(`color: rgba(0, 0, 0, 1);`); // Default black text
+        }
+        // Ensure text has proper line height for visibility
+        if (!textStyles.some(style => style.startsWith('line-height:'))) {
+            textStyles.push(`line-height: 1.2;`); // Default line height
+        }
+        // Ensure text has minimum font size for visibility
+        if (!textStyles.some(style => style.startsWith('font-size:'))) {
+            textStyles.push(`font-size: 16px;`); // Default font size
+        }
+        // Ensure text has minimum font weight for visibility
+        if (!textStyles.some(style => style.startsWith('font-weight:'))) {
+            textStyles.push(`font-weight: 400;`); // Default font weight
+        }
+        // Ensure text has font family for visibility
+        if (!textStyles.some(style => style.startsWith('font-family:'))) {
+            textStyles.push(`font-family: "CircularXX TT", sans-serif;`); // Default font family
+        }
+        return textStyles;
+    }
+    generateTextColor(fills) {
+        const solidFill = fills.find(fill => fill.type === 'SOLID' && fill.color);
+        if (solidFill === null || solidFill === void 0 ? void 0 : solidFill.color) {
+            const { r, g, b } = solidFill.color;
+            const alpha = solidFill.opacity || 1;
+            return `color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
+        }
+        return null;
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/plugin/figma-data-extractor.ts":
+/*!********************************************!*\
+  !*** ./src/plugin/figma-data-extractor.ts ***!
+  \********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   FigmaDataExtractor: () => (/* binding */ FigmaDataExtractor)
+/* harmony export */ });
 class FigmaDataExtractor {
     async extractNodes(selection) {
         const nodes = [];
@@ -3269,7 +2785,677 @@ class FigmaDataExtractor {
     }
 }
 
-;// ./src/plugin/main.ts
+
+/***/ }),
+
+/***/ "./src/utils/font-loader.ts":
+/*!**********************************!*\
+  !*** ./src/utils/font-loader.ts ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   analyzeRequiredFonts: () => (/* binding */ analyzeRequiredFonts),
+/* harmony export */   generateFontPreloadLinks: () => (/* binding */ generateFontPreloadLinks),
+/* harmony export */   getEmbeddedFontStyles: () => (/* binding */ getEmbeddedFontStyles),
+/* harmony export */   loadFonts: () => (/* binding */ loadFonts)
+/* harmony export */ });
+// Font loading functions for Figma plugin environment
+async function loadFonts(node) {
+    if (node.type === 'TEXT' && node.fontName) {
+        try {
+            await figma.loadFontAsync(node.fontName);
+        }
+        catch (error) {
+            console.warn(`Failed to load font for node ${node.name}:`, error);
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            await loadFonts(child);
+        }
+    }
+}
+// Font CSS generation for web output
+function getEmbeddedFontStyles() {
+    return `
+    /* Custom font declarations - CircularXX TT family with font-weight variations */
+    
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Thin.ttf") format("truetype");
+      font-weight: 100;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ThinItalic.ttf") format("truetype");
+      font-weight: 100;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Light.ttf") format("truetype");
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-LightItalic.ttf") format("truetype");
+      font-weight: 300;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Italic.ttf") format("truetype");
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Book.ttf") format("truetype");
+      font-weight: 450;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BookItalic.ttf") format("truetype");
+      font-weight: 450;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-MediumItalic.ttf") format("truetype");
+      font-weight: 500;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BoldItalic.ttf") format("truetype");
+      font-weight: 700;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-Black.ttf") format("truetype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-BlackItalic.ttf") format("truetype");
+      font-weight: 900;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ExtraBlack.ttf") format("truetype");
+      font-weight: 950;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CircularXX TT";
+      src: url("fonts/CircularXXTT-ExtraBlackItalic.ttf") format("truetype");
+      font-weight: 950;
+      font-style: italic;
+      font-display: swap;
+    }
+  `;
+}
+// Analyze text nodes to determine what fonts are needed
+function analyzeRequiredFonts(nodes) {
+    const requiredFonts = new Set();
+    function analyzeNode(node) {
+        if (node.type === 'TEXT') {
+            if (node.fontName && typeof node.fontName === 'object' && node.fontName.family) {
+                requiredFonts.add(node.fontName.family);
+            }
+            else if (node.fontFamily) {
+                requiredFonts.add(node.fontFamily);
+            }
+        }
+        if (node.children) {
+            node.children.forEach(analyzeNode);
+        }
+    }
+    nodes.forEach(analyzeNode);
+    return requiredFonts;
+}
+// Generate font preload links for better performance
+function generateFontPreloadLinks(fontFamilies) {
+    const preloadLinks = [];
+    fontFamilies.forEach(family => {
+        if (family === 'CircularXX TT') {
+            // Add preload links for commonly used weights
+            // Note: crossorigin is removed for local file access
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Regular.ttf" as="font" type="font/ttf">`);
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Medium.ttf" as="font" type="font/ttf">`);
+            preloadLinks.push(`<link rel="preload" href="fonts/CircularXXTT-Bold.ttf" as="font" type="font/ttf">`);
+        }
+    });
+    return preloadLinks.join('\n  ');
+}
+
+
+/***/ }),
+
+/***/ "./src/utils/position-calculator.ts":
+/*!******************************************!*\
+  !*** ./src/utils/position-calculator.ts ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PositionCalculator: () => (/* binding */ PositionCalculator)
+/* harmony export */ });
+class PositionCalculator {
+    /**
+     * Calculate adjusted position for a node based on its layout context
+     */
+    static calculateAdjustedPosition(node, parent) {
+        // If no parent, return original position
+        if (!parent) {
+            return {
+                x: node.x,
+                y: node.y,
+                reason: 'no_parent'
+            };
+        }
+        // Check if this is a layout-driven position that needs adjustment
+        const layoutAdjustment = this.calculateLayoutDrivenPosition(node, parent);
+        if (layoutAdjustment) {
+            return layoutAdjustment;
+        }
+        // Check if this is a relative positioning case
+        const relativeAdjustment = this.calculateRelativePosition(node, parent);
+        if (relativeAdjustment) {
+            return relativeAdjustment;
+        }
+        // Default: return original position
+        return {
+            x: node.x,
+            y: node.y,
+            reason: 'original_position'
+        };
+    }
+    /**
+     * Calculate position adjustments for layout-driven positioning
+     */
+    static calculateLayoutDrivenPosition(node, parent) {
+        // Check if parent has layout properties that affect child positioning
+        if (!this.hasLayoutProperties(parent)) {
+            return null;
+        }
+        // Check if this is a case where the node position seems inconsistent with layout
+        const isLayoutInconsistent = this.isPositionLayoutInconsistent(node, parent);
+        if (!isLayoutInconsistent) {
+            return null;
+        }
+        // Calculate adjusted position based on parent's layout properties
+        const adjustedPosition = this.adjustPositionForLayout(node, parent);
+        return {
+            x: adjustedPosition.x,
+            y: adjustedPosition.y,
+            reason: 'layout_driven_adjustment'
+        };
+    }
+    /**
+     * Calculate relative positioning adjustments
+     */
+    static calculateRelativePosition(node, parent) {
+        // Check if this node should be positioned relative to parent bounds
+        if (this.shouldUseRelativePositioning(node, parent)) {
+            const relativePosition = this.calculateRelativeToParent(node, parent);
+            return {
+                x: relativePosition.x,
+                y: relativePosition.y,
+                reason: 'relative_positioning'
+            };
+        }
+        return null;
+    }
+    /**
+     * Check if a node has layout properties
+     */
+    static hasLayoutProperties(node) {
+        return node.layoutMode !== 'NONE' ||
+            node.primaryAxisAlignItems !== undefined ||
+            node.counterAxisAlignItems !== undefined ||
+            node.layoutSizingHorizontal !== undefined ||
+            node.layoutSizingVertical !== undefined;
+    }
+    /**
+     * Check if node position is inconsistent with parent layout
+     */
+    static isPositionLayoutInconsistent(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        // Check if node is positioned outside parent bounds
+        if (node.x < 0 || node.y < 0 ||
+            node.x + nodeWidth > parentWidth ||
+            node.y + nodeHeight > parentHeight) {
+            return true;
+        }
+        // Check if node position seems arbitrary (very large values)
+        // Note: Removed hardcoded 1000px threshold as modern designs can legitimately exceed this
+        // Instead, check for extremely large values that would indicate data corruption
+        const POSITION_THRESHOLD = 50000; // Much more reasonable threshold for detecting corrupt data
+        if (node.x > POSITION_THRESHOLD || node.y > POSITION_THRESHOLD) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Adjust position based on parent's layout properties
+     */
+    static adjustPositionForLayout(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        let adjustedX = node.x;
+        let adjustedY = node.y;
+        // Adjust based on primary axis alignment
+        if (parent.primaryAxisAlignItems) {
+            switch (parent.primaryAxisAlignItems) {
+                case 'MIN':
+                    adjustedX = 0;
+                    break;
+                case 'CENTER':
+                    adjustedX = (parentWidth - nodeWidth) / 2;
+                    break;
+                case 'MAX':
+                    adjustedX = parentWidth - nodeWidth;
+                    break;
+                default:
+                    // Keep original position for unknown alignment types
+                    break;
+            }
+        }
+        // Adjust based on counter axis alignment
+        if (parent.counterAxisAlignItems) {
+            switch (parent.counterAxisAlignItems) {
+                case 'MIN':
+                    adjustedY = 0;
+                    break;
+                case 'CENTER':
+                    adjustedY = (parentHeight - nodeHeight) / 2;
+                    break;
+                case 'MAX':
+                    adjustedY = parentHeight - nodeHeight;
+                    break;
+            }
+        }
+        return { x: adjustedX, y: adjustedY };
+    }
+    /**
+     * Check if node should use relative positioning
+     */
+    static shouldUseRelativePositioning(node, parent) {
+        // Check if parent has HUG sizing and node has FIXED sizing
+        if (parent.layoutSizingHorizontal === 'HUG' &&
+            node.layoutSizingHorizontal === 'FIXED') {
+            return true;
+        }
+        // Check if parent has HUG sizing and node has FIXED sizing
+        if (parent.layoutSizingVertical === 'HUG' &&
+            node.layoutSizingVertical === 'FIXED') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Calculate position relative to parent
+     */
+    static calculateRelativeToParent(node, parent) {
+        const parentWidth = parent.width || 0;
+        const parentHeight = parent.height || 0;
+        const nodeWidth = node.width || 0;
+        const nodeHeight = node.height || 0;
+        // For HUG sizing, position the node at the center of the parent
+        let adjustedX = (parentWidth - nodeWidth) / 2;
+        let adjustedY = (parentHeight - nodeHeight) / 2;
+        // Ensure the node doesn't go outside parent bounds
+        adjustedX = Math.max(0, Math.min(adjustedX, parentWidth - nodeWidth));
+        adjustedY = Math.max(0, Math.min(adjustedY, parentHeight - nodeHeight));
+        return { x: adjustedX, y: adjustedY };
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/utils/svg-converter.ts":
+/*!************************************!*\
+  !*** ./src/utils/svg-converter.ts ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   colorToRGBA: () => (/* binding */ colorToRGBA),
+/* harmony export */   convertEllipseToSVG: () => (/* binding */ convertEllipseToSVG),
+/* harmony export */   convertRectangleToSVG: () => (/* binding */ convertRectangleToSVG),
+/* harmony export */   convertVectorToSVG: () => (/* binding */ convertVectorToSVG)
+/* harmony export */ });
+function colorToRGBA(color, opacity = 1) {
+    const r = Math.round(color.r * 255);
+    const g = Math.round(color.g * 255);
+    const b = Math.round(color.b * 255);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+function base64Decode(str) {
+    if (typeof atob !== 'undefined') {
+        return atob(str);
+    }
+    // Fallback for environments without atob (Figma plugin environment)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let result = '';
+    let i = 0;
+    // Remove any padding
+    str = str.replace(/=+$/, '');
+    while (i < str.length) {
+        const e1 = chars.indexOf(str.charAt(i++));
+        const e2 = chars.indexOf(str.charAt(i++));
+        const e3 = chars.indexOf(str.charAt(i++));
+        const e4 = chars.indexOf(str.charAt(i++));
+        const c1 = (e1 << 2) | (e2 >> 4);
+        const c2 = ((e2 & 15) << 4) | (e3 >> 2);
+        const c3 = ((e3 & 3) << 6) | e4;
+        result += String.fromCharCode(c1);
+        if (e3 !== 64)
+            result += String.fromCharCode(c2);
+        if (e4 !== 64)
+            result += String.fromCharCode(c3);
+    }
+    return result;
+}
+function getVectorStyles(node) {
+    const styles = {
+        fills: [],
+        strokes: [],
+        strokeWeight: node.strokeWeight || 0,
+        gradients: []
+    };
+    // Process fills
+    if (node.fills && Array.isArray(node.fills)) {
+        styles.fills = node.fills.map((fill, fillIndex) => {
+            var _a;
+            if (fill.type === 'SOLID' && fill.color) {
+                const opacity = (_a = fill.opacity) !== null && _a !== void 0 ? _a : 1;
+                return colorToRGBA(fill.color, opacity);
+            }
+            else if (fill.type === 'GRADIENT_LINEAR' || fill.type === 'GRADIENT_RADIAL') {
+                const gradientId = `gradient-${node.id}-${fillIndex}`;
+                styles.gradients.push({
+                    id: gradientId,
+                    type: fill.type,
+                    fill: fill
+                });
+                return `url(#${gradientId})`;
+            }
+            return 'none';
+        });
+    }
+    // Process strokes
+    if (node.strokes && Array.isArray(node.strokes)) {
+        styles.strokes = node.strokes.map((stroke) => {
+            var _a;
+            if (stroke.type === 'SOLID' && stroke.color) {
+                const opacity = (_a = stroke.opacity) !== null && _a !== void 0 ? _a : 1;
+                return colorToRGBA(stroke.color, opacity);
+            }
+            return 'none';
+        });
+    }
+    return styles;
+}
+function createSVGGradientDefinitions(gradients) {
+    if (gradients.length === 0)
+        return '';
+    const defs = gradients.map(gradient => {
+        var _a, _b;
+        const { id, type, fill } = gradient;
+        if (type === 'GRADIENT_LINEAR') {
+            const stops = ((_a = fill.gradientStops) === null || _a === void 0 ? void 0 : _a.map((stop) => {
+                const color = colorToRGBA(stop.color, stop.opacity);
+                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
+            }).join('')) || '';
+            return `<linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%">${stops}</linearGradient>`;
+        }
+        else if (type === 'GRADIENT_RADIAL') {
+            const stops = ((_b = fill.gradientStops) === null || _b === void 0 ? void 0 : _b.map((stop) => {
+                const color = colorToRGBA(stop.color, stop.opacity);
+                return `<stop offset="${stop.position}%" stop-color="${color}" />`;
+            }).join('')) || '';
+            return `<radialGradient id="${id}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>`;
+        }
+        return '';
+    }).join('');
+    return defs ? `<defs>${defs}</defs>` : '';
+}
+function convertVectorToSVG(node) {
+    var _a, _b;
+    console.log('Converting vector to SVG:', {
+        nodeId: node.id,
+        nodeName: node.name,
+        hasVectorPaths: !!node.vectorPaths,
+        vectorPathsLength: ((_a = node.vectorPaths) === null || _a === void 0 ? void 0 : _a.length) || 0,
+        hasFills: !!node.fills,
+        fillsLength: ((_b = node.fills) === null || _b === void 0 ? void 0 : _b.length) || 0
+    });
+    const width = node.width || 0;
+    const height = node.height || 0;
+    if (!width || !height) {
+        console.warn('No valid dimensions found for vector node:', {
+            nodeId: node.id,
+            nodeName: node.name,
+            width: node.width,
+            height: node.height
+        });
+        return '';
+    }
+    const styles = getVectorStyles(node);
+    // Check for blur effects and add filter definitions
+    let blurFilterRef = '';
+    if (node.effects && Array.isArray(node.effects)) {
+        const blur = node.effects.find((effect) => effect.type === 'LAYER_BLUR' || effect.type === 'BACKGROUND_BLUR');
+        if (blur) {
+            const filterId = `blur-${node.id}`;
+            blurFilterRef = ` filter="url(#${filterId})"`;
+        }
+    }
+    if (!node.vectorPaths || !Array.isArray(node.vectorPaths)) {
+        console.warn('No vector paths found for vector:', {
+            nodeId: node.id,
+            nodeName: node.name,
+            vectorPaths: node.vectorPaths
+        });
+        return '';
+    }
+    const paths = node.vectorPaths.map((path, index) => {
+        var _a, _b;
+        console.log('Processing vector path:', {
+            pathIndex: index,
+            pathData: path.data,
+            pathDataLength: ((_a = path.data) === null || _a === void 0 ? void 0 : _a.length) || 0
+        });
+        const fill = styles.fills.length === 1 ? styles.fills[0] : (styles.fills[index] || 'none');
+        const stroke = styles.strokes.length === 1 ? styles.strokes[0] : (styles.strokes[index] || 'none');
+        const strokeWidth = styles.strokeWeight || 0;
+        // Decode path data from base64
+        let decodedPathData = path.data;
+        try {
+            if (/^[A-Za-z0-9+/=]+$/.test(path.data)) {
+                decodedPathData = base64Decode(path.data);
+                console.log('Decoded base64 path data:', {
+                    originalLength: ((_b = path.data) === null || _b === void 0 ? void 0 : _b.length) || 0,
+                    decodedLength: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.length) || 0,
+                    firstChars: (decodedPathData === null || decodedPathData === void 0 ? void 0 : decodedPathData.substring(0, 50)) || 'empty'
+                });
+            }
+            if (!decodedPathData || decodedPathData.trim() === '') {
+                console.warn('Empty decoded path data for path index:', index);
+                return '';
+            }
+            const validCommands = ['M', 'L', 'H', 'V', 'C', 'S', 'Q', 'T', 'A', 'Z'];
+            const firstChar = decodedPathData.trim().charAt(0).toUpperCase();
+            if (!validCommands.includes(firstChar)) {
+                console.warn('Invalid SVG path command:', firstChar);
+                return '';
+            }
+        }
+        catch (error) {
+            console.warn('Error decoding path data:', error);
+            decodedPathData = path.data;
+        }
+        return `<path d="${decodedPathData}" 
+            fill="${fill}" 
+            stroke="${stroke}" 
+            stroke-width="${String(strokeWidth)}"
+            fill-rule="nonzero"${blurFilterRef} />`;
+    }).join('\n    ');
+    if (!paths) {
+        console.warn('No path data found for vector');
+        return '';
+    }
+    // Create gradient definitions if any gradients exist
+    const gradientDefs = createSVGGradientDefinitions(styles.gradients);
+    // Wrap paths in a group element
+    const wrappedPaths = `<g id="${node.name.replace(/\s+/g, '_')}">\n    ${paths}\n</g>`;
+    return gradientDefs + '\n    ' + wrappedPaths;
+}
+function convertRectangleToSVG(node) {
+    let fillColor = 'none';
+    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
+        const fill = node.fills[0];
+        if (fill.type === 'SOLID' && fill.color) {
+            fillColor = colorToRGBA(fill.color, fill.opacity);
+        }
+    }
+    const rx = node.cornerRadius && typeof node.cornerRadius === 'number' ? node.cornerRadius : 0;
+    return `<rect width="${node.width}" height="${node.height}" fill="${fillColor}" rx="${rx}"/>`;
+}
+function convertEllipseToSVG(node) {
+    let fillColor = 'none';
+    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
+        const fill = node.fills[0];
+        if (fill.type === 'SOLID' && fill.color) {
+            fillColor = colorToRGBA(fill.color, fill.opacity);
+        }
+    }
+    const cx = node.width / 2;
+    const cy = node.height / 2;
+    const rx = node.width / 2;
+    const ry = node.height / 2;
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fillColor}"/>`;
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
+(() => {
+/*!****************************!*\
+  !*** ./src/plugin/main.ts ***!
+  \****************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _html_generator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../html/generator */ "./src/html/generator.ts");
+/* harmony import */ var _figma_data_extractor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./figma-data-extractor */ "./src/plugin/figma-data-extractor.ts");
 
 
 // Plugin entry point
@@ -3326,7 +3512,7 @@ async function handleExportHTML() {
     }
     console.log('Starting HTML export for', selection.length, 'selected nodes');
     // Extract Figma data
-    const extractor = new FigmaDataExtractor();
+    const extractor = new _figma_data_extractor__WEBPACK_IMPORTED_MODULE_1__.FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
     const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
@@ -3337,7 +3523,7 @@ async function handleExportHTML() {
         return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     });
     // Generate HTML
-    const generator = new HTMLGenerator();
+    const generator = new _html_generator__WEBPACK_IMPORTED_MODULE_0__.HTMLGenerator();
     const html = generator.generateHTML(nodes, resolvedInstances);
     // Send back to UI
     figma.ui.postMessage({
@@ -3364,7 +3550,7 @@ async function handleExportJSON() {
     }
     console.log('Starting JSON export for', selection.length, 'selected nodes');
     // Extract Figma data
-    const extractor = new FigmaDataExtractor();
+    const extractor = new _figma_data_extractor__WEBPACK_IMPORTED_MODULE_1__.FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
     const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
@@ -3411,7 +3597,7 @@ async function handleExportBoth() {
     }
     console.log('Starting JSON + HTML export for', selection.length, 'selected nodes');
     // Extract Figma data
-    const extractor = new FigmaDataExtractor();
+    const extractor = new _figma_data_extractor__WEBPACK_IMPORTED_MODULE_1__.FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
     const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
@@ -3422,7 +3608,7 @@ async function handleExportBoth() {
         return firstVariant ? extractor.traceAnimationChain(firstVariant.id, nodes) : [];
     });
     // Generate HTML
-    const generator = new HTMLGenerator();
+    const generator = new _html_generator__WEBPACK_IMPORTED_MODULE_0__.HTMLGenerator();
     const html = generator.generateHTML(nodes, resolvedInstances);
     // Create comprehensive export data
     const exportData = {
@@ -3464,7 +3650,7 @@ async function handleAnalyzeSelection() {
         });
         return;
     }
-    const extractor = new FigmaDataExtractor();
+    const extractor = new _figma_data_extractor__WEBPACK_IMPORTED_MODULE_1__.FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Analyze the selection
     const analysis = {
@@ -3520,6 +3706,8 @@ figma.ui.postMessage({
     message: 'Plugin loaded successfully',
     success: true
 });
+
+})();
 
 /******/ })()
 ;
