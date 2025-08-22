@@ -207,10 +207,10 @@ export class VariantHandler {
       }
     });
 
-    // Show target variant - CRITICAL: Set both display AND opacity
+    // Show target variant - CRITICAL: Set both display AND opacity with !important
     if (targetElement) {
-      targetElement.style.display = 'block';
-      targetElement.style.opacity = '1';
+      targetElement.style.setProperty('display', 'block', 'important');
+      targetElement.style.setProperty('opacity', '1', 'important');
       targetElement.style.transform = '';
       
       // Log target element state AFTER switch

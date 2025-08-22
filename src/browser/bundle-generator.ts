@@ -61,11 +61,11 @@ export class BundleGenerator {
               const element = document.querySelector(\`[data-figma-id="\${variantId}"]\`);
               if (element) {
                 if (variantId === variantInstance.activeVariant) {
-                  element.style.display = 'block';
-                  element.style.opacity = '1';
+                  element.style.setProperty('display', 'block', 'important');
+                  element.style.setProperty('opacity', '1', 'important');
                 } else {
-                  element.style.display = 'none';
-                  element.style.opacity = '0';
+                  element.style.setProperty('display', 'none', 'important');
+                  element.style.setProperty('opacity', '0', 'important');
                 }
               }
             });
