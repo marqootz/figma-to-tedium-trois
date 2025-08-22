@@ -681,6 +681,12 @@ export class BundleGenerator {
           ) || null;
         }
 
+        findVariantInstanceByTarget(targetId) {
+          return this.variantInstances.find(instance => 
+            instance.variants.includes(targetId)
+          ) || null;
+        }
+
         async executeVariantAnimation(variantInstance, sourceId, targetId, sourceElement, targetElement, sourceNode, targetNode, options) {
           console.log('Executing variant animation:', sourceId, '→', targetId);
 
@@ -831,7 +837,14 @@ export class BundleGenerator {
         async executeAnimation(sourceId, targetId) {
           console.log('Executing animation:', sourceId, '→', targetId);
           
-          const variantInstance = this.variantHandler.findVariantInstance(sourceId);
+          // First check if source is part of a variant instance
+          let variantInstance = this.variantHandler.findVariantInstance(sourceId);
+          
+          // If not found, check if target is a variant (for clicks from instance children to variants)
+          if (!variantInstance) {
+            variantInstance = this.variantHandler.findVariantInstanceByTarget(targetId);
+          }
+          
           if (variantInstance) {
             await this.executeVariantAnimation(variantInstance, sourceId, targetId);
             return;
@@ -858,7 +871,24 @@ export class BundleGenerator {
             instanceElement.style.display = 'none';
           }
 
-          const options = this.getAnimationOptions(sourceNode);
+          // Determine which node to use for animation options
+          // If source is not a variant, use the current active variant as the source
+          let animationSourceNode = sourceNode;
+          let animationSourceElement = sourceElement;
+          
+          if (!variantInstance.variants.includes(sourceId)) {
+            // Source is not a variant, so we need to animate from the current active variant to the target
+            const currentActiveVariantId = variantInstance.activeVariant;
+            animationSourceNode = this.nodeRegistry.get(currentActiveVariantId);
+            animationSourceElement = this.elementRegistry.get(currentActiveVariantId);
+            
+            if (!animationSourceNode || !animationSourceElement) {
+              console.error('Missing current active variant for animation');
+              return;
+            }
+          }
+
+          const options = this.getAnimationOptions(animationSourceNode);
           if (!options) {
             console.log('No reaction found, performing instant variant switch');
             this.variantHandler.executeVariantAnimation(
@@ -869,8 +899,8 @@ export class BundleGenerator {
           }
 
           await this.variantHandler.executeVariantAnimation(
-            variantInstance, sourceId, targetId, sourceElement, targetElement, 
-            sourceNode, targetNode, options
+            variantInstance, sourceId, targetId, animationSourceElement, targetElement, 
+            animationSourceNode, targetNode, options
           );
 
           this.setupTimeoutReactions(targetId);
