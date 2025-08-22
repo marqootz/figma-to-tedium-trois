@@ -623,7 +623,7 @@ export class FigmaDataExtractor {
       const timeoutReaction = currentNode.reactions.find(r => r.trigger.type === 'AFTER_TIMEOUT');
       if (!timeoutReaction) break;
       
-      currentId = timeoutReaction.action.destinationId;
+      currentId = timeoutReaction.action.destinationId || '';
       if (currentId && !chain.includes(currentId)) {
         chain.push(currentId);
       } else {

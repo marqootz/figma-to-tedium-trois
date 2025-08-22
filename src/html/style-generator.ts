@@ -273,7 +273,8 @@ export class StyleGenerator {
     // Line height
     if (node.lineHeight) {
       if (typeof node.lineHeight === 'object' && node.lineHeight.value) {
-        if (node.lineHeight.unit === 'AUTO' || node.lineHeight.unit === 'auto') {
+        const unit = (node.lineHeight as any).unit;
+        if (unit === 'AUTO' || unit === 'auto') {
           textStyles.push(`line-height: normal;`);
         } else {
           // Figma line height is percentage
@@ -281,7 +282,7 @@ export class StyleGenerator {
         }
       } else if (typeof node.lineHeight === 'number') {
         textStyles.push(`line-height: ${node.lineHeight}%;`);
-      } else if (typeof node.lineHeight === 'string' && node.lineHeight.toLowerCase() === 'auto') {
+      } else if (typeof node.lineHeight === 'string' && (node.lineHeight as string).toLowerCase() === 'auto') {
         textStyles.push(`line-height: normal;`);
       }
     }

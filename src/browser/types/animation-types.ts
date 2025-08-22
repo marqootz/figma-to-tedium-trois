@@ -4,8 +4,8 @@
 export class AnimationChange {
   constructor(
     public property: string,
-    public sourceValue: unknown,
-    public targetValue: unknown,
+    public sourceValue: any,
+    public targetValue: any,
     public delta?: number,
     public childName?: string,
     public childId?: string

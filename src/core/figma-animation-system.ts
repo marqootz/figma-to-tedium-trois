@@ -45,9 +45,9 @@ export class FigmaAnimationSystem {
     }
 
     const options: AnimationOptions = {
-      duration: reaction.action.transition.duration,
-      easing: mapFigmaEasing(reaction.action.transition.easing.type),
-      transitionType: reaction.action.transition.type
+      duration: reaction.action.transition?.duration || 0,
+      easing: mapFigmaEasing(reaction.action.transition?.easing?.type || 'GENTLE'),
+      transitionType: reaction.action.transition?.type || 'SMART_ANIMATE'
     };
 
     // Detect changes
@@ -240,7 +240,7 @@ export class FigmaAnimationSystem {
         console.log(`Setting up timeout reaction: ${reaction.trigger.timeout}s delay`);
         
         const timeout = setTimeout(() => {
-          this.executeAnimation(nodeId, reaction.action.destinationId);
+          this.executeAnimation(nodeId, reaction.action.destinationId || '');
         }, (reaction.trigger.timeout || 0) * 1000);
         
         this.timeouts.add(timeout);

@@ -117,8 +117,8 @@ export interface FigmaGradientStop {
 
 export interface AnimationChange {
   property: 'translateX' | 'translateY' | 'opacity' | 'alignment' | 'color';
-  sourceValue: unknown;
-  targetValue: unknown;
+  sourceValue: any;
+  targetValue: any;
   delta?: number;
 }
 

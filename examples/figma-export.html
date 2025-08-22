@@ -316,8 +316,8 @@
 ">
   <div style="font-weight: bold; margin-bottom: 4px;">✅ Latest Plugin Code</div>
   <div style="font-size: 10px; opacity: 0.9;">Version: 1.0.0</div>
-  <div style="font-size: 10px; opacity: 0.9;">Built: 08/22/2025, 10:36:58 AM</div>
-  <div style="font-size: 10px; opacity: 0.9;">Exported: 2025-08-22T17:36:58.277Z</div>
+  <div style="font-size: 10px; opacity: 0.9;">Built: 08/22/2025, 10:46:05 AM</div>
+  <div style="font-size: 10px; opacity: 0.9;">Exported: 2025-08-22T17:46:05.114Z</div>
 </div>
 <div data-figma-id="5533:4501" data-figma-name="glydcar/info-bar/arrow-down-right" data-figma-type="INSTANCE" data-layout-mode="NONE" data-reactions='[{"trigger":{"type":"AFTER_TIMEOUT","timeout":0.0010000000474974513},"action":{"type":"NODE","destinationId":"5533:4021","navigation":"CHANGE_TO","transition":{"type":"SMART_ANIMATE","duration":0.30000001192092896,"easing":{"type":"EASE_IN_AND_OUT_BACK"}}}}]'><div data-figma-id="I5533:4501;5533:3994" data-figma-name="info-bar-arrow" data-figma-type="FRAME" data-layout-mode="NONE"><div data-figma-id="I5533:4501;7262:1567" data-figma-name="Frame 1315" data-figma-type="FRAME" data-layout-mode="VERTICAL"><svg width="78.1279296875" height="78.11328125" viewBox="0 0 78.1279296875 78.11328125" xmlns="http://www.w3.org/2000/svg" data-figma-id="I5533:4501;7027:3088" data-figma-name="Union" data-figma-type="VECTOR">
     <g id="Union">
@@ -579,11 +579,10 @@
         }
 
         static hasLayoutProperties(node) {
-          return node.layoutMode !== 'NONE' || 
-                 node.primaryAxisAlignItems !== undefined ||
-                 node.counterAxisAlignItems !== undefined ||
-                 node.layoutSizingHorizontal !== undefined ||
-                 node.layoutSizingVertical !== undefined;
+          // Only consider it a layout-driven change if the parent actually uses auto layout
+          // (layoutMode is not 'NONE'). Properties like primaryAxisAlignItems can exist
+          // even in absolute positioning mode but don't affect positioning.
+          return node.layoutMode !== 'NONE' && node.layoutMode !== undefined;
         }
 
         static findParentRecursive(node, targetChild, condition) {

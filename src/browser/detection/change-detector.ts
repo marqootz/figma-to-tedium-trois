@@ -193,11 +193,10 @@ export class ChangeDetector {
   }
 
   static hasLayoutProperties(node: any): boolean {
-    return node.layoutMode !== 'NONE' || 
-           node.primaryAxisAlignItems !== undefined ||
-           node.counterAxisAlignItems !== undefined ||
-           node.layoutSizingHorizontal !== undefined ||
-           node.layoutSizingVertical !== undefined;
+    // Only consider it a layout-driven change if the parent actually uses auto layout
+    // (layoutMode is not 'NONE'). Properties like primaryAxisAlignItems can exist
+    // even in absolute positioning mode but don't affect positioning.
+    return node.layoutMode !== 'NONE' && node.layoutMode !== undefined;
   }
 
   static findParentRecursive(node: any, targetChild: any, condition: (parent: any) => boolean): any {
