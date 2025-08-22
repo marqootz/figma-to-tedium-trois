@@ -221,15 +221,18 @@ export class BundleGenerator {
           for (const [childPath, sourceChild] of sourceChildren) {
             const targetChild = targetChildren.get(childPath);
             if (targetChild && this.fillsAreDifferent(sourceChild.fills, targetChild.fills)) {
-              // Skip SVG elements - they shouldn't get background colors
-              if (sourceChild.type === 'VECTOR' || sourceChild.type === 'SVG' || 
-                  childPath.toLowerCase().includes('svg') || childPath.toLowerCase().includes('vector')) {
-                console.log('🔍 Skipping SVG element for background change:', childPath);
-                continue;
-              }
+              // Check if this is an SVG element
+              const isSVG = sourceChild.type === 'VECTOR' || sourceChild.type === 'SVG' || 
+                           childPath.toLowerCase().includes('svg') || childPath.toLowerCase().includes('vector');
               
-              console.log('🔍 Child background change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
-              changes.push(new AnimationChange('childBackground', sourceChild.fills, targetChild.fills, null, childPath, sourceChild.id));
+              if (isSVG) {
+                console.log('🔍 SVG color change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
+                // For SVG elements, we want to change the fill color, not background color
+                changes.push(new AnimationChange('childFill', sourceChild.fills, targetChild.fills, null, childPath, sourceChild.id));
+              } else {
+                console.log('🔍 Child background change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
+                changes.push(new AnimationChange('childBackground', sourceChild.fills, targetChild.fills, null, childPath, sourceChild.id));
+              }
             }
           }
           
@@ -520,6 +523,13 @@ export class BundleGenerator {
               if (childElement) {
                 const deltaX = change.targetValue.x - change.sourceValue.x;
                 const deltaY = change.targetValue.y - change.sourceValue.y;
+                console.log('🎬 Position calculation:', {
+                  source: change.sourceValue,
+                  target: change.targetValue,
+                  deltaX,
+                  deltaY,
+                  childId: change.childId
+                });
                 return { type: 'transform', value: \`translate(\${deltaX}px, \${deltaY}px)\`, target: childElement };
               }
               return null;
@@ -547,6 +557,17 @@ export class BundleGenerator {
                 }
               }
               return null;
+            case 'childFill':
+              const fillChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (fillChildElement) {
+                const fill = change.targetValue[0];
+                if (fill && fill.color) {
+                  const { r, g, b } = fill.color;
+                  const alpha = fill.opacity || 1;
+                  return { type: 'fill', value: \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`, target: fillChildElement };
+                }
+              }
+              return null;
             default:
               return null;
           }
@@ -565,7 +586,12 @@ export class BundleGenerator {
               styleChange.target.style.opacity = styleChange.value;
               break;
             case 'backgroundColor':
+              console.log('🎨 Applying background color to element:', styleChange.target.getAttribute('data-figma-id'), 'value:', styleChange.value);
               styleChange.target.style.backgroundColor = styleChange.value;
+              break;
+            case 'fill':
+              console.log('🎨 Applying fill color to SVG element:', styleChange.target.getAttribute('data-figma-id'), 'value:', styleChange.value);
+              styleChange.target.style.fill = styleChange.value;
               break;
             case 'borderRadius':
               styleChange.target.style.borderRadius = styleChange.value;
@@ -707,7 +733,8 @@ export class BundleGenerator {
             change.property === 'childPosition' || 
             change.property === 'childSize' || 
             change.property === 'childOpacity' ||
-            change.property === 'childBackground'
+            change.property === 'childBackground' ||
+            change.property === 'childFill'
           );
           
           childChanges.forEach(change => {
@@ -722,6 +749,9 @@ export class BundleGenerator {
               }
               if (change.property === 'childBackground') {
                 childTransitionProps.push('background-color');
+              }
+              if (change.property === 'childFill') {
+                childTransitionProps.push('fill');
               }
               if (childTransitionProps.length > 0) {
                 childElement.style.transition = childTransitionProps
@@ -784,6 +814,9 @@ export class BundleGenerator {
               break;
             case 'childBackground':
               properties.add('background-color');
+              break;
+            case 'childFill':
+              properties.add('fill');
               break;
               case 'background':
                 properties.add('background-color');
@@ -886,12 +919,19 @@ export class BundleGenerator {
               const styleChange = DOMManipulator.prepareChange(sourceElement, change);
               if (styleChange) {
                 styleChanges.push(styleChange);
+                console.log('🎬 Prepared style change:', styleChange);
+              } else {
+                console.log('🎬 No style change prepared for:', change.property);
               }
             });
             
+            console.log('🎬 Total style changes to apply:', styleChanges.length);
+            
             // Apply all style changes simultaneously in next frame
             requestAnimationFrame(() => {
-              styleChanges.forEach(styleChange => {
+              console.log('🎬 Applying', styleChanges.length, 'style changes in requestAnimationFrame');
+              styleChanges.forEach((styleChange, index) => {
+                console.log('🎬 Applying style change', index + 1, ':', styleChange);
                 DOMManipulator.applyStyleChange(sourceElement, styleChange);
               });
             });
