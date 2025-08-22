@@ -561,9 +561,15 @@ export class BundleGenerator {
 
         static setupTransitions(element, changes, options) {
           const transitionProperties = this.getTransitionProperties(changes);
-          element.style.transition = transitionProperties
+          const transitionString = transitionProperties
             .map(prop => prop + ' ' + options.duration + 's ' + options.easing)
             .join(', ');
+          
+          console.log('🎬 Setting up transitions for element:', element.getAttribute('data-figma-id'));
+          console.log('🎬 Transition properties:', transitionProperties);
+          console.log('🎬 Transition string:', transitionString);
+          
+          element.style.transition = transitionString;
         }
 
         static setupChildTransitions(element, changes, options) {
@@ -724,7 +730,11 @@ export class BundleGenerator {
             DOMManipulator.setupChildTransitions(sourceElement, changes, options);
 
             // Apply changes immediately to avoid frame delay
-            changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
+            console.log('🎬 Applying changes to element:', sourceElement.getAttribute('data-figma-id'));
+            changes.forEach(change => {
+              console.log('🎬 Applying change:', change.property, '=', change.targetValue);
+              DOMManipulator.applyChange(sourceElement, change);
+            });
 
             setTimeout(() => {
               console.log('🎬 Smart animate complete, switching variants');
