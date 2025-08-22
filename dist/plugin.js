@@ -3082,10 +3082,21 @@ class FigmaDataExtractor {
         };
     }
     // Enhanced method to resolve instances and find their component sets
-    async resolveInstancesAndComponentSets(nodes) {
+    async resolveInstancesAndComponentSets(nodes, originalNodes) {
         const resolvedInstances = [];
         console.log('🚀 Starting instance resolution for', nodes.length, 'nodes');
         console.log('📋 Node types:', nodes.map(n => ({ id: n.id, type: n.type, name: n.name })));
+        // Create a map of extracted nodes to original nodes for easy lookup
+        const nodeMap = new Map();
+        const buildNodeMap = (extractedNodes, originalNodes) => {
+            for (let i = 0; i < extractedNodes.length; i++) {
+                nodeMap.set(extractedNodes[i].id, originalNodes[i]);
+                if (extractedNodes[i].children && originalNodes[i] && 'children' in originalNodes[i] && originalNodes[i].children) {
+                    buildNodeMap(extractedNodes[i].children, originalNodes[i].children);
+                }
+            }
+        };
+        buildNodeMap(nodes, originalNodes);
         // Recursively find all instances in the node tree
         const findInstancesRecursively = async (nodeList) => {
             for (const node of nodeList) {
@@ -3093,8 +3104,8 @@ class FigmaDataExtractor {
                 if (node.type === 'INSTANCE') {
                     console.log('✅ Found INSTANCE node:', node.id);
                     try {
-                        // Get the original Figma node to access the API
-                        const originalNode = figma.getNodeById(node.id);
+                        // Get the original Figma node from our map
+                        const originalNode = nodeMap.get(node.id);
                         console.log('🔍 Original node found:', !!originalNode, 'type:', originalNode === null || originalNode === void 0 ? void 0 : originalNode.type);
                         if (originalNode) {
                             const mainComponent = originalNode.mainComponent;
@@ -3393,7 +3404,7 @@ async function handleExportHTML() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes, selection);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {
@@ -3431,7 +3442,7 @@ async function handleExportJSON() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes, selection);
     // Create comprehensive export data
     const exportData = {
         meta: {
@@ -3478,7 +3489,7 @@ async function handleExportBoth() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes, selection);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {

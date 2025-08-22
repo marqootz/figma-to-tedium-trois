@@ -341,7 +341,7 @@ export class FigmaDataExtractor {
   }
 
   // Enhanced method to resolve instances and find their component sets
-  async resolveInstancesAndComponentSets(nodes: FigmaNode[]): Promise<{
+  async resolveInstancesAndComponentSets(nodes: FigmaNode[], originalNodes: readonly SceneNode[]): Promise<{
     instance: FigmaNode;
     mainComponent: FigmaNode;
     componentSet: FigmaNode;
@@ -359,6 +359,18 @@ export class FigmaDataExtractor {
     console.log('🚀 Starting instance resolution for', nodes.length, 'nodes');
     console.log('📋 Node types:', nodes.map(n => ({ id: n.id, type: n.type, name: n.name })));
     
+    // Create a map of extracted nodes to original nodes for easy lookup
+    const nodeMap = new Map<string, SceneNode>();
+    const buildNodeMap = (extractedNodes: FigmaNode[], originalNodes: readonly SceneNode[]) => {
+      for (let i = 0; i < extractedNodes.length; i++) {
+        nodeMap.set(extractedNodes[i].id, originalNodes[i]);
+        if (extractedNodes[i].children && originalNodes[i] && 'children' in originalNodes[i] && (originalNodes[i] as any).children) {
+          buildNodeMap(extractedNodes[i].children!, (originalNodes[i] as any).children!);
+        }
+      }
+    };
+    buildNodeMap(nodes, originalNodes);
+    
     // Recursively find all instances in the node tree
     const findInstancesRecursively = async (nodeList: FigmaNode[]) => {
       for (const node of nodeList) {
@@ -367,8 +379,8 @@ export class FigmaDataExtractor {
         if (node.type === 'INSTANCE') {
           console.log('✅ Found INSTANCE node:', node.id);
           try {
-            // Get the original Figma node to access the API
-            const originalNode = figma.getNodeById(node.id) as InstanceNode;
+            // Get the original Figma node from our map
+            const originalNode = nodeMap.get(node.id) as InstanceNode;
             console.log('🔍 Original node found:', !!originalNode, 'type:', originalNode?.type);
             
             if (originalNode) {
