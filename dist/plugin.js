@@ -3079,25 +3079,33 @@ class FigmaDataExtractor {
     async resolveInstancesAndComponentSets(nodes) {
         const resolvedInstances = [];
         console.log('Starting instance resolution for', nodes.length, 'nodes');
-        for (const node of nodes) {
-            console.log('Checking node:', node.id, node.type, node.mainComponentId);
-            if (node.type === 'INSTANCE' && node.mainComponentId) {
-                console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
-                try {
-                    const resolved = await this.resolveInstance(node);
-                    if (resolved) {
-                        console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
-                        resolvedInstances.push(resolved);
+        // Recursively find all instances in the node tree
+        const findInstancesRecursively = async (nodeList) => {
+            for (const node of nodeList) {
+                console.log('Checking node:', node.id, node.type, node.mainComponentId);
+                if (node.type === 'INSTANCE' && node.mainComponentId) {
+                    console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
+                    try {
+                        const resolved = await this.resolveInstance(node);
+                        if (resolved) {
+                            console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
+                            resolvedInstances.push(resolved);
+                        }
+                        else {
+                            console.warn('Instance resolution returned null for:', node.id);
+                        }
                     }
-                    else {
-                        console.warn('Instance resolution returned null for:', node.id);
+                    catch (error) {
+                        console.warn('Failed to resolve instance:', node.id, error);
                     }
                 }
-                catch (error) {
-                    console.warn('Failed to resolve instance:', node.id, error);
+                // Recursively check children
+                if (node.children && node.children.length > 0) {
+                    await findInstancesRecursively(node.children);
                 }
             }
-        }
+        };
+        await findInstancesRecursively(nodes);
         console.log('Instance resolution complete. Found', resolvedInstances.length, 'resolved instances');
         return resolvedInstances;
     }
@@ -3412,7 +3420,7 @@ async function handleExportHTML() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {
@@ -3450,7 +3458,7 @@ async function handleExportJSON() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Create comprehensive export data
     const exportData = {
         meta: {
@@ -3497,7 +3505,7 @@ async function handleExportBoth() {
     const extractor = new FigmaDataExtractor();
     const nodes = await extractor.extractNodes(selection);
     // Resolve instances and find component sets
-    const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+    const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
     // Analyze the structure
     const componentSets = extractor.findComponentSets(nodes);
     const animationChains = resolvedInstances.map(instance => {

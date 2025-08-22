@@ -351,24 +351,34 @@ export class FigmaDataExtractor {
 
     console.log('Starting instance resolution for', nodes.length, 'nodes');
     
-    for (const node of nodes) {
-      console.log('Checking node:', node.id, node.type, node.mainComponentId);
-      
-      if (node.type === 'INSTANCE' && node.mainComponentId) {
-        console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
-        try {
-          const resolved = await this.resolveInstance(node);
-          if (resolved) {
-            console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
-            resolvedInstances.push(resolved);
-          } else {
-            console.warn('Instance resolution returned null for:', node.id);
+    // Recursively find all instances in the node tree
+    const findInstancesRecursively = async (nodeList: FigmaNode[]) => {
+      for (const node of nodeList) {
+        console.log('Checking node:', node.id, node.type, node.mainComponentId);
+        
+        if (node.type === 'INSTANCE' && node.mainComponentId) {
+          console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
+          try {
+            const resolved = await this.resolveInstance(node);
+            if (resolved) {
+              console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
+              resolvedInstances.push(resolved);
+            } else {
+              console.warn('Instance resolution returned null for:', node.id);
+            }
+          } catch (error) {
+            console.warn('Failed to resolve instance:', node.id, error);
           }
-        } catch (error) {
-          console.warn('Failed to resolve instance:', node.id, error);
+        }
+        
+        // Recursively check children
+        if (node.children && node.children.length > 0) {
+          await findInstancesRecursively(node.children);
         }
       }
-    }
+    };
+    
+    await findInstancesRecursively(nodes);
 
     console.log('Instance resolution complete. Found', resolvedInstances.length, 'resolved instances');
 

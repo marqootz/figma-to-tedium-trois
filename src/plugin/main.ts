@@ -69,7 +69,7 @@ async function handleExportHTML(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
   
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
@@ -118,7 +118,7 @@ async function handleExportJSON(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
   
   // Create comprehensive export data
   const exportData = {
@@ -173,7 +173,7 @@ async function handleExportBoth(): Promise<void> {
   const nodes = await extractor.extractNodes(selection);
   
   // Resolve instances and find component sets
-  const resolvedInstances = await extractor.resolveInstancesFromSelection(selection);
+  const resolvedInstances = await extractor.resolveInstancesAndComponentSets(nodes);
   
   // Analyze the structure
   const componentSets = extractor.findComponentSets(nodes);
