@@ -259,9 +259,16 @@ export class FigmaDataExtractor {
   }
 
   private extractMainComponentId(node: SceneNode): string | undefined {
+    console.log('🔍 extractMainComponentId for:', node.id, node.type, 'has mainComponentId:', 'mainComponentId' in node);
+    if ('mainComponentId' in node) {
+      console.log('🔍 mainComponentId value:', node.mainComponentId, 'is figma.mixed:', node.mainComponentId === figma.mixed);
+    }
+    
     if ('mainComponentId' in node && node.mainComponentId && node.mainComponentId !== figma.mixed) {
+      console.log('✅ Returning mainComponentId:', node.mainComponentId);
       return node.mainComponentId as string;
     }
+    console.log('❌ No valid mainComponentId found');
     return undefined;
   }
 
