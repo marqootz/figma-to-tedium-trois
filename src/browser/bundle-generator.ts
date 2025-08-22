@@ -143,6 +143,13 @@ export class BundleGenerator {
             console.log('🔍 Fills are the same or both empty');
           }
 
+          // Check for background color changes in child elements
+          const childBackgroundChanges = this.detectChildBackgroundChanges(source, target);
+          if (childBackgroundChanges.length > 0) {
+            console.log('🔍 Found child background changes:', childBackgroundChanges.length);
+            changes.push(...childBackgroundChanges);
+          }
+
           // Corner radius changes
           if (source.cornerRadius !== target.cornerRadius) {
             changes.push(new AnimationChange('borderRadius', source.cornerRadius || 0, target.cornerRadius || 0));
@@ -198,6 +205,24 @@ export class BundleGenerator {
               if (sourceChild.opacity !== targetChild.opacity) {
                 changes.push(new AnimationChange('childOpacity', sourceChild.opacity || 1, targetChild.opacity || 1, null, childPath, sourceChild.id));
               }
+            }
+          }
+          
+          return changes;
+        }
+
+        static detectChildBackgroundChanges(source, target) {
+          const changes = [];
+          
+          // Recursively find all children with their full paths
+          const sourceChildren = this.createRecursiveChildMap(source);
+          const targetChildren = this.createRecursiveChildMap(target);
+          
+          for (const [childPath, sourceChild] of sourceChildren) {
+            const targetChild = targetChildren.get(childPath);
+            if (targetChild && this.fillsAreDifferent(sourceChild.fills, targetChild.fills)) {
+              console.log('🔍 Child background change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
+              changes.push(new AnimationChange('childBackground', sourceChild.fills, targetChild.fills, null, childPath, sourceChild.id));
             }
           }
           
@@ -560,6 +585,18 @@ export class BundleGenerator {
                 console.log('Applied child opacity change to', change.childName, ':', change.targetValue);
               }
               break;
+            case 'childBackground':
+              const backgroundChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (backgroundChildElement) {
+                const fill = change.targetValue[0];
+                if (fill && fill.color) {
+                  const { r, g, b } = fill.color;
+                  const alpha = fill.opacity || 1;
+                  backgroundChildElement.style.backgroundColor = \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`;
+                  console.log('Applied child background change to', change.childName, ':', \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`);
+                }
+              }
+              break;
           }
         }
 
@@ -580,7 +617,8 @@ export class BundleGenerator {
           const childChanges = changes.filter(change => 
             change.property === 'childPosition' || 
             change.property === 'childSize' || 
-            change.property === 'childOpacity'
+            change.property === 'childOpacity' ||
+            change.property === 'childBackground'
           );
           
           childChanges.forEach(change => {
@@ -592,6 +630,9 @@ export class BundleGenerator {
               }
               if (change.property === 'childOpacity') {
                 childTransitionProps.push('opacity');
+              }
+              if (change.property === 'childBackground') {
+                childTransitionProps.push('background-color');
               }
               if (childTransitionProps.length > 0) {
                 childElement.style.transition = childTransitionProps
@@ -649,9 +690,12 @@ export class BundleGenerator {
                 properties.add('transform');
                 break;
               case 'opacity':
-              case 'childOpacity':
-                properties.add('opacity');
-                break;
+                          case 'childOpacity':
+              properties.add('opacity');
+              break;
+            case 'childBackground':
+              properties.add('background-color');
+              break;
               case 'background':
                 properties.add('background-color');
                 break;
