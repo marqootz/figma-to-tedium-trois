@@ -110,7 +110,10 @@ export class PositionCalculator {
     }
 
     // Check if node position seems arbitrary (very large values)
-    if (node.x > 1000 || node.y > 1000) {
+    // Note: Removed hardcoded 1000px threshold as modern designs can legitimately exceed this
+    // Instead, check for extremely large values that would indicate data corruption
+    const POSITION_THRESHOLD = 50000; // Much more reasonable threshold for detecting corrupt data
+    if (node.x > POSITION_THRESHOLD || node.y > POSITION_THRESHOLD) {
       return true;
     }
 
