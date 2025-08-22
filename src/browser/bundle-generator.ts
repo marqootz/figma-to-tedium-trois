@@ -723,9 +723,8 @@ export class BundleGenerator {
             DOMManipulator.setupTransitions(sourceElement, changes, options);
             DOMManipulator.setupChildTransitions(sourceElement, changes, options);
 
-            requestAnimationFrame(() => {
-              changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
-            });
+            // Apply changes immediately to avoid frame delay
+            changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
 
             setTimeout(() => {
               console.log('🎬 Smart animate complete, switching variants');
@@ -954,9 +953,8 @@ export class BundleGenerator {
 
             DOMManipulator.setupTransitions(sourceElement, changes, options);
 
-            requestAnimationFrame(() => {
-              changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
-            });
+            // Apply changes immediately to avoid frame delay
+            changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
 
             setTimeout(() => {
               console.log('Animation completed, switching to target');
