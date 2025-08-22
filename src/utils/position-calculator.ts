@@ -20,7 +20,15 @@ export class PositionCalculator {
       };
     }
 
-    // Check if this is a layout-driven position that needs adjustment
+    // Check if this node itself has layout properties that should affect its positioning
+    if (this.hasLayoutProperties(node)) {
+      const selfLayoutAdjustment = this.calculateSelfLayoutPosition(node, parent);
+      if (selfLayoutAdjustment) {
+        return selfLayoutAdjustment;
+      }
+    }
+
+    // Check if this is a layout-driven position that needs adjustment based on parent
     const layoutAdjustment = this.calculateLayoutDrivenPosition(node, parent);
     if (layoutAdjustment) {
       return layoutAdjustment;
@@ -38,6 +46,24 @@ export class PositionCalculator {
       y: node.y,
       reason: 'original_position'
     };
+  }
+
+  /**
+   * Calculate position adjustments when the node itself has layout properties
+   */
+  private static calculateSelfLayoutPosition(node: FigmaNode, parent: FigmaNode): PositionAdjustment | null {
+    // If the node has auto layout, its position should be calculated based on its layout properties
+    // and the parent's bounds, but ONLY if the parent also has auto layout
+    if (node.layoutMode && node.layoutMode !== 'NONE' && this.hasLayoutProperties(parent)) {
+      const adjustedPosition = this.adjustPositionForLayout(node, parent);
+      return {
+        x: adjustedPosition.x,
+        y: adjustedPosition.y,
+        reason: 'self_layout_adjustment'
+      };
+    }
+
+    return null;
   }
 
   /**

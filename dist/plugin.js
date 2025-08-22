@@ -312,7 +312,14 @@ class PositionCalculator {
                 reason: 'no_parent'
             };
         }
-        // Check if this is a layout-driven position that needs adjustment
+        // Check if this node itself has layout properties that should affect its positioning
+        if (this.hasLayoutProperties(node)) {
+            const selfLayoutAdjustment = this.calculateSelfLayoutPosition(node, parent);
+            if (selfLayoutAdjustment) {
+                return selfLayoutAdjustment;
+            }
+        }
+        // Check if this is a layout-driven position that needs adjustment based on parent
         const layoutAdjustment = this.calculateLayoutDrivenPosition(node, parent);
         if (layoutAdjustment) {
             return layoutAdjustment;
@@ -328,6 +335,22 @@ class PositionCalculator {
             y: node.y,
             reason: 'original_position'
         };
+    }
+    /**
+     * Calculate position adjustments when the node itself has layout properties
+     */
+    static calculateSelfLayoutPosition(node, parent) {
+        // If the node has auto layout, its position should be calculated based on its layout properties
+        // and the parent's bounds, but ONLY if the parent also has auto layout
+        if (node.layoutMode && node.layoutMode !== 'NONE' && this.hasLayoutProperties(parent)) {
+            const adjustedPosition = this.adjustPositionForLayout(node, parent);
+            return {
+                x: adjustedPosition.x,
+                y: adjustedPosition.y,
+                reason: 'self_layout_adjustment'
+            };
+        }
+        return null;
     }
     /**
      * Calculate position adjustments for layout-driven positioning
@@ -502,12 +525,20 @@ class StyleGenerator {
             properties.push(`height: ${node.height}px;`);
         }
         else {
-            // Child elements use relative positioning within their parent
-            // Check if this is a layout-driven position that needs adjustment
-            const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
-            properties.push(`position: absolute;`);
-            properties.push(`left: ${adjustedPosition.x}px;`);
-            properties.push(`top: ${adjustedPosition.y}px;`);
+            // Determine positioning based on parent's layout mode
+            if (parent && this.parentHasAutoLayout(parent)) {
+                // Parent has auto layout - child should use relative positioning to flow within flex container
+                properties.push(`position: relative;`);
+                // In flex layout, we don't need explicit left/top positioning
+                // The flex container handles positioning via align-items, justify-content, etc.
+            }
+            else {
+                // Parent has no auto layout - child uses absolute positioning
+                const adjustedPosition = this.adjustLayoutDrivenPosition(node, parent);
+                properties.push(`position: absolute;`);
+                properties.push(`left: ${adjustedPosition.x}px;`);
+                properties.push(`top: ${adjustedPosition.y}px;`);
+            }
             // Only set width/height here if not using special sizing (FILL/HUG will be set later)
             if (!node.layoutSizingHorizontal || node.layoutSizingHorizontal === 'FIXED') {
                 properties.push(`width: ${node.width}px;`);
@@ -521,13 +552,20 @@ class StyleGenerator {
             properties.push(`opacity: ${node.opacity};`);
         }
         // Layout mode (for flexbox)
-        if (node.layoutMode && node.layoutMode !== 'NONE') {
+        if (this.nodeHasAutoLayout(node)) {
             properties.push(`display: flex;`);
+            // Determine flex direction - if layoutMode is explicit, use it
+            // Otherwise, infer from the presence of alignment properties
             if (node.layoutMode === 'HORIZONTAL') {
                 properties.push(`flex-direction: row;`);
             }
             else if (node.layoutMode === 'VERTICAL') {
                 properties.push(`flex-direction: column;`);
+            }
+            else if (node.layoutMode === 'NONE' && this.hasAutoLayoutProperties(node)) {
+                // Infer direction based on content or default to row
+                // For now, default to row for components with auto layout properties
+                properties.push(`flex-direction: row;`);
             }
             // Alignment
             if (node.counterAxisAlignItems) {
@@ -545,6 +583,10 @@ class StyleGenerator {
                     'MAX': 'flex-end'
                 };
                 properties.push(`justify-content: ${justifyMap[node.primaryAxisAlignItems]};`);
+            }
+            // Item spacing (gap)
+            if (node.itemSpacing !== undefined && node.itemSpacing > 0) {
+                properties.push(`gap: ${node.itemSpacing}px;`);
             }
         }
         // Sizing properties (FILL/HUG/FIXED)
@@ -789,6 +831,36 @@ class StyleGenerator {
             return `color: rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha});`;
         }
         return null;
+    }
+    /**
+     * Check if a parent node has auto layout, including cases where layoutMode is NONE
+     * but auto layout properties are present (indicating incorrect data)
+     */
+    parentHasAutoLayout(parent) {
+        // Only consider explicit layout mode as auto layout
+        // Auto layout properties alone don't make a node a flex container
+        return !!(parent.layoutMode && parent.layoutMode !== 'NONE');
+    }
+    /**
+     * Check if a node has auto layout, including cases where layoutMode is NONE
+     * but auto layout properties are present (indicating incorrect data)
+     */
+    nodeHasAutoLayout(node) {
+        // Only consider explicit layout mode as auto layout
+        // Auto layout properties alone don't make a node a flex container
+        return !!(node.layoutMode && node.layoutMode !== 'NONE');
+    }
+    /**
+     * Check if a node has auto layout properties
+     */
+    hasAutoLayoutProperties(node) {
+        return node.counterAxisAlignItems !== undefined ||
+            node.primaryAxisAlignItems !== undefined ||
+            node.itemSpacing !== undefined ||
+            node.paddingLeft !== undefined ||
+            node.paddingRight !== undefined ||
+            node.paddingTop !== undefined ||
+            node.paddingBottom !== undefined;
     }
 }
 
