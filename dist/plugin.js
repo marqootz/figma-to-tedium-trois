@@ -3078,42 +3078,46 @@ class FigmaDataExtractor {
     // Enhanced method to resolve instances and find their component sets
     async resolveInstancesAndComponentSets(nodes) {
         const resolvedInstances = [];
-        console.log('Starting instance resolution for', nodes.length, 'nodes');
+        console.log('🚀 Starting instance resolution for', nodes.length, 'nodes');
+        console.log('📋 Node types:', nodes.map(n => ({ id: n.id, type: n.type, name: n.name })));
         // Recursively find all instances in the node tree
         const findInstancesRecursively = async (nodeList) => {
             for (const node of nodeList) {
-                console.log('Checking node:', node.id, node.type, node.mainComponentId);
+                console.log('🔍 Checking node:', node.id, node.type, node.mainComponentId);
                 if (node.type === 'INSTANCE' && node.mainComponentId) {
-                    console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
+                    console.log('✅ Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
                     try {
                         // Get the original Figma node to access the API
                         const originalNode = figma.getNodeById(node.id);
+                        console.log('🔍 Original node found:', !!originalNode, 'type:', originalNode === null || originalNode === void 0 ? void 0 : originalNode.type);
                         if (originalNode) {
                             const mainComponent = originalNode.mainComponent;
+                            console.log('🔍 Main component found:', !!mainComponent, 'id:', mainComponent === null || mainComponent === void 0 ? void 0 : mainComponent.id);
                             if (mainComponent) {
                                 const resolved = await this.resolveInstanceFromSelection(originalNode, mainComponent);
                                 if (resolved) {
-                                    console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
+                                    console.log('✅ Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
                                     resolvedInstances.push(resolved);
                                 }
                                 else {
-                                    console.warn('Instance resolution returned null for:', node.id);
+                                    console.warn('❌ Instance resolution returned null for:', node.id);
                                 }
                             }
                             else {
-                                console.warn('Instance has no mainComponent:', node.id);
+                                console.warn('❌ Instance has no mainComponent:', node.id);
                             }
                         }
                         else {
-                            console.warn('Original node not found:', node.id);
+                            console.warn('❌ Original node not found:', node.id);
                         }
                     }
                     catch (error) {
-                        console.warn('Failed to resolve instance:', node.id, error);
+                        console.warn('❌ Failed to resolve instance:', node.id, error);
                     }
                 }
                 // Recursively check children
                 if (node.children && node.children.length > 0) {
+                    console.log('🔍 Checking children of:', node.id, '-', node.children.length, 'children');
                     await findInstancesRecursively(node.children);
                 }
             }
