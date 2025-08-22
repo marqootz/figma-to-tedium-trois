@@ -889,6 +889,7 @@ export class BundleGenerator {
           }
 
           const options = this.getAnimationOptions(animationSourceNode);
+          console.log('🔍 Animation options for', animationSourceNode.id, ':', options);
           if (!options) {
             console.log('No reaction found, performing instant variant switch');
             this.variantHandler.executeVariantAnimation(
@@ -984,9 +985,15 @@ export class BundleGenerator {
         }
 
         getAnimationOptions(node) {
+          console.log('🔍 Getting animation options for node:', node.id, node.name);
+          console.log('🔍 Node reactions:', node.reactions);
           const reaction = node.reactions && node.reactions[0];
-          if (!reaction) return null;
+          if (!reaction) {
+            console.log('🔍 No reaction found for node:', node.id);
+            return null;
+          }
 
+          console.log('🔍 Found reaction:', reaction);
           return new AnimationOptions(
             reaction.action.transition.duration,
             this.mapFigmaEasing(reaction.action.transition.easing.type),
