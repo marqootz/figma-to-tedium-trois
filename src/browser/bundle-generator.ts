@@ -221,9 +221,8 @@ export class BundleGenerator {
           for (const [childPath, sourceChild] of sourceChildren) {
             const targetChild = targetChildren.get(childPath);
             if (targetChild && this.fillsAreDifferent(sourceChild.fills, targetChild.fills)) {
-              // Check if this is an SVG element
-              const isSVG = sourceChild.type === 'VECTOR' || sourceChild.type === 'SVG' || 
-                           childPath.toLowerCase().includes('svg') || childPath.toLowerCase().includes('vector');
+              // Check if this is an SVG element (VECTOR type)
+              const isSVG = sourceChild.type === 'VECTOR';
               
               if (isSVG) {
                 console.log('🔍 SVG color change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
