@@ -495,6 +495,88 @@ export class BundleGenerator {
   private static getDOMManipulatorCode(): string {
     return `
       class DOMManipulator {
+        static prepareChange(element, change) {
+          switch (change.property) {
+            case 'position':
+              const { x, y } = change.targetValue;
+              return { type: 'transform', value: \`translate(\${x}px, \${y}px)\`, target: element };
+            case 'size':
+              const { width, height } = change.targetValue;
+              return { type: 'size', width, height, target: element };
+            case 'opacity':
+              return { type: 'opacity', value: change.targetValue.toString(), target: element };
+            case 'background':
+              const fill = change.targetValue[0];
+              if (fill && fill.color) {
+                const { r, g, b } = fill.color;
+                const alpha = fill.opacity || 1;
+                return { type: 'backgroundColor', value: \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`, target: element };
+              }
+              return null;
+            case 'borderRadius':
+              return { type: 'borderRadius', value: change.targetValue + 'px', target: element };
+            case 'childPosition':
+              const childElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (childElement) {
+                const deltaX = change.targetValue.x - change.sourceValue.x;
+                const deltaY = change.targetValue.y - change.sourceValue.y;
+                return { type: 'transform', value: \`translate(\${deltaX}px, \${deltaY}px)\`, target: childElement };
+              }
+              return null;
+            case 'childSize':
+              const sizeChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (sizeChildElement) {
+                const { width, height } = change.targetValue;
+                return { type: 'childSize', width, height, target: sizeChildElement };
+              }
+              return null;
+            case 'childOpacity':
+              const opacityChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (opacityChildElement) {
+                return { type: 'opacity', value: change.targetValue.toString(), target: opacityChildElement };
+              }
+              return null;
+            case 'childBackground':
+              const backgroundChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
+              if (backgroundChildElement) {
+                const fill = change.targetValue[0];
+                if (fill && fill.color) {
+                  const { r, g, b } = fill.color;
+                  const alpha = fill.opacity || 1;
+                  return { type: 'backgroundColor', value: \`rgba(\${Math.round(r * 255)}, \${Math.round(g * 255)}, \${Math.round(b * 255)}, \${alpha})\`, target: backgroundChildElement };
+                }
+              }
+              return null;
+            default:
+              return null;
+          }
+        }
+
+        static applyStyleChange(element, styleChange) {
+          switch (styleChange.type) {
+            case 'transform':
+              styleChange.target.style.transform = styleChange.value;
+              break;
+            case 'size':
+              styleChange.target.style.width = styleChange.width + 'px';
+              styleChange.target.style.height = styleChange.height + 'px';
+              break;
+            case 'opacity':
+              styleChange.target.style.opacity = styleChange.value;
+              break;
+            case 'backgroundColor':
+              styleChange.target.style.backgroundColor = styleChange.value;
+              break;
+            case 'borderRadius':
+              styleChange.target.style.borderRadius = styleChange.value;
+              break;
+            case 'childSize':
+              styleChange.target.style.width = styleChange.width + 'px';
+              styleChange.target.style.height = styleChange.height + 'px';
+              break;
+          }
+        }
+
         static applyChange(element, change) {
           console.log('Applying change:', change.property, '=', change.targetValue);
 
@@ -796,10 +878,21 @@ export class BundleGenerator {
               console.log('🎬 Queuing change:', change.property, '=', change.targetValue);
             });
             
-            // Use requestAnimationFrame to batch all changes in a single frame
+            // Collect all style changes and apply them simultaneously
+            const styleChanges = [];
+            
+            changes.forEach(change => {
+              console.log('🎬 Queuing change:', change.property, '=', change.targetValue);
+              const styleChange = DOMManipulator.prepareChange(sourceElement, change);
+              if (styleChange) {
+                styleChanges.push(styleChange);
+              }
+            });
+            
+            // Apply all style changes simultaneously in next frame
             requestAnimationFrame(() => {
-              changes.forEach(change => {
-                DOMManipulator.applyChange(sourceElement, change);
+              styleChanges.forEach(styleChange => {
+                DOMManipulator.applyStyleChange(sourceElement, styleChange);
               });
             });
 
