@@ -3086,13 +3086,26 @@ class FigmaDataExtractor {
                 if (node.type === 'INSTANCE' && node.mainComponentId) {
                     console.log('Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
                     try {
-                        const resolved = await this.resolveInstance(node);
-                        if (resolved) {
-                            console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
-                            resolvedInstances.push(resolved);
+                        // Get the original Figma node to access the API
+                        const originalNode = figma.getNodeById(node.id);
+                        if (originalNode) {
+                            const mainComponent = originalNode.mainComponent;
+                            if (mainComponent) {
+                                const resolved = await this.resolveInstanceFromSelection(originalNode, mainComponent);
+                                if (resolved) {
+                                    console.log('Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
+                                    resolvedInstances.push(resolved);
+                                }
+                                else {
+                                    console.warn('Instance resolution returned null for:', node.id);
+                                }
+                            }
+                            else {
+                                console.warn('Instance has no mainComponent:', node.id);
+                            }
                         }
                         else {
-                            console.warn('Instance resolution returned null for:', node.id);
+                            console.warn('Original node not found:', node.id);
                         }
                     }
                     catch (error) {
@@ -3141,56 +3154,6 @@ class FigmaDataExtractor {
         }
         console.log('Instance resolution from selection complete. Found', resolvedInstances.length, 'resolved instances');
         return resolvedInstances;
-    }
-    // Resolve a single instance to its component set and variants
-    async resolveInstance(instance) {
-        if (!instance.mainComponentId) {
-            return null;
-        }
-        try {
-            // Get the main component from Figma
-            const mainComponent = figma.getNodeById(instance.mainComponentId);
-            if (!mainComponent) {
-                console.warn('Main component not found:', instance.mainComponentId);
-                return null;
-            }
-            // Find the parent component set
-            const componentSet = mainComponent.parent;
-            if (!componentSet || componentSet.type !== 'COMPONENT_SET') {
-                console.warn('Component set not found for main component:', instance.mainComponentId);
-                return null;
-            }
-            // Extract all variants from the component set
-            const variants = [];
-            for (const variant of componentSet.children) {
-                if (variant.type === 'COMPONENT') {
-                    const variantNode = await this.extractNode(variant);
-                    variants.push(variantNode);
-                }
-            }
-            // Find the active variant based on instance properties
-            const activeVariant = this.findActiveVariant(instance, variants);
-            if (!activeVariant) {
-                console.warn('Active variant not found for instance:', instance.id);
-                return null;
-            }
-            // Extract the component set and main component
-            const componentSetNode = await this.extractNode(componentSet);
-            const mainComponentNode = await this.extractNode(mainComponent);
-            // Propagate sizing properties from instance to component set and variants
-            const propagatedData = this.propagateSizingProperties(instance, componentSetNode, variants);
-            return {
-                instance,
-                mainComponent: mainComponentNode,
-                componentSet: propagatedData.componentSet,
-                variants: propagatedData.variants,
-                activeVariant: propagatedData.activeVariant
-            };
-        }
-        catch (error) {
-            console.error('Error resolving instance:', instance.id, error);
-            return null;
-        }
     }
     // Resolve a single instance from the original selection
     async resolveInstanceFromSelection(instanceNode, mainComponent) {
