@@ -759,13 +759,10 @@ export class BundleGenerator {
         performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement) {
           console.log('🔄 Variant switch:', sourceId, '→', targetId);
           
-          // Log target element state BEFORE switch
+          // Log target element state BEFORE switch (simplified to avoid DOM queries)
           console.log('🔄 Target BEFORE switch:', {
             display: targetElement.style.display,
-            opacity: targetElement.style.opacity,
-            computedDisplay: window.getComputedStyle(targetElement).display,
-            computedOpacity: window.getComputedStyle(targetElement).opacity,
-            visible: targetElement.offsetParent !== null
+            opacity: targetElement.style.opacity
           });
           
           // Reset source element
@@ -797,13 +794,10 @@ export class BundleGenerator {
             targetElement.style.setProperty('opacity', '1', 'important');
             targetElement.style.transform = '';
             
-            // Log target element state AFTER switch
+            // Log target element state AFTER switch (simplified to avoid DOM queries)
             console.log('🔄 Target AFTER switch:', {
               display: targetElement.style.display,
-              opacity: targetElement.style.opacity,
-              computedDisplay: window.getComputedStyle(targetElement).display,
-              computedOpacity: window.getComputedStyle(targetElement).opacity,
-              visible: targetElement.offsetParent !== null
+              opacity: targetElement.style.opacity
             });
           }
         }
@@ -892,7 +886,6 @@ export class BundleGenerator {
           }
 
           const options = this.getAnimationOptions(animationSourceNode);
-          console.log('🔍 Animation options for', animationSourceNode.id, ':', options);
           if (!options) {
             console.log('No reaction found, performing instant variant switch');
             this.variantHandler.executeVariantAnimation(
@@ -987,15 +980,11 @@ export class BundleGenerator {
         }
 
         getAnimationOptions(node) {
-          console.log('🔍 Getting animation options for node:', node.id, node.name);
-          console.log('🔍 Node reactions:', node.reactions);
           const reaction = node.reactions && node.reactions[0];
           if (!reaction) {
-            console.log('🔍 No reaction found for node:', node.id);
             return null;
           }
 
-          console.log('🔍 Found reaction:', reaction);
           return new AnimationOptions(
             reaction.action.transition.duration,
             this.mapFigmaEasing(reaction.action.transition.easing.type),
