@@ -221,6 +221,13 @@ export class BundleGenerator {
           for (const [childPath, sourceChild] of sourceChildren) {
             const targetChild = targetChildren.get(childPath);
             if (targetChild && this.fillsAreDifferent(sourceChild.fills, targetChild.fills)) {
+              // Skip SVG elements - they shouldn't get background colors
+              if (sourceChild.type === 'VECTOR' || sourceChild.type === 'SVG' || 
+                  childPath.toLowerCase().includes('svg') || childPath.toLowerCase().includes('vector')) {
+                console.log('🔍 Skipping SVG element for background change:', childPath);
+                continue;
+              }
+              
               console.log('🔍 Child background change detected for:', childPath, 'source fills:', sourceChild.fills, 'target fills:', targetChild.fills);
               changes.push(new AnimationChange('childBackground', sourceChild.fills, targetChild.fills, null, childPath, sourceChild.id));
             }
@@ -774,10 +781,13 @@ export class BundleGenerator {
               DOMManipulator.applyLayoutFlattening(sourceElement, layoutChange);
             }
 
+            // Store original source element state for restoration
+            const originalSourceState = this.captureElementState(sourceElement);
+
             DOMManipulator.setupTransitions(sourceElement, changes, options);
             DOMManipulator.setupChildTransitions(sourceElement, changes, options);
 
-            // Apply changes immediately to avoid frame delay
+            // Apply changes to animate source element to target state
             console.log('🎬 Applying changes to element:', sourceElement.getAttribute('data-figma-id'));
             changes.forEach(change => {
               console.log('🎬 Applying change:', change.property, '=', change.targetValue);
@@ -786,6 +796,10 @@ export class BundleGenerator {
 
             setTimeout(() => {
               console.log('🎬 Smart animate complete, switching variants');
+              
+              // Restore source element to original state before switching
+              this.restoreElementState(sourceElement, originalSourceState);
+              
               this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
               resolve();
             }, options.duration * 1000);
@@ -811,6 +825,53 @@ export class BundleGenerator {
               this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
               resolve();
             }, options.duration * 1000);
+          });
+        }
+
+        captureElementState(element) {
+          const state = {
+            style: {
+              transition: element.style.transition,
+              transform: element.style.transform,
+              opacity: element.style.opacity,
+              backgroundColor: element.style.backgroundColor
+            },
+            children: []
+          };
+          
+          // Capture child element states
+          const childElements = element.querySelectorAll('[data-figma-id]');
+          childElements.forEach(child => {
+            state.children.push({
+              id: child.getAttribute('data-figma-id'),
+              style: {
+                transition: child.style.transition,
+                transform: child.style.transform,
+                opacity: child.style.opacity,
+                backgroundColor: child.style.backgroundColor
+              }
+            });
+          });
+          
+          return state;
+        }
+
+        restoreElementState(element, state) {
+          // Restore element style
+          element.style.transition = state.style.transition;
+          element.style.transform = state.style.transform;
+          element.style.opacity = state.style.opacity;
+          element.style.backgroundColor = state.style.backgroundColor;
+          
+          // Restore child element styles
+          state.children.forEach(childState => {
+            const childElement = element.querySelector(\`[data-figma-id="\${childState.id}"]\`);
+            if (childElement) {
+              childElement.style.transition = childState.style.transition;
+              childElement.style.transform = childState.style.transform;
+              childElement.style.opacity = childState.style.opacity;
+              childElement.style.backgroundColor = childState.style.backgroundColor;
+            }
           });
         }
 
