@@ -1375,21 +1375,10 @@ export class BundleGenerator {
         }
       `;
       
-      // Recursively register children that have reactions
+      // Recursively register ALL children to ensure we catch all nodes with reactions
       if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-          // Register child if it has reactions
-          if (child.reactions && child.reactions.length > 0) {
-            registerNodeRecursively(child);
-          }
-          // Also register all children recursively to ensure we catch nested reactions
-          if (child.children && child.children.length > 0) {
-            child.children.forEach(grandchild => {
-              if (grandchild.reactions && grandchild.reactions.length > 0) {
-                registerNodeRecursively(grandchild);
-              }
-            });
-          }
+          registerNodeRecursively(child);
         });
       }
     };
@@ -1421,21 +1410,10 @@ export class BundleGenerator {
         }
       `;
           
-          // Recursively register children that have reactions
+          // Recursively register ALL children to ensure we catch all nodes with reactions
           if (node.children && node.children.length > 0) {
             node.children.forEach(child => {
-              // Register child if it has reactions
-              if (child.reactions && child.reactions.length > 0) {
-                registerVariantRecursively(child);
-              }
-              // Also register all children recursively to ensure we catch nested reactions
-              if (child.children && child.children.length > 0) {
-                child.children.forEach(grandchild => {
-                  if (grandchild.reactions && grandchild.reactions.length > 0) {
-                    registerVariantRecursively(grandchild);
-                  }
-                });
-              }
+              registerVariantRecursively(child);
             });
           }
         };
@@ -1448,11 +1426,42 @@ export class BundleGenerator {
   }
 
   private static generateInitialTimeouts(nodes: FigmaNodeData[], resolvedInstances?: any[]): string {
-    const nodesWithTimeouts = nodes.filter(node => 
-      node.reactions?.some(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')
-    );
+    // Recursively find all nodes with timeout reactions
+    const allNodesWithTimeouts: FigmaNodeData[] = [];
+    
+    const findNodesWithTimeouts = (nodeList: FigmaNodeData[]) => {
+      nodeList.forEach(node => {
+        // Check if this node has timeout reactions
+        if (node.reactions?.some(reaction => reaction.trigger.type === 'AFTER_TIMEOUT')) {
+          console.log('⏰ Found node with timeout reactions:', node.name, node.id, node.reactions);
+          allNodesWithTimeouts.push(node);
+        }
+        
+        // Recursively check children
+        if (node.children && node.children.length > 0) {
+          findNodesWithTimeouts(node.children);
+        }
+      });
+    };
+    
+    findNodesWithTimeouts(nodes);
+    
+    // Also check resolved instances for timeout reactions
+    if (resolvedInstances) {
+      resolvedInstances.forEach(instance => {
+        if (instance.variants) {
+          findNodesWithTimeouts(instance.variants);
+        }
+      });
+    }
 
-    return nodesWithTimeouts.map(node => {
+    console.log('⏰ Found nodes with timeout reactions:', allNodesWithTimeouts.map(n => ({ 
+      id: n.id, 
+      name: n.name, 
+      reactions: n.reactions?.map(r => ({ trigger: r.trigger.type, destination: r.action.destinationId }))
+    })));
+
+    return allNodesWithTimeouts.map(node => {
       // Check if this is an instance with variants
       const instanceWithVariants = resolvedInstances?.find(instance => 
         instance.instance?.id === node.id
