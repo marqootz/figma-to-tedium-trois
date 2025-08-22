@@ -3090,8 +3090,8 @@ class FigmaDataExtractor {
         const findInstancesRecursively = async (nodeList) => {
             for (const node of nodeList) {
                 console.log('🔍 Checking node:', node.id, node.type, node.mainComponentId);
-                if (node.type === 'INSTANCE' && node.mainComponentId) {
-                    console.log('✅ Found INSTANCE node:', node.id, 'with mainComponentId:', node.mainComponentId);
+                if (node.type === 'INSTANCE') {
+                    console.log('✅ Found INSTANCE node:', node.id);
                     try {
                         // Get the original Figma node to access the API
                         const originalNode = figma.getNodeById(node.id);
