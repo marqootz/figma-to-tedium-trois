@@ -707,14 +707,7 @@ export class BundleGenerator {
 
         async executeVariantSmartAnimate(variantInstance, sourceId, targetId, sourceElement, targetElement, changes, options) {
           return new Promise((resolve) => {
-            console.log('🎬 === ANIMATION DEBUG START ===');
-            console.log('🎬 Cycle:', variantInstance.currentIndex + 1, '| Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
-            console.log('🎬 Source element before animation setup:', {
-              id: sourceId,
-              transition: sourceElement.style.transition,
-              transform: sourceElement.style.transform,
-              computedTransition: window.getComputedStyle(sourceElement).transition
-            });
+            console.log('🎬 Smart animate:', options.duration + 's');
 
             const layoutChange = changes.find(change => change.property === 'layout');
             if (layoutChange) {
@@ -723,23 +716,14 @@ export class BundleGenerator {
 
             DOMManipulator.setupTransitions(sourceElement, changes, options);
             DOMManipulator.setupChildTransitions(sourceElement, changes, options);
-            
-            console.log('🎬 Source element after animation setup:', {
-              id: sourceId,
-              transition: sourceElement.style.transition,
-              transform: sourceElement.style.transform,
-              computedTransition: window.getComputedStyle(sourceElement).transition
-            });
 
             requestAnimationFrame(() => {
               changes.forEach(change => DOMManipulator.applyChange(sourceElement, change));
-              console.log('🎬 Animation changes applied to source element');
             });
 
             setTimeout(() => {
-              console.log('🎬 Animation completed, switching to target');
+              console.log('🎬 Smart animate complete, switching variants');
               this.performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement);
-              console.log('🎬 === ANIMATION DEBUG END ===');
               resolve();
             }, options.duration * 1000);
           });
@@ -768,65 +752,30 @@ export class BundleGenerator {
         }
 
         performVariantSwitch(variantInstance, sourceId, targetId, sourceElement, targetElement) {
-          console.log('🔄 === VARIANT SWITCH DEBUG START ===');
-          console.log('🔄 Cycle:', variantInstance.currentIndex + 1, '| Performing variant switch:', sourceId, '→', targetId);
+          console.log('🔄 Variant switch:', sourceId, '→', targetId);
           
-          // Log source element state BEFORE reset
-          if (sourceElement) {
-            console.log('🔄 Source element BEFORE reset:', {
-              id: sourceId,
-              transition: sourceElement.style.transition,
-              transform: sourceElement.style.transform,
-              opacity: sourceElement.style.opacity,
-              display: sourceElement.style.display,
-              computedTransition: window.getComputedStyle(sourceElement).transition,
-              computedTransform: window.getComputedStyle(sourceElement).transform
-            });
-            
-            // Log child elements state BEFORE reset
-            const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]');
-            console.log('🔄 Source child elements BEFORE reset:', Array.from(sourceChildElements).map(child => ({
-              id: child.getAttribute('data-figma-id'),
-              transition: child.style.transition,
-              transform: child.style.transform,
-              opacity: child.style.opacity
-            })));
-          }
+          // Log target element state BEFORE switch
+          console.log('🔄 Target BEFORE switch:', {
+            display: targetElement.style.display,
+            opacity: targetElement.style.opacity,
+            computedDisplay: window.getComputedStyle(targetElement).display,
+            computedOpacity: window.getComputedStyle(targetElement).opacity,
+            visible: targetElement.offsetParent !== null
+          });
           
-          // Reset the source element to its original state before hiding it
-          // This ensures it's clean when it becomes a target again
+          // Reset source element
           if (sourceElement) {
-            console.log('🔄 Resetting source element to original state:', sourceId);
             sourceElement.style.transition = '';
             sourceElement.style.transform = '';
             sourceElement.style.opacity = '';
             
-            // Reset child elements of source variant to original state
+            // Reset child elements
             const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]');
             sourceChildElements.forEach(child => {
               child.style.transition = '';
               child.style.transform = '';
               child.style.opacity = '';
             });
-            
-            // Log source element state AFTER reset
-            console.log('🔄 Source element AFTER reset:', {
-              id: sourceId,
-              transition: sourceElement.style.transition,
-              transform: sourceElement.style.transform,
-              opacity: sourceElement.style.opacity,
-              display: sourceElement.style.display,
-              computedTransition: window.getComputedStyle(sourceElement).transition,
-              computedTransform: window.getComputedStyle(sourceElement).transform
-            });
-            
-            // Log child elements state AFTER reset
-            console.log('🔄 Source child elements AFTER reset:', Array.from(sourceChildElements).map(child => ({
-              id: child.getAttribute('data-figma-id'),
-              transition: child.style.transition,
-              transform: child.style.transform,
-              opacity: child.style.opacity
-            })));
           }
           
           // Hide all variants
@@ -837,22 +786,21 @@ export class BundleGenerator {
             }
           });
 
-          // Show target variant
+          // Show target variant - CRITICAL: Set both display AND opacity with !important
           if (targetElement) {
-            targetElement.style.display = 'block';
-            targetElement.style.opacity = '1';
+            targetElement.style.setProperty('display', 'block', 'important');
+            targetElement.style.setProperty('opacity', '1', 'important');
             targetElement.style.transform = '';
             
-            console.log('🔄 Target element state after switch:', {
-              id: targetId,
-              transition: targetElement.style.transition,
-              transform: targetElement.style.transform,
+            // Log target element state AFTER switch
+            console.log('🔄 Target AFTER switch:', {
+              display: targetElement.style.display,
               opacity: targetElement.style.opacity,
-              display: targetElement.style.display
+              computedDisplay: window.getComputedStyle(targetElement).display,
+              computedOpacity: window.getComputedStyle(targetElement).opacity,
+              visible: targetElement.offsetParent !== null
             });
           }
-          
-          console.log('🔄 === VARIANT SWITCH DEBUG END ===');
         }
       }
     `;
