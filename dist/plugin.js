@@ -2242,9 +2242,15 @@ class BundleGenerator {
     }
     static generateVariantRegistrations(resolvedInstances) {
         let registrations = '';
+        const registeredIds = new Set(); // Track registered IDs to avoid duplicates
         resolvedInstances.forEach(instance => {
             instance.variants.forEach((variant) => {
                 const registerVariantRecursively = (node) => {
+                    // Skip if already registered to avoid duplicate variable declarations
+                    if (registeredIds.has(node.id)) {
+                        return;
+                    }
+                    registeredIds.add(node.id);
                     const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
                     registrations += `
         const variant_${sanitizedId} = document.querySelector('[data-figma-id="${node.id}"]');
@@ -2651,7 +2657,7 @@ ${css}
         let css = nodes.map(node => this.styleGenerator.generateStyles(node, true)).join('\n\n');
         // Add CSS for all variants if we have resolved instances
         if (resolvedInstances) {
-            const variantCSS = this.generateVariantCSS(resolvedInstances);
+            const variantCSS = this.generateVariantCSS(resolvedInstances, nodes);
             css += '\n\n' + variantCSS;
         }
         return css;
@@ -2696,14 +2702,18 @@ ${css}
         return this.animationHandler.generateAnimationCode(nodes, resolvedInstances);
     }
     // Generate CSS for all variants in the shadow variant system
-    generateVariantCSS(resolvedInstances) {
+    generateVariantCSS(resolvedInstances, allNodes) {
         let css = '';
         resolvedInstances.forEach(instance => {
             const { instance: instanceNode, variants, activeVariant } = instance;
+            // Calculate absolute position by traversing up the parent chain
+            const absolutePosition = this.calculateAbsolutePosition(instanceNode, allNodes);
             // Generate CSS for the variant container (acts as the instance sizing context)
             css += `\n/* Variant container for ${instanceNode.name} */\n`;
             css += `.variant-container[data-instance-id="${instanceNode.id}"] {\n`;
-            css += `  position: relative;\n`;
+            css += `  position: absolute;\n`;
+            css += `  left: ${absolutePosition.x}px;\n`;
+            css += `  top: ${absolutePosition.y}px;\n`;
             css += `  width: ${instanceNode.width}px;\n`;
             css += `  height: ${instanceNode.height}px;\n`;
             css += `  overflow: visible;\n`;
@@ -2718,8 +2728,8 @@ ${css}
                 css += `\n[data-figma-id="${variant.id}"] {\n`;
                 css += `  display: ${isActive ? 'block' : 'none'};\n`;
                 css += `  position: absolute;\n`;
-                css += `  left: 0;\n`;
-                css += `  top: 0;\n`;
+                css += `  left: ${variant.x - instanceNode.x}px;\n`; // Position relative to instance
+                css += `  top: ${variant.y - instanceNode.y}px;\n`; // Position relative to instance
                 css += `}\n`;
             });
         });
@@ -2776,6 +2786,35 @@ ${css}
             html += `</div>\n`;
         });
         return html;
+    }
+    // Calculate absolute position by traversing up the parent chain
+    calculateAbsolutePosition(instanceNode, allNodes) {
+        let absoluteX = instanceNode.x;
+        let absoluteY = instanceNode.y;
+        // Find the parent chain by looking for nodes that contain this instance
+        const findParentChain = (targetId, nodes, currentPath = []) => {
+            for (const node of nodes) {
+                if (node.id === targetId) {
+                    return currentPath;
+                }
+                if (node.children) {
+                    const found = findParentChain(targetId, node.children, [...currentPath, node]);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        };
+        const parentChain = findParentChain(instanceNode.id, allNodes);
+        if (parentChain) {
+            // Add up all parent positions
+            for (const parent of parentChain) {
+                absoluteX += parent.x;
+                absoluteY += parent.y;
+            }
+        }
+        return { x: absoluteX, y: absoluteY };
     }
 }
 
@@ -3108,21 +3147,26 @@ class FigmaDataExtractor {
                         const originalNode = nodeMap.get(node.id);
                         console.log('🔍 Original node found:', !!originalNode, 'type:', originalNode === null || originalNode === void 0 ? void 0 : originalNode.type);
                         if (originalNode) {
-                            const mainComponent = originalNode.mainComponent;
-                            console.log('🔍 Main component found:', !!mainComponent, 'id:', mainComponent === null || mainComponent === void 0 ? void 0 : mainComponent.id);
-                            if (mainComponent) {
-                                const resolved = await this.resolveInstanceFromSelection(originalNode, mainComponent);
-                                if (resolved) {
-                                    console.log('✅ Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
-                                    resolvedInstances.push(resolved);
-                                }
-                                else {
-                                    console.warn('❌ Instance resolution returned null for:', node.id);
-                                }
-                            }
-                            else {
-                                console.warn('❌ Instance has no mainComponent:', node.id);
-                            }
+                            // Since we can't access mainComponent due to API restrictions, 
+                            // let's try to work with what we have from the extracted data
+                            console.log('🔍 Instance found but mainComponent access restricted. Using extracted data only.');
+                            // For now, let's create a minimal resolution using just the instance data
+                            // This will at least allow the animation system to work with the instance
+                            const instanceNodeData = await this.extractNode(originalNode);
+                            // Create a properly positioned variant that matches the instance location
+                            const positionedVariant = Object.assign(Object.assign({}, instanceNodeData), { 
+                                // Ensure the variant is positioned exactly where the instance is
+                                x: instanceNodeData.x, y: instanceNodeData.y, width: instanceNodeData.width, height: instanceNodeData.height });
+                            // Create a placeholder resolution that the animation system can use
+                            const minimalResolution = {
+                                instance: instanceNodeData,
+                                mainComponent: positionedVariant,
+                                componentSet: positionedVariant,
+                                variants: [positionedVariant],
+                                activeVariant: positionedVariant
+                            };
+                            console.log('✅ Created minimal instance resolution for:', node.id, 'at position:', positionedVariant.x, positionedVariant.y);
+                            resolvedInstances.push(minimalResolution);
                         }
                         else {
                             console.warn('❌ Original node not found:', node.id);

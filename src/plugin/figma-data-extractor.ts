@@ -384,20 +384,35 @@ export class FigmaDataExtractor {
             console.log('🔍 Original node found:', !!originalNode, 'type:', originalNode?.type);
             
             if (originalNode) {
-              const mainComponent = (originalNode as any).mainComponent;
-              console.log('🔍 Main component found:', !!mainComponent, 'id:', mainComponent?.id);
+              // Since we can't access mainComponent due to API restrictions, 
+              // let's try to work with what we have from the extracted data
+              console.log('🔍 Instance found but mainComponent access restricted. Using extracted data only.');
               
-              if (mainComponent) {
-                const resolved = await this.resolveInstanceFromSelection(originalNode, mainComponent);
-                if (resolved) {
-                  console.log('✅ Successfully resolved instance:', node.id, 'with', resolved.variants.length, 'variants');
-                  resolvedInstances.push(resolved);
-                } else {
-                  console.warn('❌ Instance resolution returned null for:', node.id);
-                }
-              } else {
-                console.warn('❌ Instance has no mainComponent:', node.id);
-              }
+              // For now, let's create a minimal resolution using just the instance data
+              // This will at least allow the animation system to work with the instance
+              const instanceNodeData = await this.extractNode(originalNode);
+              
+              // Create a properly positioned variant that matches the instance location
+              const positionedVariant = {
+                ...instanceNodeData,
+                // Ensure the variant is positioned exactly where the instance is
+                x: instanceNodeData.x,
+                y: instanceNodeData.y,
+                width: instanceNodeData.width,
+                height: instanceNodeData.height
+              };
+              
+              // Create a placeholder resolution that the animation system can use
+              const minimalResolution = {
+                instance: instanceNodeData,
+                mainComponent: positionedVariant, // Use positioned variant as main component
+                componentSet: positionedVariant,  // Use positioned variant as component set
+                variants: [positionedVariant],    // Single positioned variant
+                activeVariant: positionedVariant
+              };
+              
+              console.log('✅ Created minimal instance resolution for:', node.id, 'at position:', positionedVariant.x, positionedVariant.y);
+              resolvedInstances.push(minimalResolution);
             } else {
               console.warn('❌ Original node not found:', node.id);
             }

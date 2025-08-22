@@ -67,7 +67,7 @@ ${css}
     
     // Add CSS for all variants if we have resolved instances
     if (resolvedInstances) {
-      const variantCSS = this.generateVariantCSS(resolvedInstances);
+      const variantCSS = this.generateVariantCSS(resolvedInstances, nodes);
       css += '\n\n' + variantCSS;
     }
     
@@ -121,16 +121,21 @@ ${css}
   }
 
   // Generate CSS for all variants in the shadow variant system
-  private generateVariantCSS(resolvedInstances: any[]): string {
+  private generateVariantCSS(resolvedInstances: any[], allNodes: FigmaNode[]): string {
     let css = '';
     
     resolvedInstances.forEach(instance => {
       const { instance: instanceNode, variants, activeVariant } = instance;
       
+      // Calculate absolute position by traversing up the parent chain
+      const absolutePosition = this.calculateAbsolutePosition(instanceNode, allNodes);
+      
       // Generate CSS for the variant container (acts as the instance sizing context)
       css += `\n/* Variant container for ${instanceNode.name} */\n`;
       css += `.variant-container[data-instance-id="${instanceNode.id}"] {\n`;
-      css += `  position: relative;\n`;
+      css += `  position: absolute;\n`;
+      css += `  left: ${absolutePosition.x}px;\n`;
+      css += `  top: ${absolutePosition.y}px;\n`;
       css += `  width: ${instanceNode.width}px;\n`;
       css += `  height: ${instanceNode.height}px;\n`;
       css += `  overflow: visible;\n`;
@@ -147,8 +152,8 @@ ${css}
         css += `\n[data-figma-id="${variant.id}"] {\n`;
         css += `  display: ${isActive ? 'block' : 'none'};\n`;
         css += `  position: absolute;\n`;
-        css += `  left: 0;\n`;
-        css += `  top: 0;\n`;
+        css += `  left: ${variant.x - instanceNode.x}px;\n`; // Position relative to instance
+        css += `  top: ${variant.y - instanceNode.y}px;\n`;  // Position relative to instance
         css += `}\n`;
       });
     });
@@ -219,6 +224,41 @@ ${css}
     });
     
     return html;
+  }
+
+  // Calculate absolute position by traversing up the parent chain
+  private calculateAbsolutePosition(instanceNode: FigmaNode, allNodes: FigmaNode[]): { x: number; y: number } {
+    let absoluteX = instanceNode.x;
+    let absoluteY = instanceNode.y;
+    
+    // Find the parent chain by looking for nodes that contain this instance
+    const findParentChain = (targetId: string, nodes: FigmaNode[], currentPath: FigmaNode[] = []): FigmaNode[] | null => {
+      for (const node of nodes) {
+        if (node.id === targetId) {
+          return currentPath;
+        }
+        
+        if (node.children) {
+          const found = findParentChain(targetId, node.children, [...currentPath, node]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    };
+    
+    const parentChain = findParentChain(instanceNode.id, allNodes);
+    
+    if (parentChain) {
+      // Add up all parent positions
+      for (const parent of parentChain) {
+        absoluteX += parent.x;
+        absoluteY += parent.y;
+      }
+    }
+    
+    return { x: absoluteX, y: absoluteY };
   }
 }
 

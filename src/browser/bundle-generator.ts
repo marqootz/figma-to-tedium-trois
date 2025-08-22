@@ -1392,10 +1392,17 @@ export class BundleGenerator {
 
   private static generateVariantRegistrations(resolvedInstances: any[]): string {
     let registrations = '';
+    const registeredIds = new Set<string>(); // Track registered IDs to avoid duplicates
     
     resolvedInstances.forEach(instance => {
       instance.variants.forEach((variant: FigmaNodeData) => {
         const registerVariantRecursively = (node: FigmaNodeData) => {
+          // Skip if already registered to avoid duplicate variable declarations
+          if (registeredIds.has(node.id)) {
+            return;
+          }
+          registeredIds.add(node.id);
+          
           const sanitizedId = node.id.replace(/[^a-zA-Z0-9]/g, '_');
           registrations += `
         const variant_${sanitizedId} = document.querySelector('[data-figma-id="${node.id}"]');
