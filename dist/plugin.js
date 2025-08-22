@@ -3010,7 +3010,9 @@ class FigmaDataExtractor {
     }
     extractReactions(node) {
         if ('reactions' in node && node.reactions && Array.isArray(node.reactions)) {
-            return node.reactions.map(reaction => ({
+            return node.reactions
+                .filter(reaction => reaction && reaction.trigger && reaction.action) // Filter out null reactions
+                .map(reaction => ({
                 trigger: {
                     type: reaction.trigger.type,
                     timeout: reaction.trigger.type === 'AFTER_TIMEOUT' ? reaction.trigger.timeout : undefined
@@ -3019,7 +3021,7 @@ class FigmaDataExtractor {
                     type: reaction.action.type,
                     destinationId: reaction.action.type === 'NODE' ? reaction.action.destinationId : undefined,
                     navigation: reaction.action.type === 'NODE' ? reaction.action.navigation : undefined,
-                    transition: reaction.action.type === 'NODE' ? {
+                    transition: reaction.action.type === 'NODE' && reaction.action.transition ? {
                         type: reaction.action.transition.type,
                         duration: reaction.action.transition.duration,
                         easing: reaction.action.transition.easing

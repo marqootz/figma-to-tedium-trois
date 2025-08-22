@@ -274,26 +274,28 @@ export class FigmaDataExtractor {
 
   private extractReactions(node: SceneNode): FigmaReaction[] {
     if ('reactions' in node && node.reactions && Array.isArray(node.reactions)) {
-      return node.reactions.map(reaction => ({
-        trigger: {
-          type: reaction.trigger.type,
-          timeout: reaction.trigger.type === 'AFTER_TIMEOUT' ? reaction.trigger.timeout : undefined
-        },
-        action: {
-          type: reaction.action.type,
-          destinationId: reaction.action.type === 'NODE' ? reaction.action.destinationId : undefined,
-          navigation: reaction.action.type === 'NODE' ? reaction.action.navigation : undefined,
-          transition: reaction.action.type === 'NODE' ? {
-            type: reaction.action.transition.type,
-            duration: reaction.action.transition.duration,
-            easing: reaction.action.transition.easing
-          } : {
-            type: 'SMART_ANIMATE' as const,
-            duration: 0.3,
-            easing: { type: 'GENTLE' as const }
+      return node.reactions
+        .filter(reaction => reaction && reaction.trigger && reaction.action) // Filter out null reactions
+        .map(reaction => ({
+          trigger: {
+            type: reaction.trigger.type,
+            timeout: reaction.trigger.type === 'AFTER_TIMEOUT' ? reaction.trigger.timeout : undefined
+          },
+          action: {
+            type: reaction.action.type,
+            destinationId: reaction.action.type === 'NODE' ? reaction.action.destinationId : undefined,
+            navigation: reaction.action.type === 'NODE' ? reaction.action.navigation : undefined,
+            transition: reaction.action.type === 'NODE' && reaction.action.transition ? {
+              type: reaction.action.transition.type,
+              duration: reaction.action.transition.duration,
+              easing: reaction.action.transition.easing
+            } : {
+              type: 'SMART_ANIMATE' as const,
+              duration: 0.3,
+              easing: { type: 'GENTLE' as const }
+            }
           }
-        }
-      }));
+        }));
     }
     return [];
   }
