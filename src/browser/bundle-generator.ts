@@ -872,17 +872,21 @@ export class BundleGenerator {
           }
 
           // Determine which node to use for animation options
-          // If source is not a variant, use the current active variant as the source
+          // Always use the original source node for animation options (where the reaction is defined)
           let animationSourceNode = sourceNode;
           let animationSourceElement = sourceElement;
+          
+          // For the actual animation, we need to animate from the current active variant to the target
+          let animationFromElement = sourceElement;
+          let animationFromNode = sourceNode;
           
           if (!variantInstance.variants.includes(sourceId)) {
             // Source is not a variant, so we need to animate from the current active variant to the target
             const currentActiveVariantId = variantInstance.activeVariant;
-            animationSourceNode = this.nodeRegistry.get(currentActiveVariantId);
-            animationSourceElement = this.elementRegistry.get(currentActiveVariantId);
+            animationFromNode = this.nodeRegistry.get(currentActiveVariantId);
+            animationFromElement = this.elementRegistry.get(currentActiveVariantId);
             
-            if (!animationSourceNode || !animationSourceElement) {
+            if (!animationFromNode || !animationFromElement) {
               console.error('Missing current active variant for animation');
               return;
             }
@@ -900,8 +904,8 @@ export class BundleGenerator {
           }
 
           await this.variantHandler.executeVariantAnimation(
-            variantInstance, sourceId, targetId, animationSourceElement, targetElement, 
-            animationSourceNode, targetNode, options
+            variantInstance, sourceId, targetId, animationFromElement, targetElement, 
+            animationFromNode, targetNode, options
           );
 
           this.setupTimeoutReactions(targetId);
