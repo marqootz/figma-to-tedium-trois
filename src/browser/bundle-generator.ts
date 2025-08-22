@@ -559,8 +559,8 @@ export class BundleGenerator {
             case 'childFill':
               const fillChildElement = element.querySelector(\`[data-figma-id="\${change.childId}"]\`);
               if (fillChildElement) {
-                // For SVG elements, we need to target the path element inside
-                const pathElement = fillChildElement.querySelector('path');
+                // For SVG elements, we need to traverse: svg > g > path
+                const pathElement = fillChildElement.querySelector('g path') || fillChildElement.querySelector('path');
                 if (pathElement) {
                   const fill = change.targetValue[0];
                   if (fill && fill.color) {
