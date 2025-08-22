@@ -787,11 +787,20 @@ export class BundleGenerator {
             DOMManipulator.setupTransitions(sourceElement, changes, options);
             DOMManipulator.setupChildTransitions(sourceElement, changes, options);
 
-            // Apply changes to animate source element to target state
+            // Apply all changes simultaneously to animate source element to target state
             console.log('🎬 Applying changes to element:', sourceElement.getAttribute('data-figma-id'));
+            console.log('🎬 Applying', changes.length, 'changes simultaneously');
+            
+            // Apply all changes at once to ensure simultaneous animation
             changes.forEach(change => {
-              console.log('🎬 Applying change:', change.property, '=', change.targetValue);
-              DOMManipulator.applyChange(sourceElement, change);
+              console.log('🎬 Queuing change:', change.property, '=', change.targetValue);
+            });
+            
+            // Use requestAnimationFrame to batch all changes in a single frame
+            requestAnimationFrame(() => {
+              changes.forEach(change => {
+                DOMManipulator.applyChange(sourceElement, change);
+              });
             });
 
             setTimeout(() => {
