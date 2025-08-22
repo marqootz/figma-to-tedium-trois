@@ -135,8 +135,12 @@ export class BundleGenerator {
           }
 
           // Background color changes
+          console.log('🔍 Checking fills - source:', source.fills, 'target:', target.fills);
           if (this.fillsAreDifferent(source.fills, target.fills)) {
+            console.log('🔍 Fills are different, adding background change');
             changes.push(new AnimationChange('background', source.fills, target.fills));
+          } else {
+            console.log('🔍 Fills are the same or both empty');
           }
 
           // Corner radius changes
