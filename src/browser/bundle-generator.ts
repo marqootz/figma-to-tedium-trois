@@ -993,8 +993,22 @@ export class BundleGenerator {
                 transition: child.style.transition,
                 transform: child.style.transform,
                 opacity: child.style.opacity,
-                backgroundColor: child.style.backgroundColor
+                backgroundColor: child.style.backgroundColor,
+                fill: child.style.fill
               }
+            });
+          });
+          
+          // Also capture path elements for SVG fill colors
+          const pathElements = element.querySelectorAll('path');
+          pathElements.forEach(path => {
+            state.children.push({
+              id: 'path-' + Math.random().toString(36).substr(2, 9), // Generate unique ID
+              style: {
+                fill: path.style.fill
+              },
+              isPath: true,
+              element: path
             });
           });
           
@@ -1010,12 +1024,21 @@ export class BundleGenerator {
           
           // Restore child element styles
           state.children.forEach(childState => {
-            const childElement = element.querySelector(\`[data-figma-id="\${childState.id}"]\`);
-            if (childElement) {
-              childElement.style.transition = childState.style.transition;
-              childElement.style.transform = childState.style.transform;
-              childElement.style.opacity = childState.style.opacity;
-              childElement.style.backgroundColor = childState.style.backgroundColor;
+            if (childState.isPath) {
+              // Restore path element directly
+              if (childState.element) {
+                childState.element.style.fill = childState.style.fill;
+              }
+            } else {
+              // Restore regular child elements
+              const childElement = element.querySelector(\`[data-figma-id="\${childState.id}"]\`);
+              if (childElement) {
+                childElement.style.transition = childState.style.transition;
+                childElement.style.transform = childState.style.transform;
+                childElement.style.opacity = childState.style.opacity;
+                childElement.style.backgroundColor = childState.style.backgroundColor;
+                childElement.style.fill = childState.style.fill;
+              }
             }
           });
         }
