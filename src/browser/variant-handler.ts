@@ -34,17 +34,11 @@ export class VariantHandler {
     targetNode: FigmaNodeData,
     options: AnimationOptions
   ): Promise<void> {
-    console.log('🎬 === ANIMATION CYCLE START ===');
-    console.log('🎬 Executing variant animation:', sourceId, '→', targetId);
-    console.log('🎬 Current activeVariant:', variantInstance.activeVariant);
-    
-    // Log initial element states
-    this.logElementState('SOURCE', sourceId, sourceElement);
-    this.logElementState('TARGET', targetId, targetElement);
+    console.log('🎬 Variant animation:', sourceId, '→', targetId, `(${options.transitionType})`);
 
-    // Detect comprehensive changes between variants
+    // Detect changes between variants
     const changes = ChangeDetector.detectChanges(sourceNode, targetNode);
-    console.log('🎬 Variant changes detected:', changes);
+    console.log('🎬 Changes detected:', changes.length, 'changes');
 
     // Execute variant animation based on transition type
     switch (options.transitionType) {
@@ -74,20 +68,8 @@ export class VariantHandler {
     }
 
     // Update variant instance state
-    console.log('🎬 Updating variant instance state...');
-    console.log('🎬 Old activeVariant:', variantInstance.activeVariant);
     variantInstance.activeVariant = targetId;
     variantInstance.currentIndex = variantInstance.variants.indexOf(targetId);
-    console.log('🎬 New activeVariant:', variantInstance.activeVariant);
-    
-    // Log final element states after animation
-    this.logElementState('SOURCE (after)', sourceId, sourceElement);
-    this.logElementState('TARGET (after)', targetId, targetElement);
-    
-    // CRITICAL: Reset the scene state so the target becomes the new source
-    // This ensures each animation cycle is treated as an isolated scene
-    console.log('🎬 Animation cycle complete. Target', targetId, 'is now the new source for next animation.');
-    console.log('🎬 === ANIMATION CYCLE END ===');
   }
 
   /**
@@ -105,9 +87,7 @@ export class VariantHandler {
     return new Promise((resolve) => {
       console.log('🎭 Starting variant SMART_ANIMATE:', options.duration + 's', options.easing);
       
-      // Log target element state before reset
-      console.log('🎭 Target element BEFORE reset:');
-      this.logElementState('TARGET_BEFORE_RESET', targetId, targetElement);
+
 
       // Ensure target element is visible and reset to initial state
       console.log('🎭 Resetting target element to initial state...');
@@ -118,7 +98,6 @@ export class VariantHandler {
       
       // Reset child elements of target variant to initial state
       const childElements = targetElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
-      console.log('🎭 Resetting', childElements.length, 'child elements...');
       childElements.forEach(child => {
         child.style.transition = '';
         child.style.transform = '';
@@ -126,34 +105,20 @@ export class VariantHandler {
         child.style.height = '';
         child.style.opacity = '';
       });
-      
-      // Log target element state after reset
-      console.log('🎭 Target element AFTER reset:');
-      this.logElementState('TARGET_AFTER_RESET', targetId, targetElement);
 
-      // Apply hybrid flattening if layout changes detected
+      // Apply layout flattening if needed
       const layoutChange = changes.find(change => change.property === 'layout');
       if (layoutChange) {
         DOMManipulator.applyLayoutFlattening(targetElement, layoutChange);
       }
 
-      // Setup CSS transitions for all changing properties on target element
+      // Setup transitions
       DOMManipulator.setupTransitions(targetElement, changes, options);
-
-      // Setup transitions for child elements that will be animated
       DOMManipulator.setupChildTransitions(targetElement, changes, options);
 
-      // Apply changes on next frame to target element
+      // Apply changes
       requestAnimationFrame(() => {
-        console.log('🎭 Applying animation changes to target element...');
-        changes.forEach(change => {
-          console.log('🎭 Applying change:', change.property, change.targetValue);
-          DOMManipulator.applyChange(targetElement, change);
-        });
-        
-        // Log target element state after animation changes applied
-        console.log('🎭 Target element AFTER animation changes:');
-        this.logElementState('TARGET_AFTER_CHANGES', targetId, targetElement);
+        changes.forEach(change => DOMManipulator.applyChange(targetElement, change));
       });
 
       // Complete animation
@@ -177,7 +142,7 @@ export class VariantHandler {
     options: AnimationOptions
   ): Promise<void> {
     return new Promise((resolve) => {
-      console.log('Starting variant DISSOLVE:', options.duration + 's');
+      console.log('🎬 Dissolve:', options.duration + 's');
 
       _sourceElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
       targetElement.style.transition = 'opacity ' + options.duration + 's ' + options.easing;
@@ -208,18 +173,24 @@ export class VariantHandler {
     sourceElement: HTMLElement,
     targetElement: HTMLElement
   ): void {
-    console.log('🔄 === VARIANT SWITCH START ===');
-    console.log('🔄 Performing variant switch:', sourceId, '→', targetId);
+    console.log('🔄 Variant switch:', sourceId, '→', targetId);
     
-    // Reset the source element to its original state before hiding it
-    // This ensures it's clean when it becomes a target again
+    // Log target element state BEFORE switch
+    console.log('🔄 Target BEFORE switch:', {
+      display: targetElement.style.display,
+      opacity: targetElement.style.opacity,
+      computedDisplay: window.getComputedStyle(targetElement).display,
+      computedOpacity: window.getComputedStyle(targetElement).opacity,
+      visible: targetElement.offsetParent !== null
+    });
+    
+    // Reset source element
     if (sourceElement) {
-      console.log('🔄 Resetting source element to original state:', sourceId);
       sourceElement.style.transition = '';
       sourceElement.style.transform = '';
       sourceElement.style.opacity = '';
       
-      // Reset child elements of source variant to original state
+      // Reset child elements
       const sourceChildElements = sourceElement.querySelectorAll('[data-figma-id]') as NodeListOf<HTMLElement>;
       sourceChildElements.forEach(child => {
         child.style.transition = '';
@@ -236,44 +207,22 @@ export class VariantHandler {
       }
     });
 
-    // Show target variant
+    // Show target variant - CRITICAL: Set both display AND opacity
     if (targetElement) {
       targetElement.style.display = 'block';
       targetElement.style.opacity = '1';
       targetElement.style.transform = '';
+      
+      // Log target element state AFTER switch
+      console.log('🔄 Target AFTER switch:', {
+        display: targetElement.style.display,
+        opacity: targetElement.style.opacity,
+        computedDisplay: window.getComputedStyle(targetElement).display,
+        computedOpacity: window.getComputedStyle(targetElement).opacity,
+        visible: targetElement.offsetParent !== null
+      });
     }
   }
 
-  /**
-   * Log element visual state for debugging
-   */
-  private logElementState(label: string, elementId: string, element: HTMLElement): void {
-    const computedStyle = window.getComputedStyle(element);
-    console.log(`🔍 ${label} Element ${elementId} state:`, {
-      display: element.style.display || computedStyle.display,
-      opacity: element.style.opacity || computedStyle.opacity,
-      transform: element.style.transform || computedStyle.transform,
-      transition: element.style.transition || computedStyle.transition,
-      width: element.style.width || computedStyle.width,
-      height: element.style.height || computedStyle.height,
-      offsetWidth: element.offsetWidth,
-      offsetHeight: element.offsetHeight,
-      visible: element.offsetParent !== null
-    });
-    
-    // Log child element states for key elements
-    const childElements = element.querySelectorAll('[data-figma-id]');
-    if (childElements.length > 0) {
-      console.log(`🔍 ${label} Child elements:`, Array.from(childElements).slice(0, 3).map(child => {
-        const childEl = child as HTMLElement;
-        const childComputed = window.getComputedStyle(childEl);
-        return {
-          id: childEl.getAttribute('data-figma-id'),
-          transform: childEl.style.transform || childComputed.transform,
-          width: childEl.style.width || childComputed.width,
-          height: childEl.style.height || childComputed.height
-        };
-      }));
-    }
-  }
+
 }
